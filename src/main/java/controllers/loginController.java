@@ -1,6 +1,7 @@
 package controllers;
 
 import application.SceneManager;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -45,6 +46,11 @@ public class loginController {
     @FXML
     void handleLoginButton(MouseEvent event) throws IOException {
         sceneManager.switchToNextScene(FxmlView.RECOVER_PASSWORD);
+    }
+
+    @FXML
+    void accessIn(ActionEvent event) {
+
     }
 
     @FXML
