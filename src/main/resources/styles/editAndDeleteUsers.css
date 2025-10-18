@@ -1,0 +1,76 @@
+.fieldSearchUsers{
+    -fx-border-color: #5A6A85;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-pref-height: 36px;
+    -fx-pref-width: 230px;
+    -fx-max-width: 230px;
+    -fx-font-family: Montserrat;
+    -fx-text-fill: #5A6A85;
+}
+
+.comboBox{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+    -fx-pref-height: 37px;
+    -fx-pref-width: 225px;
+    -fx-max-width: 250px;
+    -fx-background-color: #FFFFFF;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 13px;
+    -fx-text-fill: #5A6A85;
+    -fx-cursor: hand;
+}
+
+.scroll-pane{
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #FFFFFF;
+}
+
+.scroll-pane .viewport{
+    -fx-background-color: #FFFFFF;
+}
+
+.scroll-bar:vertical {
+    -fx-pref-width: 8;
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.table-view{
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #5A6A85;
+    -fx-border-radius: 8;
+    -fx-padding: 5;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #f8f9fa, #dee2e6);
+    -fx-border-color: #adb5bd;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header .label {
+    -fx-font-family: Montserrat;
+    -fx-font-size: 13px;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #e9ecef;
+}

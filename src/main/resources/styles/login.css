@@ -1,0 +1,60 @@
+.bttLogin {
+    -fx-background-color: #FC0610;
+    -fx-background-radius: 25px;
+    -fx-text-fill: #FFFFFF;
+}
+
+.bttLogin:hover {
+    -fx-background-color: #FFC1C4;
+    -fx-cursor: hand;
+    -fx-text-fill: #FC0610;
+}
+
+.fieldLogin {
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+}
+
+.fieldLogin:focused {
+    -fx-border-color: #FC0610;
+    -fx-border-width: 3px;
+}
+
+.labelLogin {
+   -fx-text-fill: #FC0610;
+}
+
+.labelLogin:hover {
+   -fx-text-fill: #FFC1C4;
+   -fx-cursor: hand;
+}
+
+.boxLogin {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+}
+
+.labelRecover {
+    -fx-text-fill: #5A6A85;
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+
+.textArea {
+    -fx-text-fill: #5A6A85;
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-border-style: none;
+    -fx-border-width: 0;
+}
+
+.textArea .content {
+    -fx-background-color: #FFFFFF;
+}

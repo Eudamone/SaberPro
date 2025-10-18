@@ -1,0 +1,71 @@
+.title{
+    -fx-text-fill: #DE0009;
+}
+
+.textLabels{
+    -fx-text-fill: #5A6A85;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 13px;
+}
+
+.gridPanel{
+    -fx-background-color: #FFFFFF;
+    -fx-border-radius: 12px;
+    -fx-border-color: #FFFFFF;
+    -fx-effect: dropshadow(gaussian,rgba(145,158,171,0.12),15,0.2,0,0.5);
+    -fx-padding: 15;
+    -fx-background-radius: 8;
+}
+
+.fieldText{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+    -fx-pref-height: 36px;
+    -fx-max-width: 300px;
+}
+
+.comboBox{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+    -fx-pref-height: 37px;
+    -fx-max-width: 300px;
+    -fx-background-color: #FFFFFF;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 13px;
+    -fx-text-fill: #5A6A85;
+    -fx-cursor: hand;
+}
+
+.bttCreate{
+    -fx-background-color: #FC0610;
+    -fx-background-radius: 25px;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 13px;
+    -fx-pref-width: 130;
+    -fx-pref-height: 40px;
+    -fx-cursor: hand;
+}
+
+.bttCreate:hover{
+    -fx-effect: dropshadow(gaussian, #919EAB29, 20, 0.1, 0, 0);
+    -fx-translate-y: -2;
+}
+
+.bttCancel{
+    -fx-background-color: #E6E6E6;
+    -fx-background-radius: 25px;
+    -fx-text-fill: #5A6A85;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 13px;
+    -fx-pref-width: 100;
+    -fx-pref-height: 40px;
+    -fx-cursor: hand;
+}
+
+.bttCancel:hover{
+    -fx-effect: dropshadow(gaussian, #919EAB29, 20, 0.1, 0, 0);
+    -fx-translate-y: -2;
+}

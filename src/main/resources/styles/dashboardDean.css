@@ -1,0 +1,52 @@
+.bttMenuSelected{
+    -fx-background-color: #FFC1C4;
+    -fx-background-radius: 20px;
+    -fx-text-fill: #900C11;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-pref-width: 200.0;
+    -fx-pref-height: 26.0;
+    -fx-alignment: TOP_LEFT;
+    -fx-cursor: hand;
+}
+
+.icon-bttMenuSelected{
+    -fx-fill: #900C11;
+}
+
+
+.bttMenu{
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 20px;
+    -fx-text-fill: #5A6A85;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 14px;
+    -fx-pref-height: 26.0;
+    -fx-pref-width: 200.0;
+    -fx-alignment: TOP_LEFT;
+    -fx-cursor: hand;
+}
+
+.icon {
+    -fx-fill: #5A6A85;
+}
+
+
+.bttMenu:hover{
+    -fx-background-color: #FFF0F1;
+    -fx-text-fill: #900C11;
+}
+
+.bttMenu:hover .icon{
+    -fx-fill: #900C11;
+}
+
+.scroll-pane{
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #FFFFFF;
+}
+
+.scroll-pane .viewport{
+    -fx-background-color: #FFFFFF;
+}
