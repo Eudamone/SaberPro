@@ -24,8 +24,6 @@ public class SaberProUser {
 
     private String rol;
 
-    @Column(name = "cuenta_activa")
-    private Boolean cuentaActiva;
 
     // --- getters y setters ---
     public Integer getId() { return id; }
@@ -52,8 +50,6 @@ public class SaberProUser {
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
 
-    public Boolean getCuentaActiva() { return cuentaActiva; }
-    public void setCuentaActiva(Boolean cuentaActiva) { this.cuentaActiva = cuentaActiva; }
 }
 
 

@@ -1,5 +1,11 @@
 package controllers;
 
+import application.AuthService;
+import application.SaberProUser;
+import javafx.scene.control.Alert;
+
+
+
 import application.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -22,10 +28,11 @@ import java.io.IOException;
 public class loginController {
 
     private final SceneManager sceneManager;
+    private final AuthService authService;
 
     @Lazy
-    public loginController(SceneManager sceneManager) {
-        this.sceneManager = sceneManager;
+    public loginController(SceneManager sceneManager, AuthService authService) {
+        this.sceneManager = sceneManager; this.authService = authService;
     }
 
     @FXML
@@ -50,7 +57,32 @@ public class loginController {
 
     @FXML
     void accessIn(ActionEvent event) {
+        String username = (txtUser != null) ? txtUser.getText() : null;
+        String password = (txtPassword != null) ? txtPassword.getText() : null;
 
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            showError("Por favor, ingrese su usuario y contraseña.");
+            return;
+        }
+
+        // Autenticación con BD (bcrypt)
+        SaberProUser user = authService.login(username, password);
+        if (user == null) {
+            showError("Credenciales no válidas.");
+            return;
+        }
+
+        // Política de acceso (demo): si es Decano → dashboard del decano; si no, dashboard genérico
+        try {
+            if ("Decano".equalsIgnoreCase(user.getRol())) {
+                sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
+            } else {
+                sceneManager.switchToNextScene(FxmlView.DASHBOARD_USER);
+            }
+        } catch (Exception e) {
+            showError("No se puede abrir la siguiente vista.");
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -67,5 +99,11 @@ public class loginController {
 
 
     }
-
+    private void showError(String msg) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setHeaderText(null);
+        a.setTitle("Login");
+        a.setContentText(msg);
+        a.showAndWait();
+    }
 }
