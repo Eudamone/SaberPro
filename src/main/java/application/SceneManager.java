@@ -23,6 +23,7 @@ public class SceneManager {
 
         Scene scene = new Scene(rootNode);
         primaryStage.setScene(scene);
+        primaryStage.setTitle(view.getTitle());
         primaryStage.show();
     }
 
@@ -40,6 +41,7 @@ public class SceneManager {
         Parent rootNode = loadRootNode(view.getFxmlFile());
         primaryStage.getScene().setRoot(rootNode);
 
+        primaryStage.setTitle(view.getTitle());
         primaryStage.show();
     }
 
