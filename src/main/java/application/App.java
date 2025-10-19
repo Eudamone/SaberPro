@@ -15,6 +15,8 @@ import org.springframework.context.annotation.ComponentScan;
 import views.FxmlView;
 
 import java.io.IOException;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"application", "controllers","spring.config"})
