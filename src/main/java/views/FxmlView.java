@@ -28,7 +28,7 @@ public enum FxmlView {
         @Override
         public String getTitle(){return "Dashboard Decano - Saber Pro";}
         @Override
-        public String getFxmlFile(){return "/views/dashboardDean.fxml";}
+        public String getFxmlFile(){return "/views/Dean/dashboardDean.fxml";}
     },
     DASHBOARD_USER {
         @Override
@@ -37,17 +37,23 @@ public enum FxmlView {
         public String getFxmlFile() { return "/views/dashboardAdmin.fxml"; }
         // o cambia a "/views/dashboardUser.fxml" si más adelante haces uno separado
     },
-    CREATE_USER{
+    CREATE_USER_DEAN{
         @Override
         public String getTitle() { return "Crear Usuario - Saber Pro"; }
         @Override
-        public String getFxmlFile() { return "/views/createUser.fxml"; }
+        public String getFxmlFile() { return "/views/Dean/createUser.fxml"; }
     },
-    LOAD_MASSIVE_USERS{
+    LOAD_MASSIVE_USERS_DEAN{
         @Override
         public String getTitle() { return "Carga masiva de usuarios - Saber Pro"; }
         @Override
-        public String getFxmlFile() { return "/views/loadMassiveUsers.fxml"; }
+        public String getFxmlFile() { return "/views/Dean/loadMassiveUsers.fxml"; }
+    },
+    EDIT_AND_DELETE_USERS_DEAN{
+        @Override
+        public String getTitle() { return "Editar usuarios - Saber Pro"; }
+        @Override
+        public String getFxmlFile() { return "/views/Dean/editAndDeleteUsers.fxml"; }
     };
 
     public abstract String getTitle();

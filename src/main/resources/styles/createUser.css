@@ -25,6 +25,15 @@
     -fx-max-width: 300px;
 }
 
+.fieldTextError{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-pref-height: 36px;
+    -fx-max-width: 300px;
+    -fx-border-color: red;
+    -fx-border-width: 2px;
+}
+
 .comboBox{
     -fx-background-radius: 10px;
     -fx-border-radius: 10px;
@@ -36,6 +45,20 @@
     -fx-font-size: 13px;
     -fx-text-fill: #5A6A85;
     -fx-cursor: hand;
+}
+
+.comboBoxError{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-pref-height: 37px;
+    -fx-max-width: 300px;
+    -fx-background-color: #FFFFFF;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 13px;
+    -fx-text-fill: #5A6A85;
+    -fx-cursor: hand;
+    -fx-border-color: red;
+    -fx-border-width: 2px;
 }
 
 .bttCreate{

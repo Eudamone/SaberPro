@@ -1,15 +1,11 @@
-package controllers;
+package controllers.Dean;
 
 import application.SceneManager;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import views.FxmlView;
-
-import java.io.IOException;
+import utils.NavigationHelper;
 
 @Component
 public class dashboardDeanController {
@@ -22,8 +18,8 @@ public class dashboardDeanController {
     }
 
     @FXML
-    void changeToCreateUser(ActionEvent event) throws IOException {
-        sceneManager.switchToNextScene(FxmlView.CREATE_USER);
+    void handleViewChange(ActionEvent event) throws Exception {
+        NavigationHelper.handleViewChange(event,sceneManager);
     }
 
     @FXML

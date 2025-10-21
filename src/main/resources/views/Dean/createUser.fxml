@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -17,7 +18,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.loadMassiveUsersController">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.createUserDeanController">
    <children>
       <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" prefHeight="746.0" prefWidth="250.0" spacing="10.0" style="-fx-background-color: #FFFFFF; -fx-pref-height: 100%;" HBox.hgrow="NEVER">
          <children>
@@ -25,7 +26,7 @@
                <children>
                   <ImageView fitHeight="50.0" fitWidth="70.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../images/logo_unillanos.png" />
+                        <Image url="@../../images/logo_unillanos.png" />
                      </image>
                   </ImageView>
                   <Label alignment="CENTER" contentDisplay="CENTER" text="SABER PRO" textFill="#de0009">
@@ -40,7 +41,7 @@
             </HBox>
             <HBox prefHeight="100.0" prefWidth="250.0" style="-fx-background-color: #FFFFFF;" VBox.vgrow="ALWAYS">
                <children>
-                  <ScrollPane focusTraversable="false" prefHeight="200.0" prefWidth="250.0" style="-fx-background-color: #FFFFFF;" stylesheets="@../styles/dashboardDean.css" HBox.hgrow="ALWAYS">
+                  <ScrollPane focusTraversable="false" prefHeight="200.0" prefWidth="250.0" style="-fx-background-color: #FFFFFF;" stylesheets="@../../styles/dashboardDean.css" HBox.hgrow="ALWAYS">
                      <content>
                         <VBox prefHeight="493.0" prefWidth="243.0" spacing="2.0" style="-fx-background-color: #FFFFFF;">
                            <children>
@@ -55,7 +56,7 @@
                                     <Insets bottom="2.0" left="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <Button alignment="TOP_LEFT" graphicTextGap="14.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Dashboard">
+                              <Button alignment="TOP_LEFT" graphicTextGap="14.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Dashboard" userData="DASHBOARD_DEAN">
                                  <VBox.margin>
                                     <Insets bottom="10.0" left="5.0" />
                                  </VBox.margin>
@@ -76,15 +77,15 @@
                                     <Insets bottom="5.0" left="10.0" top="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <Button fx:id="bttCreateUser" alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Crear usuario">
+                              <Button fx:id="bttCreateUser" alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Crear usuario" userData="CREATE_USER_DEAN">
                                  <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="USER_PLUS" size="18" styleClass="icon" text="" />
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="USER_PLUS" size="18" styleClass="icon-bttMenuSelected" text="" />
                                  </graphic>
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Editar / Eliminar">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="USER" size="19" styleClass="icon" />
                                  </graphic>
@@ -92,12 +93,12 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../styles/dashboardDean.css" text="Carga masiva">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                                  <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon-bttMenuSelected" text="" />
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon" text="" />
                                  </graphic>
                               </Button>
                               <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
@@ -113,7 +114,7 @@
                                     <Insets bottom="5.0" left="10.0" top="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Registrar acción">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Registrar acción">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="PLUS_SQUARE" size="18" styleClass="icon" />
                                  </graphic>
@@ -121,7 +122,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" layoutX="10.0" layoutY="400.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Modificar acción">
+                              <Button graphicTextGap="14.0" layoutX="10.0" layoutY="400.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Modificar acción">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="PENCIL_SQUARE" size="18" styleClass="icon" />
                                  </graphic>
@@ -129,7 +130,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Visualizar acciones">
+                              <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Visualizar acciones">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon" />
                                  </graphic>
@@ -150,7 +151,7 @@
                                     <Insets bottom="5.0" left="10.0" top="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <Button graphicTextGap="12.0" layoutX="15.0" layoutY="470.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Manual de usuario">
+                              <Button graphicTextGap="12.0" layoutX="15.0" layoutY="470.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Manual de usuario">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="BOOK" size="18" styleClass="icon" />
                                  </graphic>
@@ -158,7 +159,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="12.0" layoutX="10.0" layoutY="385.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Preguntas frecuentes">
+                              <Button graphicTextGap="12.0" layoutX="10.0" layoutY="385.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Preguntas frecuentes">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="QUESTION_CIRCLE" size="18" styleClass="icon" />
                                  </graphic>
@@ -166,7 +167,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="12.0" layoutX="10.0" layoutY="415.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Reportar incidencia">
+                              <Button graphicTextGap="12.0" layoutX="10.0" layoutY="415.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Reportar incidencia">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="EXCLAMATION_CIRCLE" size="18" styleClass="icon" />
                                  </graphic>
@@ -202,73 +203,122 @@
             </HBox>
             <HBox prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                <children>
-                  <GridPane styleClass="gridPanel" stylesheets="@../styles/createUser.css" HBox.hgrow="ALWAYS">
+                  <GridPane maxHeight="1.7976931348623157E308" styleClass="gridPanel" stylesheets="@../../styles/createUser.css" HBox.hgrow="ALWAYS">
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="250.0" minWidth="10.0" percentWidth="33.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="270.0" minWidth="10.0" percentWidth="36.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="270.0" minWidth="10.0" percentWidth="31.0" prefWidth="100.0" />
                     </columnConstraints>
                     <rowConstraints>
-                      <RowConstraints maxHeight="150.0" minHeight="10.0" prefHeight="191.0" vgrow="SOMETIMES" />
-                      <RowConstraints maxHeight="50.0" minHeight="10.0" prefHeight="235.0" vgrow="SOMETIMES" />
-                      <RowConstraints maxHeight="250.0" minHeight="10.0" prefHeight="154.0" vgrow="SOMETIMES" />
-                        <RowConstraints maxHeight="70.0" minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="60.0" minHeight="10.0" prefHeight="196.0" vgrow="NEVER" />
+                      <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="300.0" minHeight="10.0" prefHeight="400.0" />
+                        <RowConstraints maxHeight="100.0" minHeight="10.0" prefHeight="400.0" />
                     </rowConstraints>
                      <HBox.margin>
                         <Insets left="15.0" right="15.0" top="25.0" />
                      </HBox.margin>
                      <children>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnSpan="2">
+                        <HBox alignment="BOTTOM_CENTER" maxHeight="-Infinity" prefHeight="50.0" prefWidth="773.0" GridPane.columnSpan="3" GridPane.hgrow="NEVER" GridPane.vgrow="NEVER">
                            <children>
-                              <Label text="CARGA MASIVA DE USUARIOS" textFill="#de0009">
+                              <Label styleClass="title" stylesheets="@../../styles/createUser.css" text="CREAR USUARIO">
                                  <font>
                                     <Font name="Montserrat ExtraBold" size="28.0" />
                                  </font>
                               </Label>
-                              <Label text="Seleccione el tipo de usuario a cargar, posteriormente seleccione el archivo .xlsx o .csv " textFill="#5a6a85">
+                           </children>
+                           <GridPane.margin>
+                              <Insets />
+                           </GridPane.margin>
+                        </HBox>
+                        <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="1">
+                           <children>
+                              <Label style="-fx-text-fill: #5A6A85;" text="Complete el formulario para crear el nuevo usuario">
                                  <font>
                                     <Font name="Montserrat-Regular" size="13.0" />
                                  </font>
                               </Label>
                            </children>
-                        </VBox>
-                        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
-                           <children>
-                              <ComboBox prefWidth="150.0" promptText="Tipo de usuario" styleClass="comboBox" stylesheets="@../styles/loadMassiveUsers.css" />
-                           </children>
                         </HBox>
-                        <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2">
+                        <VBox prefHeight="260.0" prefWidth="207.0" GridPane.rowIndex="2">
                            <children>
-                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" styleClass="containerUpload" stylesheets="@../styles/loadMassiveUsers.css" HBox.hgrow="ALWAYS">
-                                 <children>
-                                    <Label text="Seleccione el archivo" textFill="#5a6a85">
-                                       <font>
-                                          <Font name="Montserrat SemiBold" size="12.0" />
-                                       </font>
-                                       <graphic>
-                                          <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" />
-                                       </graphic>
-                                    </Label>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </HBox.margin>
-                              </HBox>
-                           </children>
-                        </HBox>
-                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0" GridPane.columnSpan="2" GridPane.rowIndex="3">
-                           <children>
-                              <Button mnemonicParsing="false" styleClass="bttCancel" stylesheets="@../styles/createUser.css" text="Cancelar" />
-                              <Button mnemonicParsing="false" styleClass="bttCreate" stylesheets="@../styles/createUser.css" text="Guardar" />
+                              <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Nombre de usuario*" />
+                              <TextField fx:id="tfNameUser" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
+                              <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Nombre Completo">
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="tfName" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
+                              <Label>
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <ComboBox fx:id="cBoxRol" onAction="#checkRol" prefWidth="150.0" promptText="Rol" styleClass="comboBox" stylesheets="@../../styles/createUser.css" />
+                              <Label>
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </Label>
                            </children>
                            <GridPane.margin>
-                              <Insets top="10.0" />
+                              <Insets right="3.0" />
                            </GridPane.margin>
+                        </VBox>
+                        <VBox prefHeight="260.0" prefWidth="273.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <children>
+                              <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Correo institucional*" />
+                              <TextField fx:id="tfEmailInstitutional" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
+                              <Label fx:id="lbCodeTeaching1" layoutX="10.0" layoutY="130.0" styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Código de docente*" visible="false">
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <ComboBox fx:id="cBoxFaculty" prefWidth="150.0" promptText="Facultad" styleClass="comboBox" stylesheets="@../../styles/createUser.css" />
+                              <Label fx:id="lbCodeTeaching" styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Código de docente*">
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="tfCodeTeaching" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
+                           </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                           <children>
+                              <Label>
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </Label>
+                              <ComboBox fx:id="cBoxTypeDocument" prefWidth="150.0" promptText="Tipo de Documento" styleClass="comboBox" stylesheets="@../../styles/createUser.css">
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </ComboBox>
+                              <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Numero de identificación*">
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="tfNumberDocument" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
+                              <ComboBox fx:id="cBoxTeaching" prefWidth="150.0" promptText="Tipo de docente" styleClass="comboBox" stylesheets="@../../styles/createUser.css">
+                                 <VBox.margin>
+                                    <Insets top="47.0" />
+                                 </VBox.margin></ComboBox>
+                           </children>
+                        </VBox>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                           <children>
+                              <Button mnemonicParsing="false" styleClass="bttCancel" stylesheets="@../../styles/createUser.css" text="Cancelar" />
+                              <Button mnemonicParsing="false" onAction="#createUser" styleClass="bttCreate" stylesheets="@../../styles/createUser.css" text="Crear Usuario" />
+                           </children>
                         </HBox>
                      </children>
                   </GridPane>
                </children>
             </HBox>
-            <Region prefHeight="171.0" prefWidth="1049.0">
+            <Region prefHeight="111.0" prefWidth="1049.0" style="-fx-background-color: #FFFFFF;">
                <VBox.margin>
                   <Insets top="5.0" />
                </VBox.margin>
