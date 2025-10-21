@@ -1,6 +1,9 @@
 package utils;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+
+import java.util.Optional;
 
 public class Alerts {
     public static void showError(String message, String title) {
@@ -17,5 +20,13 @@ public class Alerts {
         alert.setTitle(title);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    public static Optional<ButtonType> showConfirmationAndGetResult(String message, String title) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText(null);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        return alert.showAndWait();
     }
 }

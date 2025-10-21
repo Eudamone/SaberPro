@@ -20,7 +20,6 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-
 <StackPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.createUserDeanController">
    <children>
       <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;">
@@ -61,7 +60,7 @@
                                           <Insets bottom="2.0" left="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button alignment="TOP_LEFT" graphicTextGap="14.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Dashboard" userData="DASHBOARD_DEAN">
+                                    <Button alignment="TOP_LEFT" graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" onMouseClicked="#handleViewChange" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Dashboard" userData="DASHBOARD_DEAN">
                                        <VBox.margin>
                                           <Insets bottom="10.0" left="5.0" />
                                        </VBox.margin>
@@ -90,7 +89,7 @@
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
+                                    <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="USER" size="19" styleClass="icon" />
                                        </graphic>
@@ -98,7 +97,7 @@
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
+                                    <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" onMouseClicked="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
                                        <VBox.margin>
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>

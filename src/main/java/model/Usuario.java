@@ -2,11 +2,10 @@ package model;
 
 import jakarta.persistence.*;
 
-import java.security.Key;
 
 
 @Entity
-@Table( name = "usuario",schema = "saber_pro")
+@Table( name = "usuario")
 public class Usuario {
 
     @Id
@@ -38,18 +37,59 @@ public class Usuario {
     private String numIdentification;
 
     public enum rolType{
-        Administrador,
-        Estudiante,
-        Decano,
-        DirectorPrograma,
-        CoordinadorPrograma,
-        SecretariaAcreditacion,
-        Docente
+        Administrador("Administrador"),
+        Estudiante("Estudiante"),
+        Decano("Decano"),
+        DirectorPrograma("Director Programa"),
+        CoordinadorPrograma("Coordinador Programa"),
+        SecretariaAcreditacion("Secretaria Acreditacion"),
+        Docente("Docente");
+
+        private final String tipo;
+        rolType(String tipo){
+            this.tipo = tipo;
+        }
+
+        public String getTipo() {
+            return tipo;
+        }
     }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "rol",length = 30,nullable = false)
     private rolType rol;
+
+    // Relación OneToOne Inversa (no propietaria) con Decano.
+    // Usamos mappedBy para indicar que la relación es manejada por el campo 'usuario' en Decano.
+    // Usamos CascadeType.ALL para simplificar la persistencia/eliminación.
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+    private Decano decano;
+
+    @OneToOne(mappedBy = "usuario",cascade = CascadeType.ALL)
+    private Estudiante estudiante;
+
+    public Estudiante getEstudiante() {
+        return estudiante;
+    }
+
+    public void setEstudiante(Estudiante estudiante) {
+        this.estudiante = estudiante;
+        if(estudiante != null){
+            estudiante.setUsuario(this);
+        }
+    }
+
+    public Decano getDecano() {
+        return decano;
+    }
+
+    public void setDecano(Decano decano) {
+        this.decano = decano;
+        if (decano != null) {
+            decano.setUsuario(this);
+        }
+    }
+
 
 
     public Long getId() {

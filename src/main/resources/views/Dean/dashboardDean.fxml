@@ -86,7 +86,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="USER" size="19" styleClass="icon" />
                                  </graphic>
@@ -94,7 +94,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>

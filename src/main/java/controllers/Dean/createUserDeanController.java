@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import services.UsuarioService;
 import utils.FormValidator;
+import utils.NavigationHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,11 @@ public class createUserDeanController {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
     };
+
+    @FXML
+    void handleViewChange(ActionEvent event) throws Exception {
+        NavigationHelper.handleViewChange(event, sceneManager);
+    }
 
     @FXML
     private ComboBox<String> cBoxFaculty;

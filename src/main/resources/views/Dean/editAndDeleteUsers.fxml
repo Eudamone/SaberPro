@@ -80,7 +80,7 @@
                                     <Insets bottom="5.0" left="10.0" top="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <Button alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleViewChange" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear usuario" userData="CREATE_USER">
+                              <Button alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleViewChange" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear usuario" userData="CREATE_USER_DEAN">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="USER_PLUS" size="18" styleClass="icon" text="" />
                                  </graphic>
@@ -88,7 +88,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="USER" size="19" styleClass="icon-bttMenuSelected" />
                                  </graphic>
@@ -96,7 +96,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
@@ -259,14 +259,13 @@
                               </HBox>
                               <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnSpan="3" GridPane.rowIndex="2">
                                  <children>
-                                    <TableView prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="usersTable" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
                                       <columns>
-                                        <TableColumn prefWidth="75.0" text="Usuario" />
-                                        <TableColumn prefWidth="75.0" text="Nombres" />
-                                          <TableColumn prefWidth="75.0" text="Apellidos" />
-                                          <TableColumn prefWidth="75.0" text="Email" />
-                                          <TableColumn prefWidth="75.0" text="Rol" />
-                                          <TableColumn prefWidth="75.0" text="Acciones" />
+                                        <TableColumn fx:id="colUsername" prefWidth="75.0" text="Usuario" />
+                                        <TableColumn fx:id="colNombre" prefWidth="75.0" text="Nombre" />
+                                          <TableColumn fx:id="colEmail" prefWidth="75.0" text="Email" />
+                                          <TableColumn fx:id="colRol" prefWidth="75.0" text="Rol" />
+                                          <TableColumn fx:id="colActions" prefWidth="75.0" text="Acciones" />
                                       </columns>
                                        <columnResizePolicy>
                                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -278,7 +277,7 @@
                         </GridPane>
                      </children>
                   </HBox>
-                  <GridPane maxHeight="600.0" prefHeight="500.0" styleClass="gridPanel" stylesheets="@../../styles/createUser.css" VBox.vgrow="SOMETIMES">
+                  <GridPane fx:id="editForm" maxHeight="600.0" prefHeight="500.0" styleClass="gridPanel" stylesheets="@../../styles/createUser.css" VBox.vgrow="SOMETIMES">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -346,7 +345,7 @@
                                  </VBox.margin>
                               </Label>
                               <TextField styleClass="fieldText" stylesheets="@../../styles/createUser.css" visible="false" />
-                              <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Código de docente">
+                              <Label fx:id="lbCodeTeaching" styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Código de docente">
                                  <VBox.margin>
                                     <Insets top="12.0" />
                                  </VBox.margin>
