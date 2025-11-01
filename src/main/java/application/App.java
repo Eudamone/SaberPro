@@ -1,16 +1,10 @@
 package application;
 
-import com.sun.tools.javac.Main;
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import views.FxmlView;
 
@@ -19,7 +13,9 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"application", "controllers","spring.config"})
+@ComponentScan(basePackages = {"application", "controllers", "service", "repository", "model", "spring.config", "utils", "views"})
+@EntityScan(basePackages = {"model","application"})
+@EnableJpaRepositories(basePackages = {"repository", "application"})
 public class App extends Application{
 
     private ConfigurableApplicationContext applicationContext;
@@ -39,7 +35,8 @@ public class App extends Application{
     public void start(Stage primaryStage) throws Exception {
         stage = primaryStage;
 
-        sceneManager = applicationContext.getBean(SceneManager.class,primaryStage);
+        sceneManager = applicationContext.getBean(SceneManager.class);
+        sceneManager.setPrimaryStage(primaryStage);
         // Configuración de icono de ventana
         //stage.getIcons().add(new Image(getClass().getResource("/images/logo_unillanos.png").toExternalForm()));
 

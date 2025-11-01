@@ -9,7 +9,7 @@ import views.FxmlView;
 import java.io.IOException;
 
 public class SceneManager {
-    private final Stage primaryStage;
+    private Stage primaryStage;
     private final SpringFXMLLoader springFXMLLoader;
 
     // Constructor
@@ -18,7 +18,12 @@ public class SceneManager {
         this.springFXMLLoader = loader;
     }
 
+    public void setPrimaryStage(Stage stage) {
+        this.primaryStage = stage;
+    }
+
     public void switchScene(final FxmlView view) throws IOException {
+        if (primaryStage == null) throw new IllegalStateException("Primary stage not set in SceneManager");
         Parent rootNode = loadRootNode(view.getFxmlFile());
 
         Scene scene = new Scene(rootNode);
@@ -37,6 +42,7 @@ public class SceneManager {
     }
 
     public void switchToNextScene(final FxmlView view) throws IOException {
+        if (primaryStage == null) throw new IllegalStateException("Primary stage not set in SceneManager");
         Parent rootNode = loadRootNode(view.getFxmlFile());
         primaryStage.getScene().setRoot(rootNode);
 

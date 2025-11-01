@@ -94,12 +94,20 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Carga masiva">
+                              <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../styles/dashboardDean.css" text="Carga masiva">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                                  <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon" text="" />
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon-bttMenuSelected" text="" />
+                                 </graphic>
+                              </Button>
+                              <Button fx:id="bttCargaResultados" graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../styles/dashboardDean.css" text="Carga resultados" onAction="#onCargaResultados">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" />
+                                 </VBox.margin>
+                                 <graphic>
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="UPLOAD" size="18" styleClass="icon" />
                                  </graphic>
                               </Button>
                               <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
