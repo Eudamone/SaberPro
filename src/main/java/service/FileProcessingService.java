@@ -273,19 +273,17 @@ public class FileProcessingService {
 
                 // Strings: mantener null si faltan
                 r.setEstuDiscapacidad(get(cols, idx, "estu_discapacidad"));
-                // Normalizar y resolver departamento/ciudad: si viene código numérico lo usamos; si viene nombre, buscamos/creamos
+                // Revertir: mantener departamento/ciudad como texto (no normalizamos a id)
                 String rawDept = get(cols, idx, "estu_inst_departamento");
-                Integer deptId = resolveDepartamentoId(rawDept);
-                r.setEstuInstDepartamento(deptId);
+                r.setEstuInstDepartamento(rawDept);
                 String rawCiudad = get(cols, idx, "estu_inst_municipio");
-                Integer ciudadId = resolveCiudadId(rawCiudad);
-                r.setEstuInstMunicipio(ciudadId);
+                r.setEstuInstMunicipio(rawCiudad);
                 r.setEstuNucleoPregrado(get(cols, idx, "estu_nucleo_pregrado"));
                 r.setEstuPrgmAcademico(get(cols, idx, "estu_prgm_academico"));
-                // estu_snies_prgmacademico es un código numérico -> parsear a Integer
+                // estu_snies_prgmacademico: dejar como Integer para coincidir con BD
                 r.setEstuSniesPrgmacademico(parseInteger(get(cols, idx, "estu_snies_prgmacademico")));
 
-                // Código de institución: usar null si ausente (no forzar 0)
+                // Código de institución: dejar como Integer si es posible
                 r.setInstCodInstitucion(parseInteger(get(cols, idx, "inst_cod_institucion")));
                 r.setInstNombreInstitucion(get(cols, idx, "inst_nombre_institucion"));
 

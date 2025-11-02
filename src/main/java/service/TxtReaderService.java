@@ -168,11 +168,13 @@ public class TxtReaderService {
 
                     // estu_inst_departamento
                     if (headerMap.containsKey("estu_inst_departamento") && isValid(values, headerMap.get("estu_inst_departamento"))) {
+                        // revertir: almacenar tal cual como texto (trim), no como Integer
                         dto.setEstuInstDepartamento(values[headerMap.get("estu_inst_departamento")].trim());
                     }
 
                     // estu_inst_municipio
                     if (headerMap.containsKey("estu_inst_municipio") && isValid(values, headerMap.get("estu_inst_municipio"))) {
+                        // revertir: almacenar tal cual como texto (trim), no como Integer
                         dto.setEstuInstMunicipio(values[headerMap.get("estu_inst_municipio")].trim());
                     }
 
@@ -186,16 +188,16 @@ public class TxtReaderService {
                         dto.setEstuPrgmAcademico(values[headerMap.get("estu_prgm_academico")].trim());
                     }
 
-                    // estu_snies_prgmacademico (puede venir como número o texto) -> parse to Integer
+                    // estu_snies_prgmacademico (antes se parseaba a Integer) -> ahora guardar como Integer para coincidir con BD
                     if (headerMap.containsKey("estu_snies_prgmacademico") && isValid(values, headerMap.get("estu_snies_prgmacademico"))) {
-                        Integer snies = parseIntegerSafe(values[headerMap.get("estu_snies_prgmacademico")].trim());
-                        dto.setEstuSniesPrgmacademico(snies);
+                        String raw = values[headerMap.get("estu_snies_prgmacademico")].trim();
+                        dto.setEstuSniesPrgmacademico(parseIntegerSafe(raw));
                     }
 
-                    // inst_cod_institucion
+                    // inst_cod_institucion -> guardar como Integer para coincidir con BD
                     if (headerMap.containsKey("inst_cod_institucion") && isValid(values, headerMap.get("inst_cod_institucion"))) {
-                        Integer cod = parseIntegerSafe(values[headerMap.get("inst_cod_institucion")].trim());
-                        dto.setInstCodInstitucion(cod);
+                        String raw = values[headerMap.get("inst_cod_institucion")].trim();
+                        dto.setInstCodInstitucion(parseIntegerSafe(raw));
                     }
 
                     // inst_nombre_institucion

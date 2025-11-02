@@ -24,10 +24,10 @@ public class ExternalGeneralResult {
     // Guardaremos los IDs normalizados en la tabla resultado_externo
     // (se asume que la tabla en la BD tiene estos columnas con tipo numérico)
     @Column(name = "estu_inst_departamento", nullable = true)
-    private Integer estuInstDepartamento;
+    private String estuInstDepartamento;
 
     @Column(name = "estu_inst_municipio", nullable = true)
-    private Integer estuInstMunicipio;
+    private String estuInstMunicipio;
 
     @Column(name = "estu_nucleo_pregrado", nullable = true)
     private String estuNucleoPregrado;
@@ -36,9 +36,11 @@ public class ExternalGeneralResult {
     private String estuPrgmAcademico;
 
     @Column(name = "estu_snies_prgmacademico", nullable = true)
+    // cambiado a Integer para coincidir con la definición actual en la BD
     private Integer estuSniesPrgmacademico;
 
     @Column(name = "inst_cod_institucion", nullable = true)
+    // cambiar a Integer para coincidir con la definición en la BD
     private Integer instCodInstitucion;
 
     @Column(name = "inst_nombre_institucion", nullable = true)
@@ -114,10 +116,10 @@ public class ExternalGeneralResult {
     public void setEstConsecutivo(String estConsecutivo) { this.estConsecutivo = estConsecutivo; }
     public String getEstuDiscapacidad() { return estuDiscapacidad; }
     public void setEstuDiscapacidad(String estuDiscapacidad) { this.estuDiscapacidad = estuDiscapacidad; }
-    public Integer getEstuInstDepartamento() { return estuInstDepartamento; }
-    public void setEstuInstDepartamento(Integer estuInstDepartamento) { this.estuInstDepartamento = estuInstDepartamento; }
-    public Integer getEstuInstMunicipio() { return estuInstMunicipio; }
-    public void setEstuInstMunicipio(Integer estuInstMunicipio) { this.estuInstMunicipio = estuInstMunicipio; }
+    public String getEstuInstDepartamento() { return estuInstDepartamento; }
+    public void setEstuInstDepartamento(String estuInstDepartamento) { this.estuInstDepartamento = estuInstDepartamento; }
+    public String getEstuInstMunicipio() { return estuInstMunicipio; }
+    public void setEstuInstMunicipio(String estuInstMunicipio) { this.estuInstMunicipio = estuInstMunicipio; }
     public String getEstuNucleoPregrado() { return estuNucleoPregrado; }
     public void setEstuNucleoPregrado(String estuNucleoPregrado) { this.estuNucleoPregrado = estuNucleoPregrado; }
     public String getEstuPrgmAcademico() { return estuPrgmAcademico; }
