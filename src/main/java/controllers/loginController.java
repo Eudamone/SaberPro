@@ -81,7 +81,7 @@ public class loginController {
             }
         } catch (Exception e) {
             showError("No se puede abrir la siguiente vista.");
-            e.printStackTrace();
+            java.util.logging.Logger.getLogger(loginController.class.getName()).log(java.util.logging.Level.SEVERE, "Error cambiando escena", e);
         }
     }
 

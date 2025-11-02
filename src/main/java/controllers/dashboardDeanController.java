@@ -16,9 +16,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class dashboardDeanController {
+
+    private static final Logger log = LoggerFactory.getLogger(dashboardDeanController.class);
 
     @FXML
     private Button bttCreateUser;
@@ -86,7 +90,11 @@ public class dashboardDeanController {
                 }
             };
             task.setOnSucceeded(ev -> showAlert("Éxito", "Archivos específicos de resultados procesados"));
-            task.setOnFailed(ev -> showAlert("Error", "Error procesando archivos: " + task.getException().getMessage()));
+            task.setOnFailed(ev -> {
+                Throwable ex = task.getException();
+                if (ex != null) log.error("Error procesando archivos específicos", ex);
+                showAlert("Error", "Error procesando archivos: " + (ex != null ? ex.getMessage() : "unknown"));
+            });
             new Thread(task).start();
 
         } else if ("Externo General".equals(tipo)) {
@@ -99,8 +107,12 @@ public class dashboardDeanController {
                     return null;
                 }
             };
-            task.setOnSucceeded(ev -> showAlert("Éxito", "Archivo general de resultados procesado"));
-            task.setOnFailed(ev -> showAlert("Error", "Error procesando archivo: " + task.getException().getMessage()));
+            task.setOnSucceeded(ev -> showAlert("Éxito", "Archivo general procesado"));
+            task.setOnFailed(ev -> {
+                Throwable ex = task.getException();
+                if (ex != null) log.error("Error procesando archivo general", ex);
+                showAlert("Error", "Error procesando archivo: " + (ex != null ? ex.getMessage() : "unknown"));
+            });
             new Thread(task).start();
 
         } else if ("Interno".equals(tipo)) {
@@ -113,8 +125,12 @@ public class dashboardDeanController {
                     return null;
                 }
             };
-            task.setOnSucceeded(ev -> showAlert("Éxito", "Archivo interno de resultados procesado"));
-            task.setOnFailed(ev -> showAlert("Error", "Error procesando archivo: " + task.getException().getMessage()));
+            task.setOnSucceeded(ev -> showAlert("Éxito", "Archivo interno procesado"));
+            task.setOnFailed(ev -> {
+                Throwable ex = task.getException();
+                if (ex != null) log.error("Error procesando archivo interno", ex);
+                showAlert("Error", "Error procesando archivo: " + (ex != null ? ex.getMessage() : "unknown"));
+            });
             new Thread(task).start();
         }
     }
