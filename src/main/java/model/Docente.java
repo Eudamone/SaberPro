@@ -1,6 +1,7 @@
 package model;
 
 import jakarta.persistence.*;
+import utils.TipoDocenteConverter;
 
 @Entity
 @Table(name = "docente")
@@ -19,7 +20,51 @@ public class Docente {
     private String codeTeacher;
 
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_docente", length = 20, nullable = false)
+    @Convert(converter = TipoDocenteConverter.class)
     private Decano.tipoDocente typeTeacher;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cod_facultad",nullable = false)
+    private Facultad facultad;
+
+    public Usuario  getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+        if(usuario != null && usuario.getDocente() == null){
+            usuario.setDocente(this);
+        }
+    }
+
+    public String getCodeTeacher() {
+        return codeTeacher;
+    }
+
+    public void setCodeTeacher(String codeTeacher) {
+        this.codeTeacher = codeTeacher;
+    }
+
+    public Decano.tipoDocente getTypeTeacher() {
+        return typeTeacher;
+    }
+
+    public void setTypeTeacher(Decano.tipoDocente typeTeacher) {
+        this.typeTeacher = typeTeacher;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setFacultad(Facultad facultad) {
+        this.facultad = facultad;
+    }
+
+    public Facultad getFacultad() {
+        return facultad;
+    }
+
 }

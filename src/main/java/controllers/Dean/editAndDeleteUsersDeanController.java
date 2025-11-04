@@ -3,6 +3,7 @@ package controllers.Dean;
 import application.SceneManager;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import dto.UsuarioInfoDTO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,21 +17,25 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
-import model.Decano;
+import javafx.util.StringConverter;
+import model.Facultad;
+import model.Programa;
 import model.Usuario;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import repository.FacultadRepository;
+import services.ProgramaService;
 import services.UsuarioService;
 import utils.Alerts;
 import utils.NavigationHelper;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 import static utils.Alerts.*;
+import static utils.UtilsComboBox.limpiarComboBox;
+import static utils.generateNameUser.generateUsername;
 
 @Component
 public class editAndDeleteUsersDeanController {
@@ -39,14 +44,16 @@ public class editAndDeleteUsersDeanController {
 
     // --- Servicios y Estado ---
     private final UsuarioService usuarioService;
-    private Usuario selectedUser = null; // Usuario actualmente en edición
-
-
+    private UsuarioInfoDTO selectedUser = null; // Usuario actualmente en edición
+    private final FacultadRepository facultadRepository;
+    private final ProgramaService programaService;
 
     @Lazy
-    public editAndDeleteUsersDeanController(SceneManager sceneManager,UsuarioService usuarioService) {
+    public editAndDeleteUsersDeanController(SceneManager sceneManager, UsuarioService usuarioService, FacultadRepository facultadRepository, ProgramaService programaService) {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
+        this.facultadRepository = facultadRepository;
+        this.programaService = programaService;
     }
 
     @FXML
@@ -58,7 +65,7 @@ public class editAndDeleteUsersDeanController {
     private GridPane editForm;
 
     @FXML
-    private ComboBox<String> cBoxFaculty;
+    private ComboBox<Facultad> cBoxFaculty;
 
     @FXML
     private ComboBox<String> cBoxRol;
@@ -70,22 +77,34 @@ public class editAndDeleteUsersDeanController {
     private ComboBox<String> cBoxTypeTeaching;
 
     @FXML
-    private TableColumn<Usuario, Void> colActions;
+    private ComboBox<String> cBoxStateAcademy;
 
     @FXML
-    private TableColumn<Usuario, String> colEmail;
+    private ComboBox<Programa> cBoxProgram;
 
     @FXML
-    private TableColumn<Usuario, String> colNombre;
+    private TableColumn<UsuarioInfoDTO, Void> colActions;
 
     @FXML
-    private TableColumn<Usuario, Usuario.rolType> colRol;
+    private TableColumn<UsuarioInfoDTO, String> colEmail;
 
     @FXML
-    private TableColumn<Usuario,String> colUsername;
+    private TableColumn<UsuarioInfoDTO, String> colNombre;
+
+    @FXML
+    private TableColumn<UsuarioInfoDTO, Usuario.rolType> colRol;
+
+    @FXML
+    private TableColumn<UsuarioInfoDTO, String> colUsername;
 
     @FXML
     private Label lbCodeTeaching;
+
+    @FXML
+    private Label lbCodeStudent;
+
+    @FXML
+    private TextField tfCodeEstudent;
 
     @FXML
     private TextField tfCodeTeaching;
@@ -100,118 +119,220 @@ public class editAndDeleteUsersDeanController {
     private TextField tfNameUser;
 
     @FXML
-    private TextField tfNewPassword;
+    private PasswordField tfNewPassword;
 
     @FXML
     private TextField tfNumberDocument;
 
     @FXML
-    private TextField tfRepeatNewPassword;
+    private PasswordField tfRepeatNewPassword;
 
     @FXML
-    private TableView<Usuario> usersTable;
+    private TableView<UsuarioInfoDTO> usersTable;
 
     @FXML
     void cancelEdit(ActionEvent event) {
-
+        clearElements();
+        editForm.setVisible(false);
     }
 
     @FXML
     void saveChanges(ActionEvent event) {
+        if (selectedUser == null) {
+            Alerts.showWarning("No hay ningun usuario seleccionado para editar", "Atención");
+            return;
+        }
+
+        try {
+            Usuario userDB = usuarioService.findUserForEdit(selectedUser.getId());
+
+            // Validamos contraseñas
+            String pass1 = tfNewPassword.getText();
+            String pass2 = tfRepeatNewPassword.getText();
+
+            if (!pass1.isEmpty() || !pass2.isEmpty()) {
+                if (!pass1.equals(pass2)) {
+                    Alerts.showWarning("Las contraseñas no coinciden", "Error de validación");
+                    return;
+                }
+                userDB.setPass(usuarioService.getEncoder().encode(pass1));
+            }
+
+            // Actualizar campos base
+            userDB.setUsername(tfNameUser.getText());
+            userDB.setEmail(tfEmail.getText());
+            userDB.setNombre(tfName.getText());
+            userDB.setDocument(Usuario.typeDocument.valueOf(cBoxTypeDocument.getValue()));
+            userDB.setNumIdentification(tfNumberDocument.getText());
+
+            String nuevoRol = cBoxRol.getValue();
+
+            usuarioService.updateUser(userDB, nuevoRol, extraFormData());
+
+            Alerts.showInformation("Usuario actualizado correctamente", "Éxito");
+            editForm.setVisible(false);
+            clearElements();
+
+        } catch (Exception e) {
+            Alerts.showError("Error al guardar cambios: " + e.getMessage(), "Error");
+            e.printStackTrace();
+        }
 
     }
 
+    private Map<String, Object> extraFormData() {
+        Map<String, Object> data = new HashMap<>();
+
+        switch (selectedUser.getRol()) {
+            case Docente, Decano -> {
+                data.put("codigo", tfCodeTeaching.getText());
+                data.put("tipo", cBoxTypeTeaching.getValue());
+                data.put("facultad", cBoxFaculty.getValue());
+            }
+            case Estudiante -> {
+                data.put("codigo", tfCodeEstudent.getText());
+                data.put("estado", cBoxStateAcademy.getValue());
+                data.put("programa", cBoxProgram.getValue());
+            }
+            default -> {
+            }
+        }
+        return data;
+    }
+
+    private final String[] comboRol = {"Estudiante", "Administrador", "Docente", "Decano", "Director Programa", "Secretaria Acreditacion", "Coordinador Saber Pro"};
+    private final String[] comboTeacher = {"Planta", "Ocasional", "Catedrático"};
+    private final String[] comboTypeDocument = {"CC", "TI", "CE"};
+
+    public void comboBox(ComboBox<String> comboBox, String[] items) {
+        List<String> list = new ArrayList<>();
+        Collections.addAll(list, items);
+        ObservableList<String> dataList = FXCollections.observableArrayList(list);
+        comboBox.setItems(dataList);
+    }
+
+    ;
+
     @FXML
-    public void initialize(){
+    public void initialize() {
         editForm.setVisible(false);
+
+        comboBox(cBoxRol, comboRol);
+        comboBox(cBoxTypeDocument, comboTypeDocument);
+        comboBox(cBoxTypeTeaching, comboTeacher);
+
+        // Para cambiar el username automáticamente
+        tfNameUser.textProperty().addListener((obs, oldVal, newVal) -> generateUsername(tfNameUser, tfName.getText(), tfNumberDocument.getText(), usuarioService));
+        tfNumberDocument.textProperty().addListener((obs, oldVal, newVal) -> generateUsername(tfNameUser, tfName.getText(), tfNumberDocument.getText(), usuarioService));
+
+        try {
+            List<Facultad> facultades = facultadRepository.findAllFacultades();
+            cBoxFaculty.setItems(FXCollections.observableArrayList(facultades));
+
+            cBoxFaculty.setConverter(new StringConverter<Facultad>() {
+                @Override
+                public String toString(Facultad facultad) {
+                    return (facultad != null) ? facultad.getCodeFaculty() : null;
+                }
+
+                @Override
+                public Facultad fromString(String string) {
+                    return null;
+                }
+            });
+
+            // Añadir listener para evento de selección
+            cBoxFaculty.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    facultySelected(newValue);
+                } else {
+                    cBoxProgram.getItems().clear(); // Limpiar el combobox de programas si quita la selección de la facultad
+                }
+            });
+        } catch (Exception e) {
+            showError("Error al cargar facultades: " + e.getMessage(), "Error en el proceso");
+            e.printStackTrace();
+        }
 
         // 1. Configurar Columnas (Bindings)
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("name"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colRol.setCellValueFactory(new PropertyValueFactory<>("rol"));
+        colActions.setCellFactory(accionesCellFactory());
 
-        // 2. Cargar datos iniciales
+        //  Cargar datos iniciales
         loadUsersData();
 
-        ArrayList<String> list = new ArrayList<>();
-        Collections.addAll(list, new String[]{"Decano","Docente","Coordinador Saber Pro","Estudiante"});
-        cBoxFaculty.getItems().addAll(list);
+        //setupActionsColumn();
+        colActions.setStyle("-fx-alignment: center;");
     }
 
-    // --- Lógica de Edición y Formulario ---
+    private void facultySelected(Facultad facultad) {
+        try {
+            List<Programa> programas = programaService.findProgramsByFaculty(facultad);
 
-    private void handleEditUser(Usuario user) {
-        this.selectedUser = user;
+            //  Se actualiza el combobox de programas
+            cBoxProgram.setItems(FXCollections.observableArrayList(programas));
+            cBoxProgram.getSelectionModel().clearSelection();
 
-        // 1. Mostrar el formulario
-        editForm.setVisible(true);
+            cBoxProgram.setConverter(new StringConverter<Programa>() {
+                @Override
+                public String toString(Programa programa) {
+                    return (programa != null) ? programa.getName() : null;
+                }
 
-        // 2. Llenar campos base (Usuario)
-        tfNameUser.setText(user.getUsername());
-        tfName.setText(user.getNombre());
-        tfEmail.setText(user.getEmail());
-        tfNumberDocument.setText(user.getNumIdentification());
-
-        cBoxRol.setValue(user.getRol().toString());
-        cBoxTypeDocument.setValue(user.getDocument().toString());
-
-        // 3. Manejar campos específicos según el Rol
-        clearConditionalFields(); // Limpia y oculta por defecto
-
-        // Solo Docente/Decano tiene campos condicionales
-        if (user.getRol() == Usuario.rolType.Decano.getTipo() || user.getRol() == Usuario.rolType.Docente.getTipo()) {
-
-            // Buscar la entidad Decano (asumiendo que Docente usa la misma tabla Decano.java)
-            Optional<Decano> decanoOpt = usuarioService.findDecanoById(user.getId());
-
-            if (decanoOpt.isPresent()) {
-                Decano decano = decanoOpt.get();
-
-                // Mostrar y llenar campos condicionales
-                lbCodeTeaching.setVisible(true);
-                tfCodeTeaching.setVisible(true);
-                cBoxTypeTeaching.setVisible(true);
-
-                tfCodeTeaching.setText(decano.getCodeTeacher());
-                cBoxTypeTeaching.setValue(decano.getTipoDocente().getEtiqueta()); // Usar getEtiqueta si es necesario
-
-                // Asumiendo que la facultad es un campo en Decano/Docente o debe ser persistido aparte
-                // cBoxFacultyEdit.setValue(decano.getFaculty());
-            }
+                @Override
+                public Programa fromString(String string) {
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            showError("Error al cargar programas: " + e.getMessage(), "Error en el proceso");
+            e.printStackTrace();
         }
     }
-    private void loadUsersData() {
-        // En un entorno real, esto debería ir en un Task asíncrono
-        List<Usuario> users = usuarioService.findAllUsers();
-        ObservableList<Usuario> observableUsers = FXCollections.observableArrayList(users);
-        usersTable.setItems(observableUsers);
-    }
 
-    private void setupActionsColumn() {
-        Callback<TableColumn<Usuario, Void>, TableCell<Usuario, Void>> cellFactory = new Callback<>() {
+    private Callback<TableColumn<UsuarioInfoDTO, Void>, TableCell<UsuarioInfoDTO, Void>> accionesCellFactory() {
+        return new Callback<>() {
             @Override
-            public TableCell<Usuario, Void> call(final TableColumn<Usuario, Void> param) {
-                final TableCell<Usuario, Void> cell = new TableCell<>() {
+            public TableCell<UsuarioInfoDTO, Void> call(final TableColumn<UsuarioInfoDTO, Void> param) {
+                return new TableCell<>() {
+                    // Iconos con FontAwesomeIconView
+                    final FontAwesomeIconView editIcon = new FontAwesomeIconView(FontAwesomeIcon.PENCIL_SQUARE_ALT);
+                    final FontAwesomeIconView deleteIcon = new FontAwesomeIconView(FontAwesomeIcon.TRASH);
 
-                    private final Button btnEdit = new Button("Editar"); // Ícono de lápiz o editar
-                    private final Button btnDelete = new Button("Borrar"); // Ícono de papelera o eliminar
+                    //Contenedores para los iconos
+                    private final Button btnEdit = new Button();
+                    private final Button btnDelete = new Button();
+
+                    final HBox btnBox = new HBox(10); // Contenedor para los iconos
 
                     {
-                        // Estilo básico para los botones (opcional)
-                        btnEdit.setStyle("-fx-padding: 3;");
-                        btnDelete.setStyle("-fx-padding: 3;");
+                        editIcon.getStyleClass().addAll("glyph-icon", "icon-edit");
+                        deleteIcon.getStyleClass().addAll("glyph-icon", "icon-delete");
+                        editIcon.setSize("20px");
+                        deleteIcon.setSize("20px");
 
-                        // Lógica del botón EDITAR
-                        btnEdit.setOnAction(event -> {
-                            Usuario data = getTableView().getItems().get(getIndex());
-                            handleEditUser(data);
+                        btnEdit.setGraphic(editIcon);
+                        btnDelete.setGraphic(deleteIcon);
+
+                        btnEdit.setStyle("-fx-background-color: transparent;-fx-cursor: hand;");
+                        btnDelete.setStyle("-fx-background-color: transparent;-fx-cursor: hand;");
+
+                        btnBox.setAlignment(Pos.CENTER);
+                        btnBox.setFillHeight(true);
+                        btnBox.getChildren().addAll(btnEdit, btnDelete);
+
+                        // Manejo de eventos
+                        editIcon.setOnMouseClicked(event -> {
+                            UsuarioInfoDTO user = getTableView().getItems().get(getIndex());
+                            editUser(user);
                         });
 
-                        // Lógica del botón ELIMINAR
-                        btnDelete.setOnAction(event -> {
-                            Usuario data = getTableView().getItems().get(getIndex());
-                            handleDeleteUser(data);
+                        deleteIcon.setOnMouseClicked(event -> {
+                            UsuarioInfoDTO user = getTableView().getItems().get(getIndex());
+                            deleteUser(user);
                         });
                     }
 
@@ -221,90 +342,131 @@ public class editAndDeleteUsersDeanController {
                         if (empty) {
                             setGraphic(null);
                         } else {
-                            HBox box = new HBox(5, btnEdit, btnDelete);
-                            box.setAlignment(Pos.CENTER);
-                            setGraphic(box);
+                            setGraphic(btnBox);
                         }
                     }
                 };
-                return cell;
             }
         };
-
-        colActions.setCellFactory(cellFactory);
     }
 
-    private void clearConditionalFields() {
-        // Ocultar por defecto
-        lbCodeTeaching.setVisible(false);
-        tfCodeTeaching.setVisible(false);
-        cBoxTypeTeaching.setVisible(false);
-
-        // Limpiar
-        tfCodeTeaching.clear();
-        cBoxTypeTeaching.getSelectionModel().clearSelection();
-    }
-
-    @FXML
-    private void handleUpdateUser() {
-        if (selectedUser == null) {
-            showError("Error", "No hay usuario seleccionado para actualizar.");
+    private void editUser(
+            UsuarioInfoDTO usuario
+    ) {
+        selectedUser = usuario;
+        Usuario userDB = null;
+        try {
+            userDB = usuarioService.findUserForEdit(usuario.getId());
+        } catch (Exception e) {
+            showError("Error al cargar usuario: " + e.getMessage(), "Error en el proceso");
             return;
         }
+        editForm.setVisible(true);
 
-        // 1. Recoger datos de la UI
-        Usuario updatedUser = new Usuario();
-        // NOTA: Usar el ID del usuario seleccionado
-        updatedUser.setId(selectedUser.getId());
+        // Cargar datos de la BD
+        tfNameUser.setText(usuario.getUsername());
+        tfEmail.setText(usuario.getEmail());
+        tfName.setText(usuario.getName());
+        cBoxTypeDocument.setValue(usuario.getDocument().name());
+        tfNumberDocument.setText(usuario.getNumIdentification());
+        cBoxRol.setValue(usuario.getRol().getTipo());
 
-        // Datos base
-        updatedUser.setUsername(tfNameUser.getText());
-        updatedUser.setNombre(tfName.getText());
-        updatedUser.setEmail(tfEmail.getText());
-        updatedUser.setNumIdentification(tfNumberDocument.getText());
-        updatedUser.setDocument(Usuario.typeDocument.valueOf(cBoxTypeDocument.getValue()));
-        updatedUser.setRol(Usuario.rolType.valueOf(cBoxRol.getValue()));
+        //Se ocultan los campos específicos
+        cBoxFaculty.setVisible(false);
+        lbCodeTeaching.setVisible(false);
+        lbCodeStudent.setVisible(false);
+        tfCodeTeaching.setVisible(false);
+        tfCodeEstudent.setVisible(false);
+        cBoxTypeTeaching.setVisible(false);
+        cBoxStateAcademy.setVisible(false);
+        cBoxProgram.setVisible(false);
 
-        // 2. Recoger datos condicionales
-        String codeTeaching = tfCodeTeaching.getText();
-        String typeTeaching = cBoxTypeTeaching.getValue();
-        // String faculty = cBoxFacultyEdit.getValue(); // Si manejas facultad
+        // Cargar datos especializados
+        switch (usuario.getRol()) {
+            case Estudiante -> {
+                if (userDB.getEstudiante() != null) {
+                    cBoxFaculty.setVisible(true);
+                    lbCodeStudent.setVisible(true);
+                    tfCodeEstudent.setVisible(true);
+                    cBoxProgram.setVisible(true);
+                    cBoxStateAcademy.setVisible(true);
 
-        // 3. Llamar al servicio de actualización (ASÍNCRONO EN PRODUCCIÓN)
-        try {
-            // Se debe crear un nuevo método en UsuarioService para esto
-            usuarioService.updateUserAndSpecializedEntity(updatedUser, codeTeaching, typeTeaching);
-            showInformation( "Usuario " + updatedUser.getUsername() + " actualizado.","Éxito");
+                    cBoxFaculty.setValue(userDB.getEstudiante().getInscripcion().getPrograma().getFacultad());
+                    tfCodeEstudent.setText(userDB.getEstudiante().getCodeStudent());
+                    cBoxProgram.setValue(userDB.getEstudiante().getInscripcion().getPrograma());
+                    cBoxStateAcademy.setValue(userDB.getEstudiante().getAcademicStatus().name());
+                }
+            }
+            case Decano -> {
+                if (userDB.getDecano() != null) {
+                    cBoxFaculty.setVisible(true);
+                    lbCodeTeaching.setVisible(true);
+                    tfCodeTeaching.setVisible(true);
+                    cBoxTypeTeaching.setVisible(true);
 
-            // 4. Limpiar y recargar
-            editForm.setVisible(false);
-            loadUsersData();
-            this.selectedUser = null;
-        } catch (Exception e) {
-            showError("Error de Actualización", "No se pudo actualizar el usuario: " + e.getMessage());
+                    cBoxFaculty.setValue(userDB.getDecano().getFacultad());
+                    tfCodeTeaching.setText(userDB.getDecano().getCodeTeacher());
+                    cBoxTypeTeaching.setValue(userDB.getDecano().getTipoDocente().getEtiqueta());
+                }
+            }
+            case Docente -> {
+                if (userDB.getDocente() != null) {
+                    cBoxFaculty.setVisible(true);
+                    lbCodeTeaching.setVisible(true);
+                    tfCodeTeaching.setVisible(true);
+                    cBoxTypeTeaching.setVisible(true);
+
+                    cBoxFaculty.setValue(userDB.getDocente().getFacultad());
+                    tfCodeTeaching.setText(userDB.getDocente().getCodeTeacher());
+                    cBoxTypeTeaching.setValue(userDB.getDocente().getTypeTeacher().getEtiqueta());
+                }
+            }
+            default -> {
+            }
         }
     }
 
-    // --- Lógica de Eliminación ---
-
-    private void handleDeleteUser(Usuario user) {
+    private void deleteUser(UsuarioInfoDTO user) {
         Optional<ButtonType> result = showConfirmationAndGetResult(
                 "¿Está seguro de que desea eliminar al usuario " + user.getUsername() + " (" + user.getRol() + ")?",
                 "Confirmar Eliminación"
         );
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // 1. Llamar al servicio de eliminación (ASÍNCRONO EN PRODUCCIÓN)
+            // Se llama al método de eliminación en el servicio de usuario
             try {
-                // Se debe crear un nuevo método en UsuarioService para esto
-                usuarioService.deleteUser(user.getId());
-                Alerts.showInformation("Eliminado", "Usuario " + user.getUsername() + " eliminado.");
-
-                // 2. Recargar tabla
+                Usuario userDB = usuarioService.findUserForEdit(user.getId());
+                usuarioService.deleteUser(userDB);
+                Alerts.showInformation("Usuario " + user.getUsername() + " eliminado.", "Eliminado");
                 loadUsersData();
             } catch (Exception e) {
-                showError("Error de Eliminación", "No se pudo eliminar al usuario: " + e.getMessage());
+                showError("No se pudo eliminar al usuario: " + e.getMessage(), "Error de Eliminación");
             }
         }
     }
+
+    private void loadUsersData() {
+        List<UsuarioInfoDTO> users = usuarioService.findAllUsersTable();
+        ObservableList<UsuarioInfoDTO> observableUsers = FXCollections.observableArrayList(users);
+        usersTable.setItems(observableUsers);
+    }
+
+    private void clearElements() {
+        tfNameUser.setText("");
+        tfEmail.setText("");
+        tfNewPassword.setText("");
+        tfName.setText("");
+        tfRepeatNewPassword.setText("");
+        tfCodeEstudent.setText("");
+        tfNumberDocument.setText("");
+        tfCodeTeaching.setText("");
+
+        limpiarComboBox(cBoxRol);
+        limpiarComboBox(cBoxFaculty);
+        limpiarComboBox(cBoxTypeDocument);
+        limpiarComboBox(cBoxTypeTeaching);
+        limpiarComboBox(cBoxStateAcademy);
+        limpiarComboBox(cBoxProgram);
+    }
+
 }

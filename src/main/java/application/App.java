@@ -21,7 +21,7 @@ import java.io.IOException;
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "repository")
 @EntityScan(basePackages = "model")
-@ComponentScan(basePackages = {"application", "controllers","spring.config","model","services","repository"})
+@ComponentScan(basePackages = {"application", "controllers","spring.config","model","services","repository","factories","utils"})
 public class App extends Application{
 
     private ConfigurableApplicationContext applicationContext;

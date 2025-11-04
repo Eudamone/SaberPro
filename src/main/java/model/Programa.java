@@ -35,4 +35,32 @@ public class Programa {
     // Relación ManyToMany (Inversa) con Estudiante a través de Inscripcion
     @OneToMany(mappedBy = "programa")
     private Set<Inscripcion> inscripciones;
+
+    public String getCodeProgram() {
+        return codeProgram;
+    }
+
+    public void setCodeProgram(String codeProgram) {
+        this.codeProgram = codeProgram;
+    }
+
+    public String getSnies() {
+        return snies;
+    }
+
+    public void setSnies(String snies) {
+        this.snies = snies;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Facultad getFacultad() {
+        return facultad;
+    }
 }

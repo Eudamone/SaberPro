@@ -216,8 +216,8 @@
                           <rowConstraints>
                             <RowConstraints maxHeight="60.0" minHeight="10.0" prefHeight="196.0" vgrow="NEVER" />
                             <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="300.0" minHeight="10.0" prefHeight="400.0" />
-                              <RowConstraints maxHeight="100.0" minHeight="10.0" prefHeight="400.0" />
+                              <RowConstraints maxHeight="321.0" minHeight="10.0" prefHeight="321.0" />
+                              <RowConstraints maxHeight="100.0" minHeight="10.0" prefHeight="79.0" />
                           </rowConstraints>
                            <HBox.margin>
                               <Insets left="15.0" right="15.0" top="25.0" />
@@ -244,11 +244,11 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <VBox prefHeight="260.0" prefWidth="207.0" GridPane.rowIndex="2">
+                              <VBox prefHeight="312.0" prefWidth="323.0" GridPane.rowIndex="2">
                                  <children>
                                     <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Nombre de usuario*" />
-                                    <TextField fx:id="tfNameUser" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
-                                    <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Nombre Completo">
+                                    <TextField fx:id="tfNameUser" editable="false" styleClass="fieldTextUserName" stylesheets="@../../styles/createUser.css" />
+                                    <Label styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Nombre Completo*">
                                        <VBox.margin>
                                           <Insets top="30.0" />
                                        </VBox.margin>
@@ -259,7 +259,7 @@
                                           <Insets top="30.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <ComboBox fx:id="cBoxRol" onAction="#checkRol" prefWidth="150.0" promptText="Rol" styleClass="comboBox" stylesheets="@../../styles/createUser.css" />
+                                    <ComboBox fx:id="cBoxFaculty" prefWidth="150.0" promptText="Facultad" styleClass="comboBox" stylesheets="@../../styles/createUser.css" />
                                     <Label>
                                        <VBox.margin>
                                           <Insets top="30.0" />
@@ -279,13 +279,27 @@
                                           <Insets top="30.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <ComboBox fx:id="cBoxFaculty" prefWidth="150.0" promptText="Facultad" styleClass="comboBox" stylesheets="@../../styles/createUser.css" />
-                                    <Label fx:id="lbCodeTeaching" styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Código de docente*">
-                                       <VBox.margin>
-                                          <Insets top="30.0" />
-                                       </VBox.margin>
-                                    </Label>
-                                    <TextField fx:id="tfCodeTeaching" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
+                                    <ComboBox fx:id="cBoxRol" onAction="#checkRol" prefWidth="150.0" promptText="Rol" styleClass="comboBox" stylesheets="@../../styles/createUser.css" />
+                                    <StackPane prefHeight="134.0" prefWidth="355.0">
+                                       <children>
+                                          <Label fx:id="lbMultiRol" styleClass="textLabels" stylesheets="@../../styles/createUser.css" text="Código de docente*" StackPane.alignment="CENTER_LEFT">
+                                             <StackPane.margin>
+                                                <Insets bottom="55.0" right="165.0" />
+                                             </StackPane.margin>
+                                          </Label>
+                                          <TextField fx:id="tfCodeTeaching" styleClass="fieldText" stylesheets="@../../styles/createUser.css" StackPane.alignment="CENTER_LEFT">
+                                             <StackPane.margin>
+                                                <Insets bottom="3.0" />
+                                             </StackPane.margin>
+                                          </TextField>
+                                          <ComboBox fx:id="cBoxProgram" prefWidth="150.0" promptText="Programa" styleClass="comboBox" StackPane.alignment="CENTER_LEFT">
+                                             <StackPane.margin>
+                                                <Insets bottom="2.0" />
+                                             </StackPane.margin>
+                                          </ComboBox>
+                                       </children>
+                                    </StackPane>
+                                    <ComboBox fx:id="cBoxStateAcademy" prefWidth="150.0" promptText="Estado" styleClass="comboBox" />
                                  </children>
                               </VBox>
                               <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
@@ -306,16 +320,22 @@
                                        </VBox.margin>
                                     </Label>
                                     <TextField fx:id="tfNumberDocument" styleClass="fieldText" stylesheets="@../../styles/createUser.css" />
-                                    <ComboBox fx:id="cBoxTeaching" prefWidth="150.0" promptText="Tipo de docente" styleClass="comboBox" stylesheets="@../../styles/createUser.css">
-                                       <VBox.margin>
-                                          <Insets top="47.0" />
-                                       </VBox.margin>
-                                    </ComboBox>
+                                    <StackPane prefHeight="134.0" prefWidth="200.0">
+                                       <children>
+                                          <Label fx:id="lbCodeEstudent" styleClass="textLabels" text="Codigo de estudiante*" StackPane.alignment="CENTER_LEFT">
+                                             <StackPane.margin>
+                                                <Insets bottom="55.0" />
+                                             </StackPane.margin>
+                                          </Label>
+                                          <ComboBox fx:id="cBoxTeaching" prefWidth="150.0" promptText="Tipo de docente" styleClass="comboBox" stylesheets="@../../styles/createUser.css" StackPane.alignment="CENTER_LEFT" />
+                                          <TextField fx:id="tfCodeEstudent" styleClass="fieldText" StackPane.alignment="CENTER_LEFT" />
+                                       </children>
+                                    </StackPane>
                                  </children>
                               </VBox>
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                  <children>
-                                    <Button mnemonicParsing="false" styleClass="bttCancel" stylesheets="@../../styles/createUser.css" text="Cancelar" />
+                                    <Button mnemonicParsing="false" onMouseClicked="#cancelCreateUser" styleClass="bttCancel" stylesheets="@../../styles/createUser.css" text="Cancelar" />
                                     <Button fx:id="bttCreateUser" mnemonicParsing="false" onAction="#createUser" styleClass="bttCreate" stylesheets="@../../styles/createUser.css" text="Crear Usuario" />
                                  </children>
                               </HBox>

@@ -1,9 +1,12 @@
 package services;
 
+import dto.UsuarioSession;
 import model.Usuario;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import repository.UsuarioRepository;
+
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -17,11 +20,13 @@ public class AuthService {
 
     //Validates login credentials and returns the user if valid, otherwise null.
 
-    public Usuario login(String username, String rawPassword) {
+    public UsuarioSession login(String username, String rawPassword) {
         if (username == null || rawPassword == null) return null;
 
-        return repository.findByUsername(username.trim())       //consulta
-                .filter(u -> safeMatches(rawPassword, u.getPass()))
+        Optional<UsuarioRepository.Credentials> credentials = repository.findCredentialsByUsername(username.trim());
+
+        return credentials.filter(c -> safeMatches(rawPassword,c.getPass()))
+                .map(c -> new UsuarioSession(c.getId(),c.getUsername(),c.getRol()))
                 .orElse(null);
     }
 

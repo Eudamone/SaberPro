@@ -6,22 +6,27 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
+import model.Facultad;
+import model.Programa;
 import model.Usuario;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import repository.FacultadRepository;
+import services.ProgramaService;
 import services.UsuarioService;
 import utils.FormValidator;
 import utils.NavigationHelper;
+import utils.UtilsComboBox;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static utils.Alerts.*;
+import static utils.UtilsComboBox.limpiarComboBox;
+import static utils.generateNameUser.generateUsername;
 
 @Component
 public class createUserDeanController {
@@ -34,11 +39,15 @@ public class createUserDeanController {
 
     private final SceneManager sceneManager;
     private final UsuarioService usuarioService;
+    private final FacultadRepository facultadRepository;
+    private final ProgramaService programaService;
 
     @Lazy
-    public createUserDeanController(SceneManager sceneManager, UsuarioService usuarioService) {
+    public createUserDeanController(SceneManager sceneManager, UsuarioService usuarioService,FacultadRepository facultadRepository, ProgramaService programaService) {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
+        this.facultadRepository = facultadRepository;
+        this.programaService = programaService;
     };
 
     @FXML
@@ -47,7 +56,7 @@ public class createUserDeanController {
     }
 
     @FXML
-    private ComboBox<String> cBoxFaculty;
+    private ComboBox<Facultad> cBoxFaculty;
 
     @FXML
     private ComboBox<String> cBoxRol;
@@ -59,7 +68,7 @@ public class createUserDeanController {
     private ComboBox<String> cBoxTypeDocument; // Tipo de documento
 
     @FXML
-    private Label lbCodeTeaching;
+    private Label lbMultiRol;
 
     @FXML
     private TextField tfCodeTeaching;
@@ -75,6 +84,18 @@ public class createUserDeanController {
 
     @FXML
     private TextField tfNumberDocument;
+
+    @FXML
+    private Label lbCodeEstudent;
+
+    @FXML
+    private TextField tfCodeEstudent;
+
+    @FXML
+    private ComboBox<Programa> cBoxProgram;
+
+    @FXML
+    private ComboBox<String> cBoxStateAcademy;
 
     @FXML
     public void createUser(ActionEvent actionEvent) {
@@ -95,21 +116,33 @@ public class createUserDeanController {
         // Número de Documento: Requerido Y debe ser numérico
         isValid &= FormValidator.validateTextField(tfNumberDocument, FormValidator.getNumericPattern());
 
-        // --- 2. Validaciones de ComboBox (Requerido)
-        isValid &= FormValidator.validateComboBox(cBoxRol);
-        isValid &= FormValidator.validateComboBox(cBoxFaculty);
         isValid &= FormValidator.validateComboBox(cBoxTypeDocument);
 
-        // --- 3. Validación Condicional (Lógica de Docente/Decano)
-        String rolValue = cBoxRol.getValue();
+        // --- 2. Validaciones de ComboBox (Requerido)
+        isValid &= FormValidator.validateComboBox(cBoxRol);
 
-        if (rolValue != null && !rolValue.equals("Estudiante")) {
-            if (tfCodeTeaching.isVisible()) {
-                // Código de Docente: Requerido Y debe ser numérico
-                isValid &= FormValidator.validateTextField(tfCodeTeaching, FormValidator.getNumericPattern());
-                // Tipo de Docente: Requerido
-                isValid &= FormValidator.validateComboBox(cBoxTeaching);
-            }
+        if(cBoxFaculty.isVisible()){
+            isValid &= FormValidator.validateComboBox(cBoxFaculty);
+        }
+
+        if(tfCodeTeaching.isVisible()){
+            isValid &= FormValidator.validateTextField(tfCodeTeaching, FormValidator.getNoSpacesPattern());
+        }
+
+        if(cBoxProgram.isVisible()){
+            isValid &= FormValidator.validateComboBox(cBoxProgram);
+        }
+
+        if(cBoxTeaching.isVisible()){
+            isValid &= FormValidator.validateComboBox(cBoxTeaching);
+        }
+
+        if(tfCodeEstudent.isVisible()){
+            isValid &= FormValidator.validateTextField(tfCodeEstudent, FormValidator.getNumericPattern());
+        }
+
+        if(cBoxStateAcademy.isVisible()){
+            isValid &= FormValidator.validateComboBox(cBoxStateAcademy);
         }
 
         // --- 4. Resultado final
@@ -125,17 +158,32 @@ public class createUserDeanController {
     @FXML
     void checkRol(ActionEvent event) {
         String selectedRol = cBoxRol.getSelectionModel().getSelectedItem();
-        if (selectedRol != null && !selectedRol.equals("Estudiante")) {
-            lbCodeTeaching.setVisible(true);
-            tfCodeTeaching.setVisible(true);
-            cBoxTeaching.setVisible(true);
-        }else{
-            lbCodeTeaching.setVisible(false);
-            tfCodeTeaching.setVisible(false);
-            cBoxTeaching.setVisible(false);
 
-            tfCodeTeaching.getStyleClass().add("fieldText");
-            cBoxTeaching.getStyleClass().remove("comboBox");
+        lbMultiRol.setVisible(false);
+        cBoxFaculty.setVisible(false);
+        tfCodeTeaching.setVisible(false);
+        cBoxProgram.setVisible(false);
+        cBoxTeaching.setVisible(false);
+        lbCodeEstudent.setVisible(false);
+        tfCodeEstudent.setVisible(false);
+        cBoxStateAcademy.setVisible(false);
+
+        if(selectedRol == null){return;}
+
+        switch (selectedRol){
+            case "Estudiante" -> {
+                cBoxFaculty.setVisible(true);
+                cBoxProgram.setVisible(true);
+                lbCodeEstudent.setVisible(true);
+                tfCodeEstudent.setVisible(true);
+                cBoxStateAcademy.setVisible(true);
+            }
+            case "Docente", "Decano" -> {
+                cBoxFaculty.setVisible(true);
+                lbMultiRol.setVisible(true);
+                tfCodeTeaching.setVisible(true);
+                cBoxTeaching.setVisible(true);
+            }
         }
     }
 
@@ -153,13 +201,30 @@ public class createUserDeanController {
         final String numberDocument = tfNumberDocument.getText();
         final String rol = cBoxRol.getValue();
 
+        // Construimos el mapa dinámico de datos
+        final Map<String,Object> datos = new HashMap<>();
+
+        switch (rol){
+            case "Estudiante" -> {
+                datos.put("codigo",tfCodeEstudent.getText());
+                datos.put("estado",cBoxStateAcademy.getValue());
+                datos.put("programa",cBoxProgram.getValue());
+            }
+            case "Decano", "Docente" -> {
+                datos.put("codigo",tfCodeTeaching.getText());
+                datos.put("tipo",cBoxTeaching.getValue());
+                datos.put("facultad",cBoxFaculty.getValue());
+            }
+            default ->{}
+        }
+
         // Creamos una Task
         Task<Usuario> task = new Task<>(){
             @Override
             protected Usuario call() throws Exception {
                 // Operación DB
                 return usuarioService.createAndNotify(
-                        username,email,name,typeDocument,numberDocument,rol
+                        username,email,name,typeDocument,numberDocument,rol,datos
                 );
             }
         };
@@ -193,10 +258,10 @@ public class createUserDeanController {
         new Thread(task).start();
     }
 
-    private String[] comboFaculty = {"FCBI","FCAR","FCS","FCHE"};
-    private String[] comboRol = {"Estudiante","Administrador","Docente","Decano","Director Programa","Secretaria Acreditacion","Coordinador Saber Pro"};
-    private String[] comboTeacher = {"Planta","Ocasional","Catedrático"};
-    private String[] comboTypeDocument = {"CC","TI","CE"};
+    private final String[] comboRol = {"Estudiante","Administrador","Docente","Decano","Director Programa","Secretaria Acreditacion","Coordinador Saber Pro"};
+    private final String[] comboTeacher = {"Planta","Ocasional","Catedrático"};
+    private final String[] comboTypeDocument = {"CC","TI","CE"};
+    private final String[] comboStateAcademic = {"Activo","Egresado","Retirado"};
 
     public void comboBox(ComboBox<String> comboBox,String [] items){
         List<String> list = new ArrayList<>();
@@ -209,26 +274,102 @@ public class createUserDeanController {
 
     @FXML
     public void initialize(){
-        comboBox(cBoxFaculty,comboFaculty);
         comboBox(cBoxRol,comboRol);
         comboBox(cBoxTypeDocument,comboTypeDocument);
         comboBox(cBoxTeaching,comboTeacher);
+        comboBox(cBoxStateAcademy,comboStateAcademic);
 
-        lbCodeTeaching.setVisible(false);
+        tfName.textProperty().addListener((obs,oldVal,newVal) -> generateUsername(tfNameUser,tfName.getText(),tfNumberDocument.getText(),usuarioService));
+        tfNumberDocument.textProperty().addListener((obs,oldVal,newVal) -> generateUsername(tfNameUser,tfName.getText(),tfNumberDocument.getText(),usuarioService));
+
+        try{
+            List<Facultad> facultades = facultadRepository.findAll();
+            cBoxFaculty.setItems(FXCollections.observableArrayList(facultades));
+
+            cBoxFaculty.setConverter(new StringConverter<Facultad>() {
+                @Override
+                public String toString(Facultad facultad) {
+                    return (facultad != null) ? facultad.getCodeFaculty() : null;
+                }
+                @Override
+                public Facultad fromString(String string) {return null;}
+            });
+
+            // Añadir listener para evento de selección
+            cBoxFaculty.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+                if(newValue != null){
+                    facultySelected(newValue);
+                }else{
+                    cBoxProgram.getItems().clear(); // Limpiar el combobox de programas si se desselecciona la facultad
+                }
+            });
+        } catch(Exception e){
+            showError("Error al cargar facultades: " + e.getMessage(), "Error en el proceso");
+            e.printStackTrace();
+        }
+
+        lbMultiRol.setVisible(false);
+        cBoxFaculty.setVisible(false);
+        cBoxProgram.setVisible(false);
         tfCodeTeaching.setVisible(false);
         cBoxTeaching.setVisible(false);
+        lbCodeEstudent.setVisible(false);
+        tfCodeEstudent.setVisible(false);
+        cBoxStateAcademy.setVisible(false);
+    }
+
+    private void facultySelected(Facultad facultad){
+        try{
+            List<Programa> programas = programaService.findProgramsByFaculty(facultad);
+
+            //  Se actualiza el combobox de programas
+            cBoxProgram.setItems(FXCollections.observableArrayList(programas));
+            cBoxProgram.getSelectionModel().clearSelection();
+
+            cBoxProgram.setConverter(new StringConverter<Programa>() {
+                @Override
+                public String toString(Programa programa) {
+                    return (programa != null) ? programa.getName() : null;
+                }
+                @Override
+                public Programa fromString(String string) {return null;}
+            });
+        }catch(Exception e){
+            showError("Error al cargar programas: "+e.getMessage(), "Error en el proceso");
+            e.printStackTrace();
+        }
     }
 
     private void cleanElements() {
+        tfNameUser.getStyleClass().remove("comboBoxError");
         tfNameUser.setText("");
         tfEmailInstitutional.setText("");
         tfName.setText("");
         tfNumberDocument.setText("");
         tfCodeTeaching.setText("");
-        cBoxRol.getSelectionModel().clearSelection();
-        cBoxFaculty.getSelectionModel().clearSelection();
-        cBoxTypeDocument.getSelectionModel().clearSelection();
-        cBoxTeaching.getSelectionModel().clearSelection();
+        tfCodeEstudent.setText("");
+
+        limpiarComboBox(cBoxRol);
+        limpiarComboBox(cBoxTypeDocument);
+        limpiarComboBox(cBoxFaculty);
+        limpiarComboBox(cBoxProgram);
+        limpiarComboBox(cBoxTeaching);
+        limpiarComboBox(cBoxStateAcademy);
+    }
+
+
+    @FXML
+    void cancelCreateUser(MouseEvent event) {
+        cleanElements();
+
+        lbMultiRol.setVisible(false);
+        cBoxFaculty.setVisible(false);
+        cBoxProgram.setVisible(false);
+        tfCodeTeaching.setVisible(false);
+        cBoxTeaching.setVisible(false);
+        lbCodeEstudent.setVisible(false);
+        tfCodeEstudent.setVisible(false);
+        cBoxStateAcademy.setVisible(false);
     }
 
 }

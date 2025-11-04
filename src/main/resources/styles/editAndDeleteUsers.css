@@ -55,22 +55,43 @@
     -fx-padding: 5;
 }
 
+.table-view .column-header{
+    -fx-background-color: #FFFFFF;
+}
+
 .table-view .column-header-background {
-    -fx-background-color: linear-gradient(to bottom, #f8f9fa, #dee2e6);
+    -fx-background-color: #FFFFFF;
     -fx-border-color: #adb5bd;
+    -fx-border-radius: 8;
     -fx-border-width: 0 0 1 0;
 }
 
 .table-view .column-header .label {
+    -fx-text-fill: #5A6A85;
+    -fx-font-family: Montserrat;
+    -fx-font-size: 14px;
+    -fx-alignment: center;
+}
+
+.table-cell{
+    -fx-background-color: #FFFFFF;
     -fx-font-family: Montserrat;
     -fx-font-size: 13px;
+    -fx-text-fill: #5A6A85;
+    -fx-alignment: center-left;
+    -fx-padding: 5px;
 }
 
-.table-row-cell {
-    -fx-background-color: white;
-    -fx-border-color: transparent;
+.glyph-icon {
+    -fx-font-family: "FontAwesome";
+    -fx-font-smoothing-type: gray;
+    -fx-font-size: 18px;
 }
 
-.table-row-cell:filled:selected {
-    -fx-background-color: #e9ecef;
+.icon-edit{
+    -fx-fill: #1a73e8;
+}
+
+.icon-delete{
+    -fx-fill: #d32f2f;
 }

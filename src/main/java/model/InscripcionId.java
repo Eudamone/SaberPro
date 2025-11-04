@@ -1,5 +1,6 @@
 package model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
@@ -7,7 +8,9 @@ import java.util.Objects;
 
 @Embeddable
 public class InscripcionId implements Serializable {
+    @Column(name = "id_user")
     private Long idUser; // Corresponde al tipo de id_user en Estudiante/Usuario
+    @Column(name = "cod_programa")
     private String codPrograma; // Corresponde al tipo de cod_programa en Programa
 
     // Constructor por defecto

@@ -28,9 +28,9 @@ public class Estudiante {
     @Column(name = "estado_academico", length = 20, nullable = false)
     private EstadoAcademico academicStatus;
 
-    // Relación ManyToMany (Inversa) con Programa a través de Inscripcion
-    @OneToMany(mappedBy = "estudiante")
-    private Set<Inscripcion> inscripciones;
+    // Relación OneToOne (Inversa) con Programa a través de Inscripcion
+    @OneToOne(mappedBy = "estudiante")
+    private Inscripcion inscripcion;
 
     public Usuario getUsuario() {
         return usuario;
@@ -38,8 +38,8 @@ public class Estudiante {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
-        if (usuario != null && usuario.getDecano() != null) {
-
+        if (usuario != null && usuario.getEstudiante() == null) {
+            usuario.setEstudiante(this);
         }
     }
 
@@ -65,5 +65,9 @@ public class Estudiante {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Inscripcion getInscripcion() {
+        return inscripcion;
     }
 }

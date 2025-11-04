@@ -1,40 +1,39 @@
 package services;
 
+import dto.UsuarioInfoDTO;
+import factories.UsuarioFactoryRegistry;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
-import model.Decano;
 import model.Estudiante;
 import model.Usuario;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import repository.DecanoRepository;
-import repository.EstudianteRepository;
 import repository.UsuarioRepository;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class UsuarioService {
 
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EmailService emailService;
+    private final PasswordEncoder encoder;
+    private final UsuarioFactoryRegistry factoryRegistry;
 
-    private EmailService emailService;
-
-    private final EstudianteRepository estudianteRepository;
-    private final DecanoRepository  decanoRepository;
-
-    private PasswordEncoder encoder;
-
-    public UsuarioService(UsuarioRepository usuarioRepository, EmailService emailService, PasswordEncoder encoder,EstudianteRepository estudianteRepository,DecanoRepository decanoRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, EmailService emailService, PasswordEncoder encoder,UsuarioFactoryRegistry factoryRegistry) {
         this.usuarioRepository = usuarioRepository;
         this.emailService = emailService;
         this.encoder = encoder;
-        this.estudianteRepository =  estudianteRepository;
-        this.decanoRepository = decanoRepository;
+        this.factoryRegistry = factoryRegistry;
+    }
+
+    public UsuarioRepository getUsuarioRepository() {
+        return usuarioRepository;
+    }
+
+    public PasswordEncoder getEncoder() {
+        return encoder;
     }
 
     private static final String RUTA_INSTRUCTIVO_PDF = "src/main/resources/docs/FO-DOC-112 GUIA 6. LAB MEDIOS NO GUIADOS.pdf"; // ¡Ajusta esta ruta real!
@@ -47,8 +46,11 @@ public class UsuarioService {
             String name,
             String typeDocument,
             String numberDocument,
-            String Rol
+            String Rol,
+            //Parámetros para usuarios específicos
+            Map<String,Object> datos
     ) {
+        // Lógica para crear el usuario base
         Usuario usuario = new Usuario();
         usuario.setUsername(username);
         usuario.setEmail(email);
@@ -56,11 +58,13 @@ public class UsuarioService {
         usuario.setDocument(Usuario.typeDocument.valueOf(typeDocument));
         usuario.setNumIdentification(numberDocument);
         usuario.setRol(Usuario.rolType.valueOf(Rol));
-
+        // Se le asigna una contraseña temporal
         String passTemporal = generatePasswordAleatory();
         usuario.setPass(encoder.encode(passTemporal));
-
+        // Se guarda al usuario
         Usuario userSaved = usuarioRepository.save(usuario);
+        // Creamos el usuario especializado según el rol
+        factoryRegistry.createUserSpecificFactory(userSaved,datos);
 
         try{
             String htmlBody = generateHtmlCredentials(userSaved.getUsername(), passTemporal);
@@ -75,7 +79,6 @@ public class UsuarioService {
         }catch (MessagingException e){
             System.err.println("Error al enviar correo al usuario " + userSaved.getUsername() + ": " + e.getMessage());
         }
-
         return userSaved;
     }
 
@@ -227,97 +230,58 @@ public class UsuarioService {
         return output.toString();
     }
 
-    @Transactional
-    public List<Estudiante> bulkCreateStudents(List<Estudiante> estudiantes) throws MessagingException {
-        List<Estudiante> savedEstudiantes = new ArrayList<>();
-
-        for (Estudiante estudiante : estudiantes) {
-            // 1. Generar Contraseña y Hash
-            String passTemporal = generatePasswordAleatory();
-            Usuario usuarioTemp = estudiante.getUsuario();
-
-            usuarioTemp.setPass(encoder.encode(passTemporal));
-
-            // 2. Guardar Usuario base
-            Usuario userSaved = usuarioRepository.save(usuarioTemp);
-
-            // 3. Guardar Entidad Estudiante especializada (usando el ID generado)
-            estudiante.setId(userSaved.getId()); // ¡Crucial para la relación OneToOne!
-            estudiante.setUsuario(userSaved);
-            Estudiante saved = estudianteRepository.save(estudiante);
-
-            // 4. Enviar Notificación
-            String htmlBody = generateHtmlCredentials(userSaved.getUsername(), passTemporal);
-            emailService.sendEmailNewUser(
-                    userSaved.getEmail(),
-                    "Bienvenido a Saber Pro: Sus Credenciales de Acceso",
-                    htmlBody,
-                    RUTA_INSTRUCTIVO_PDF,
-                    NOMBRE_ADJUNTO
-            );
-
-            savedEstudiantes.add(saved);
-        }
-        return savedEstudiantes;
+    public List<Usuario> findAllUsuarios() {
+        return usuarioRepository.findAllUsuarios();
     }
 
-    public List<Usuario> findAllUsers() {
-        return usuarioRepository.findAll();
-    }
-
-    public Optional<Decano> findDecanoById(Long userId) {
-        return decanoRepository.findById(userId);
+    public List<Estudiante> bulkCreateStudents(List<Estudiante> estudiantes) {
+        return estudiantes;
     }
 
     @Transactional
-    public void updateUserAndSpecializedEntity(Usuario updatedUser, String codeTeaching, String typeTeaching) {
-        // a) Guardar Usuario base
-        Usuario existingUser = usuarioRepository.findById(updatedUser.getId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado para actualizar."));
+    public void updateUser(Usuario usuario,String nuevoRol,Map<String,Object> datos) {
+        Usuario.rolType rolActual = usuario.getRol();
+        Usuario.rolType rolNuevo = Usuario.rolType.fromTipo(nuevoRol);
 
-        // Actualizar solo los campos modificables del usuario base
-        existingUser.setUsername(updatedUser.getUsername());
-        existingUser.setNombre(updatedUser.getNombre());
-        existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setNumIdentification(updatedUser.getNumIdentification());
-        existingUser.setDocument(updatedUser.getDocument());
-        // NO actualizar el Rol aquí, ya que cambiaría la estructura de la BD
+        // Si el rol cambia hay que eliminar el anterior y crear el nuevo
+        if(rolActual != rolNuevo){
+            //Se elimina la entidad especializada anterior
+            factoryRegistry.deleteUserSpecificFactory(usuario,rolActual.getTipo());
+            usuario.setRol(rolNuevo);
 
-        usuarioRepository.save(existingUser);
-
-        // b) Actualizar entidades especializadas
-        if (existingUser.getRol() == Usuario.rolType.Decano.getTipo() || existingUser.getRol() == Usuario.rolType.Docente.getTipo()) {
-            Decano decano = decanoRepository.findById(existingUser.getId())
-                    .orElseGet(Decano::new); // Si no existe, crear uno (caso raro, pero seguro)
-
-            decano.setId(existingUser.getId());
-            decano.setUsuario(existingUser);
-            decano.setCodeTeacher(codeTeaching);
-            decano.setTipoDocente(Decano.tipoDocente.valueOf(typeTeaching.toUpperCase()));
-
-            decanoRepository.save(decano);
+            // Se crea la nueva entidad especializada
+            factoryRegistry.createUserSpecificFactory(usuario,datos);
+        }else{
+            // Solo se actualiza la entidad especializada actual
+            factoryRegistry.updateUserSpecificFactory(usuario,datos);
         }
-        // Se puede añadir lógica para Estudiante aquí
-        // else if (existingUser.getRol() == Usuario.rolType.Estudiante) { ... }
+
+        usuarioRepository.save(usuario);
     }
 
-    //  Eliminar Usuario (Transaccional)
     @Transactional
-    public void deleteUser(Long userId) {
-        // La eliminación debe manejar la entidad especializada primero debido a las restricciones de FK.
+    public Usuario findUserForEdit(Long id){
+        return usuarioRepository.findByIdForEdit(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+id));
+    }
 
-        Optional<Usuario> userOpt = usuarioRepository.findById(userId);
-        if (userOpt.isEmpty()) return;
-        Usuario user = userOpt.get();
+    public List<UsuarioInfoDTO> findAllUsersTable(){
+        return usuarioRepository.findUsuarioInfo();
+    }
 
-        // Eliminar entidades especializadas manualmente (sin cascade)
-        if (user.getRol() == Usuario.rolType.Decano.getTipo() || user.getRol() == Usuario.rolType.Docente.getTipo()) {
-            decanoRepository.deleteById(userId);
-        } else if (user.getRol() == Usuario.rolType.Estudiante.getTipo()) {
-            estudianteRepository.deleteById(userId); // Asumiendo EstudianteRepository existe
+    @Transactional
+    public void deleteUser(Usuario usuario) {
+        if(usuario == null){
+            throw new IllegalArgumentException("El usuario no puede ser nulo");
         }
 
-        // Eliminar el usuario base
-        usuarioRepository.delete(user);
+        // Se guarda el rol antes de eliminar
+        String rolAnterior =  usuario.getRol().getTipo();
+
+        // Eliminamos la entidad especializada
+        factoryRegistry.deleteUserSpecificFactory(usuario,rolAnterior);
+
+        // Eliminamos el usuario de la base de datos
+        usuarioRepository.delete(usuario);
     }
 }

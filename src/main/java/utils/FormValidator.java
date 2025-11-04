@@ -99,7 +99,6 @@ public class FormValidator {
             cb.getStyleClass().remove(ERROR_STYLE_CLASS_COMBO_BOX);
             cb.getStyleClass().add(STYLE_CLASS_COMBO_BOX);
         }
-
     }
 
     // Métodos estáticos para acceder a los patrones

@@ -1,7 +1,7 @@
 package model;
 
 import jakarta.persistence.*;
-
+import utils.RolTypeConverter;
 
 
 @Entity
@@ -41,7 +41,7 @@ public class Usuario {
         Estudiante("Estudiante"),
         Decano("Decano"),
         DirectorPrograma("Director Programa"),
-        CoordinadorPrograma("Coordinador Programa"),
+        CoordinadorPrograma("Coordinador Saber Pro"),
         SecretariaAcreditacion("Secretaria Acreditacion"),
         Docente("Docente");
 
@@ -53,10 +53,19 @@ public class Usuario {
         public String getTipo() {
             return tipo;
         }
+
+        public static rolType fromTipo(String tipo) {
+            for(rolType rol: values()){
+                if(rol.getTipo().equalsIgnoreCase(tipo)){
+                    return rol;
+                }
+            }
+            throw new IllegalArgumentException("Tipo de rol invalido: " + tipo);
+        }
     }
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "rol",length = 30,nullable = false)
+    @Convert(converter = RolTypeConverter.class)
     private rolType rol;
 
     // Relación OneToOne Inversa (no propietaria) con Decano.
@@ -68,13 +77,19 @@ public class Usuario {
     @OneToOne(mappedBy = "usuario",cascade = CascadeType.ALL)
     private Estudiante estudiante;
 
+    @OneToOne(mappedBy = "usuario",cascade = CascadeType.ALL)
+    private Docente docente;
+
+    @OneToOne(mappedBy = "usuario",cascade = CascadeType.ALL)
+    private DirectorPrograma directorPrograma;
+
     public Estudiante getEstudiante() {
         return estudiante;
     }
 
     public void setEstudiante(Estudiante estudiante) {
         this.estudiante = estudiante;
-        if(estudiante != null){
+        if(estudiante != null && estudiante.getUsuario() != null){
             estudiante.setUsuario(this);
         }
     }
@@ -85,12 +100,32 @@ public class Usuario {
 
     public void setDecano(Decano decano) {
         this.decano = decano;
-        if (decano != null) {
+        if (decano != null && decano.getUsuario() != null) {
             decano.setUsuario(this);
         }
     }
 
+    public Docente getDocente(){
+        return this.docente;
+    }
 
+    public void setDocente(Docente docente){
+        this.docente = docente;
+        if (docente != null && docente.getUsuario() != null){
+            docente.setUsuario(this);
+        }
+    }
+
+    public DirectorPrograma getDirectorPrograma(){
+        return this.directorPrograma;
+    }
+
+    public void setDirectorPrograma(DirectorPrograma directorPrograma){
+        this.directorPrograma = directorPrograma;
+        if (directorPrograma != null && directorPrograma.getUsuario() != null) {
+            directorPrograma.setUsuario(this);
+        }
+    }
 
     public Long getId() {
         return id;
@@ -148,8 +183,8 @@ public class Usuario {
         this.numIdentification = numIdentification;
     }
 
-    public String getRol() {
-        return rol.toString();
+    public rolType getRol() {
+        return rol;
     }
 
     public void setRol(rolType rol) {

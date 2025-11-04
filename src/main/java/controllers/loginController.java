@@ -1,6 +1,7 @@
 package controllers;
 
 import application.SceneManager;
+import dto.UsuarioSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -62,15 +63,15 @@ public class loginController {
         }
 
         // Autenticación con BD (bcrypt)
-        Usuario user = authService.login(username, password);
-        if (user == null) {
+        UsuarioSession session = authService.login(username, password);
+        if (session == null) {
             showError("Credenciales no válidas.");
             return;
         }
 
         // Política de acceso (demo): si es Decano → dashboard del decano; si no, dashboard genérico
         try {
-            if ("Decano".equalsIgnoreCase(user.getRol())) {
+            if ("Decano".equalsIgnoreCase(session.getRol().getTipo())) {
                 sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
             } else {
                 sceneManager.switchToNextScene(FxmlView.DASHBOARD_USER);

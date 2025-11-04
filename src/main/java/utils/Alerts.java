@@ -29,4 +29,12 @@ public class Alerts {
         alert.setContentText(message);
         return alert.showAndWait();
     }
+
+    public static void showWarning(String message, String title) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setHeaderText(null);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

@@ -25,6 +25,16 @@
     -fx-max-width: 300px;
 }
 
+.fieldTextUserName{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+    -fx-pref-height: 36px;
+    -fx-max-width: 300px;
+    -fx-opacity: 0.6;
+    -fx-background-color: #e0e0e0;
+}
+
 .fieldTextError{
     -fx-background-radius: 10px;
     -fx-border-radius: 10px;
