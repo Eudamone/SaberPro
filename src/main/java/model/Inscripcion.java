@@ -12,7 +12,7 @@ public class Inscripcion {
 
 
     // FK a Estudiante (id_user)
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @MapsId("idUser") // Mapea el campo 'idUser' del EmbeddedId
     @JoinColumn(name = "id_user", nullable = false)
     private Estudiante estudiante;
