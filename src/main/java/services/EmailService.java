@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import repository.UsuarioRepository;
 
@@ -24,6 +25,21 @@ public class EmailService {
 
     @Value("${spring.mail.username}")
     private String fromEmail;
+
+    @Async("emailExecutor")
+    public void sendEmailNewUserAsync(String to, String subject, String htmlBody,String rutaAdjunto,String nombreAdjunto) {
+        try{
+            sendEmailNewUser(
+                    to,
+                    subject,
+                    htmlBody,
+                    rutaAdjunto,
+                    nombreAdjunto
+            );
+        }catch (MessagingException e){
+            System.err.println("Error al enviar correo asincrónicamente a " + to + ": " + e.getMessage());
+        }
+    }
 
     /**
      * Envía un correo electrónico con contenido HTML y un archivo adjunto
