@@ -1,6 +1,7 @@
 package controllers.Dean;
 
 import application.SceneManager;
+import dto.EstudianteLoad;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,7 +13,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-import model.Estudiante;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import services.ExcelReaderService;
@@ -98,6 +98,10 @@ public class loadMassiveUsersDeanController {
             return;
         }
 
+        if(cBoxUserType.getValue() == null){
+            showError("Por favor, selecciona un tipo de usuario","Error de usuario");
+        }
+
         if (!cBoxUserType.getValue().equals("Estudiante")) {
             showInformation( "La carga masiva para otros roles está en desarrollo. Selecciona 'Estudiante'.","En Desarrollo");
             return;
@@ -114,7 +118,8 @@ public class loadMassiveUsersDeanController {
             overlayCharge.setVisible(false);
             bttUploadFile.setDisable(false);
 
-            int count = task.getValue().size();
+            int count = task.getValue();
+
             showInformation( count + " estudiantes fueron cargados y notificados correctamente.","Carga Exitosa");
             // Limpiar la interfaz
             selectedFile = null;
@@ -124,9 +129,22 @@ public class loadMassiveUsersDeanController {
         task.setOnFailed(e -> {
             overlayCharge.setVisible(false);
             bttUploadFile.setDisable(false);
-
             Throwable exception = task.getException();
-            String message = exception.getCause() != null ? exception.getCause().getMessage() : exception.getMessage();
+
+            // 1. **CAMBIO CLAVE**: Forzar la impresión de la traza de error en la consola
+            System.err.println("--- ERROR FATAL EN CARGA MASIVA ---");
+            exception.printStackTrace();
+            System.err.println("------------------------------------");
+
+            // 2. Intentar obtener el mensaje más específico
+            String message;
+            if (exception.getCause() != null && exception.getCause().getMessage() != null) {
+                message = exception.getCause().getMessage();
+            } else if (exception.getMessage() != null) {
+                message = exception.getMessage();
+            } else {
+                message = "Error desconocido al procesar el archivo. Revisa la consola para más detalles.";
+            }
 
             showError("Error de Carga Masiva", "El proceso falló: " + message);
         });
@@ -135,7 +153,7 @@ public class loadMassiveUsersDeanController {
     }
 
     // Clase Task anidada para la ejecución asíncrona
-    private class MassiveUploadTask extends Task<List<Estudiante>> {
+    private class MassiveUploadTask extends Task<Integer> {
         private final File file;
         private final String userType;
 
@@ -145,15 +163,12 @@ public class loadMassiveUsersDeanController {
         }
 
         @Override
-        protected List<Estudiante> call() throws Exception {
-            // 1. Leer el archivo (puede lanzar IOException o IllegalArgumentException)
-            updateMessage("Leyendo archivo Excel...");
-            List<Estudiante> estudiantes = excelReaderService.readStudentsFromExcel(file);
-
-            // 2. Guardar en la base de datos y enviar correos (puede lanzar MessagingException)
-            updateMessage("Guardando " + estudiantes.size() + " usuarios y enviando credenciales...");
-            return usuarioService.bulkCreateStudents(estudiantes);
+        protected Integer call() throws Exception {
+            updateMessage("Leyendo archivo Excel y mapeando datos...");
+            List<EstudianteLoad> estudianteLoads = excelReaderService.readEstudents(file);
+            // Procesar la lista completa, manejando errores de fila y contando los éxitos.
+            updateMessage("Guardando " + estudianteLoads.size() + " usuarios y enviando credenciales...");
+            return usuarioService.processMassiveStudents(estudianteLoads);
         }
     }
-
 }
