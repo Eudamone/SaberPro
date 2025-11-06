@@ -283,7 +283,7 @@ public class createUserDeanController {
         tfNumberDocument.textProperty().addListener((obs,oldVal,newVal) -> generateUsername(tfNameUser,tfName.getText(),tfNumberDocument.getText(),usuarioService));
 
         try{
-            List<Facultad> facultades = facultadRepository.findAll();
+            List<Facultad> facultades = facultadRepository.findAllFacultades();
             cBoxFaculty.setItems(FXCollections.observableArrayList(facultades));
 
             cBoxFaculty.setConverter(new StringConverter<Facultad>() {
