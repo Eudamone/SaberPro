@@ -2,7 +2,6 @@ package model;
 
 import jakarta.persistence.*;
 
-import java.util.Set;
 
 @Entity
 @Table(name = "estudiante")
@@ -69,5 +68,9 @@ public class Estudiante {
 
     public Inscripcion getInscripcion() {
         return inscripcion;
+    }
+
+    public void setInscripcion(Inscripcion inscripcion) {
+        this.inscripcion = inscripcion;
     }
 }
