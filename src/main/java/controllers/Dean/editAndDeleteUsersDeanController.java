@@ -24,6 +24,7 @@ import model.Usuario;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import repository.FacultadRepository;
+import services.CatalogService;
 import services.ProgramaService;
 import services.UsuarioService;
 import utils.Alerts;
@@ -45,15 +46,14 @@ public class editAndDeleteUsersDeanController {
     // --- Servicios y Estado ---
     private final UsuarioService usuarioService;
     private UsuarioInfoDTO selectedUser = null; // Usuario actualmente en edición
-    private final FacultadRepository facultadRepository;
-    private final ProgramaService programaService;
+    private CatalogService catalogService;
+
 
     @Lazy
-    public editAndDeleteUsersDeanController(SceneManager sceneManager, UsuarioService usuarioService, FacultadRepository facultadRepository, ProgramaService programaService) {
+    public editAndDeleteUsersDeanController(SceneManager sceneManager, UsuarioService usuarioService, CatalogService catalogService) {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
-        this.facultadRepository = facultadRepository;
-        this.programaService = programaService;
+        this.catalogService = catalogService;
     }
 
     @FXML
@@ -144,7 +144,7 @@ public class editAndDeleteUsersDeanController {
         }
 
         try {
-            Usuario userDB = usuarioService.findUserForEdit(selectedUser.getId());
+            Usuario userDB = usuarioService.findUser(selectedUser.getId(),selectedUser.getRol());
 
             // Validamos contraseñas
             String pass1 = tfNewPassword.getText();
@@ -165,11 +165,15 @@ public class editAndDeleteUsersDeanController {
             userDB.setDocument(Usuario.typeDocument.valueOf(cBoxTypeDocument.getValue()));
             userDB.setNumIdentification(tfNumberDocument.getText());
 
+            usuarioService.getUsuarioRepository().save(userDB);
+
             String nuevoRol = cBoxRol.getValue();
 
-            usuarioService.updateUser(userDB, nuevoRol, extraFormData());
+            usuarioService.updateUser(selectedUser.getId(),selectedUser.getRol(),nuevoRol, extraFormData());
 
             Alerts.showInformation("Usuario actualizado correctamente", "Éxito");
+            catalogService.clearCacheUsuarios();
+            loadUsersData();
             editForm.setVisible(false);
             clearElements();
 
@@ -226,7 +230,7 @@ public class editAndDeleteUsersDeanController {
         tfNumberDocument.textProperty().addListener((obs, oldVal, newVal) -> generateUsername(tfNameUser, tfName.getText(), tfNumberDocument.getText(), usuarioService));
 
         try {
-            List<Facultad> facultades = facultadRepository.findAllFacultades();
+            List<Facultad> facultades = catalogService.findAllFacultades();
             cBoxFaculty.setItems(FXCollections.observableArrayList(facultades));
 
             cBoxFaculty.setConverter(new StringConverter<Facultad>() {
@@ -270,7 +274,7 @@ public class editAndDeleteUsersDeanController {
 
     private void facultySelected(Facultad facultad) {
         try {
-            List<Programa> programas = programaService.findProgramsByFaculty(facultad);
+            List<Programa> programas = catalogService.findAllProgramas(facultad);
 
             //  Se actualiza el combobox de programas
             cBoxProgram.setItems(FXCollections.observableArrayList(programas));
@@ -354,9 +358,9 @@ public class editAndDeleteUsersDeanController {
             UsuarioInfoDTO usuario
     ) {
         selectedUser = usuario;
-        Usuario userDB = null;
+        Usuario userDB;
         try {
-            userDB = usuarioService.findUserForEdit(usuario.getId());
+            userDB = usuarioService.findUser(usuario.getId(),usuario.getRol());
         } catch (Exception e) {
             showError("Error al cargar usuario: " + e.getMessage(), "Error en el proceso");
             return;
@@ -435,9 +439,10 @@ public class editAndDeleteUsersDeanController {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             // Se llama al método de eliminación en el servicio de usuario
             try {
-                Usuario userDB = usuarioService.findUserForEdit(user.getId());
+                Usuario userDB = usuarioService.findUser(user.getId(),user.getRol());
                 usuarioService.deleteUser(userDB);
                 Alerts.showInformation("Usuario " + user.getUsername() + " eliminado.", "Eliminado");
+                catalogService.clearCacheUsuarios();
                 loadUsersData();
             } catch (Exception e) {
                 showError("No se pudo eliminar al usuario: " + e.getMessage(), "Error de Eliminación");
@@ -446,7 +451,8 @@ public class editAndDeleteUsersDeanController {
     }
 
     private void loadUsersData() {
-        List<UsuarioInfoDTO> users = usuarioService.findAllUsersTable();
+        catalogService.clearCacheUsuarios();
+        List<UsuarioInfoDTO> users = catalogService.findAllUsersTable();
         ObservableList<UsuarioInfoDTO> observableUsers = FXCollections.observableArrayList(users);
         usersTable.setItems(observableUsers);
     }
