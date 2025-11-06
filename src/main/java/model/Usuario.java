@@ -74,7 +74,7 @@ public class Usuario {
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
     private Decano decano;
 
-    @OneToOne(mappedBy = "usuario",cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "usuario",cascade = CascadeType.REMOVE)
     private Estudiante estudiante;
 
     @OneToOne(mappedBy = "usuario",cascade = CascadeType.ALL)
