@@ -2,6 +2,7 @@ package model;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -62,5 +63,18 @@ public class Programa {
 
     public Facultad getFacultad() {
         return facultad;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Programa programa = (Programa) o;
+        return Objects.equals(codeProgram, programa.codeProgram);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(codeProgram);
     }
 }
