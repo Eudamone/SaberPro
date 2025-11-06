@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import repository.ProgramaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProgramaService {
@@ -25,5 +26,9 @@ public class ProgramaService {
 
     public List<Programa> findProgramsByFaculty(Facultad facultad){
         return  programaRepository.findByFacultad(facultad);
+    }
+
+    public Optional<Programa> findByNamePrograma(String name){
+        return programaRepository.findByNamePrograma(name);
     }
 }
