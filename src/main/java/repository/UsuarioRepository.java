@@ -43,16 +43,25 @@ public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
     boolean existsByUsername(String username);
 
     @EntityGraph(
-            attributePaths = {
-                    "docente.facultad",
-                    "decano.facultad",
-                    // Se carga la colección de programas
-                    "estudiante.inscripcion.programa.facultad",
-            },
+            attributePaths = {"docente.facultad"},
             type = EntityGraph.EntityGraphType.LOAD
     )
-    @Query("SELECT u FROM Usuario u WHERE u.id = :id")
-    Optional<Usuario> findByIdForEdit(@Param("id") Long id);
+    @Query("SELECT u FROM Usuario u WHERE u.id = :id AND u.rol = 'Docente'")
+    Optional<Usuario> findDocenteByIdForEdit(@Param("id") Long id);
+
+    @EntityGraph(
+            attributePaths = {"estudiante.inscripcion.programa.facultad"},
+            type = EntityGraph.EntityGraphType.LOAD
+    )
+    @Query("SELECT u FROM Usuario u WHERE u.id = :id AND u.rol = 'Estudiante'")
+    Optional<Usuario> findEstudianteByIdForEdit(@Param("id") Long id);
+
+    @EntityGraph(
+            attributePaths = {"decano.facultad"},
+            type = EntityGraph.EntityGraphType.LOAD
+    )
+    @Query("SELECT u FROM Usuario u WHERE u.id= :id AND u.rol = 'Decano'")
+    Optional<Usuario> findDecanoByIdForEdit(@Param("id") Long id);
 
     @Query("""
         SELECT u FROM Usuario u
