@@ -108,7 +108,11 @@
             <artifactId>poi</artifactId>
             <version>5.2.3</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.github.ozlerhakan</groupId>
+            <artifactId>poiji</artifactId>
+            <version>4.9.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -116,6 +120,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <jvmArguments>
+                        --enable-native-access=javafx.graphics
+                    </jvmArguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>
