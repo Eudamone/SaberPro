@@ -1,23 +1,19 @@
 package factories;
 
-import jakarta.transaction.Transactional;
 import model.*;
 import org.springframework.stereotype.Component;
 import repository.EstudianteRepository;
 import repository.InscripcionRepository;
-import repository.ProgramaRepository;
 
 import java.util.Map;
 
 @Component
 public class EstudianteFactory implements UserEspecializedFactory {
     private final EstudianteRepository  estudianteRepository;
-    private final ProgramaRepository programaRepository;
     private final InscripcionRepository   inscripcionRepository;
 
-    public EstudianteFactory(EstudianteRepository estudianteRepository, ProgramaRepository programaRepository, InscripcionRepository inscripcionRepository) {
+    public EstudianteFactory(EstudianteRepository estudianteRepository, InscripcionRepository inscripcionRepository) {
         this.estudianteRepository = estudianteRepository;
-        this.programaRepository = programaRepository;
         this.inscripcionRepository = inscripcionRepository;
     }
 
@@ -27,7 +23,6 @@ public class EstudianteFactory implements UserEspecializedFactory {
     }
 
     @Override
-    @Transactional
     public void createEntityEspecialized(Usuario usuario, Map<String,Object> datos){
         Estudiante estudiante = new Estudiante();
         estudiante.setUsuario(usuario);
@@ -54,7 +49,24 @@ public class EstudianteFactory implements UserEspecializedFactory {
         }else{
             estudiante.setCodeStudent((String) datos.get("codigo"));
             estudiante.setAcademicStatus(Estudiante.EstadoAcademico.valueOf((String) datos.get("estado")));
-            estudiante.getInscripcion().setPrograma((Programa) datos.get("programa"));
+
+            Inscripcion inscripcion = estudiante.getInscripcion();
+            Programa nuevoPrograma = (Programa) datos.get("programa");
+
+            if(inscripcion!=null && !inscripcion.getPrograma().equals(nuevoPrograma)){
+                inscripcionRepository.delete(inscripcion);
+                estudiante.setInscripcion(null);
+
+                Inscripcion nuevaInscripcion  = new Inscripcion();
+                InscripcionId nuevaInscripcionId = new InscripcionId(usuario.getId(),nuevoPrograma.getCodeProgram());
+
+                nuevaInscripcion.setId(nuevaInscripcionId);
+                nuevaInscripcion.setEstudiante(estudiante);
+                nuevaInscripcion.setPrograma(nuevoPrograma);
+                estudiante.setInscripcion(nuevaInscripcion);
+
+                inscripcionRepository.save(nuevaInscripcion);
+            }
             estudianteRepository.save(estudiante);
         }
     }
