@@ -10,6 +10,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,6 +20,7 @@ import views.FxmlView;
 import java.io.IOException;
 
 @SpringBootApplication
+@EnableCaching
 @EnableJpaRepositories(basePackages = "repository")
 @EntityScan(basePackages = "model")
 @ComponentScan(basePackages = {"application", "controllers","spring.config","model","services","repository","factories","utils"})
