@@ -1,17 +1,26 @@
 package services;
 
+import dto.EstudianteLoad;
 import dto.UsuarioInfoDTO;
 import factories.UsuarioFactoryRegistry;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.Column;
 import jakarta.transaction.Transactional;
 import model.Estudiante;
+import model.Programa;
 import model.Usuario;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import repository.UsuarioRepository;
 
 import java.security.SecureRandom;
 import java.util.*;
+
+import static utils.generateNameUser.generateUsername;
 
 @Service
 public class UsuarioService {
@@ -20,12 +29,25 @@ public class UsuarioService {
     private final EmailService emailService;
     private final PasswordEncoder encoder;
     private final UsuarioFactoryRegistry factoryRegistry;
+    private final ProgramaService programaService;
+    private UsuarioService self;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, EmailService emailService, PasswordEncoder encoder,UsuarioFactoryRegistry factoryRegistry) {
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            EmailService emailService, PasswordEncoder encoder,
+            UsuarioFactoryRegistry factoryRegistry,
+            ProgramaService programaService) {
         this.usuarioRepository = usuarioRepository;
         this.emailService = emailService;
         this.encoder = encoder;
         this.factoryRegistry = factoryRegistry;
+        this.programaService = programaService;
+    }
+
+    @Autowired
+    @Lazy
+    public void setSelf(UsuarioService self) {
+        this.self = self;
     }
 
     public UsuarioRepository getUsuarioRepository() {
@@ -66,19 +88,17 @@ public class UsuarioService {
         // Creamos el usuario especializado según el rol
         factoryRegistry.createUserSpecificFactory(userSaved,datos);
 
-        try{
+
             String htmlBody = generateHtmlCredentials(userSaved.getUsername(), passTemporal);
 
-            emailService.sendEmailNewUser(
+            emailService.sendEmailNewUserAsync(
                     userSaved.getEmail(),
                     "Bienvenido a Saber Pro: Sus Credenciales de Acceso",
                     htmlBody,
                     RUTA_INSTRUCTIVO_PDF,
                     NOMBRE_ADJUNTO
             );
-        }catch (MessagingException e){
-            System.err.println("Error al enviar correo al usuario " + userSaved.getUsername() + ": " + e.getMessage());
-        }
+
         return userSaved;
     }
 
@@ -234,13 +254,55 @@ public class UsuarioService {
         return usuarioRepository.findAllUsuarios();
     }
 
-    public List<Estudiante> bulkCreateStudents(List<Estudiante> estudiantes) {
-        return estudiantes;
+    public Integer processMassiveStudents(List<EstudianteLoad> estudianteLoads){
+        // Numero de filas procesadas
+        int successCount = 0;
+
+        for(EstudianteLoad estudianteLoad : estudianteLoads){
+            try{
+                // Se llama al método para procesar la fila
+                this.loadEstudent(estudianteLoad);
+                successCount++;
+            }catch(IllegalArgumentException e){
+                // Manejar errores de datos esperados (ej. El programa 'X' no existe).
+                String errorMsg = String.format("Error de datos en fila para %s (%s). Causa: %s",
+                        estudianteLoad.getNombre(), estudianteLoad.getEmail(), e.getMessage());
+                System.err.println(errorMsg);
+            }catch (Exception e){
+                // Manejar otros errores (DB, Email, etc.)
+                String errorMsg = String.format("Error inesperado al guardar a %s (%s). Causa: %s",
+                        estudianteLoad.getNombre(), estudianteLoad.getEmail(), e.getMessage());
+                System.err.println(errorMsg);
+            }
+        }
+
+        return successCount;
+    }
+
+    public void loadEstudent(EstudianteLoad estudianteLoad){
+        Map<String,Object> datos = new HashMap<>();
+        datos.put("codigo",estudianteLoad.getCodEstudent());
+        datos.put("estado",Estudiante.EstadoAcademico.Activo.name());
+        Programa programa = programaService.findByNamePrograma(estudianteLoad.getNombrePrograma())
+                .orElseThrow(() -> new IllegalArgumentException("El programa no existe"));
+        datos.put("programa",programa);
+
+        String username = generateUsername(estudianteLoad.getNombre(),estudianteLoad.getNumDocument(),this);
+
+        self.createAndNotify(
+                username,
+                estudianteLoad.getEmail(),
+                estudianteLoad.getNombre(),
+                estudianteLoad.getTypeDocument().name(),
+                estudianteLoad.getNumDocument(),
+                "Estudiante",
+                datos
+        );
     }
 
     @Transactional
-    public void updateUser(Usuario usuario,String nuevoRol,Map<String,Object> datos) {
-        Usuario.rolType rolActual = usuario.getRol();
+    public void updateUser(Long id,Usuario.rolType rolActual,String nuevoRol,Map<String,Object> datos) {
+        Usuario usuario = findUser(id,rolActual);
         Usuario.rolType rolNuevo = Usuario.rolType.fromTipo(nuevoRol);
 
         // Si el rol cambia hay que eliminar el anterior y crear el nuevo
@@ -248,7 +310,6 @@ public class UsuarioService {
             //Se elimina la entidad especializada anterior
             factoryRegistry.deleteUserSpecificFactory(usuario,rolActual.getTipo());
             usuario.setRol(rolNuevo);
-
             // Se crea la nueva entidad especializada
             factoryRegistry.createUserSpecificFactory(usuario,datos);
         }else{
@@ -260,9 +321,27 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario findUserForEdit(Long id){
-        return usuarioRepository.findByIdForEdit(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+id));
+    public Usuario findUser(Long id,Usuario.rolType rol){
+        Optional<Usuario> result;
+
+        switch (rol){
+            case Estudiante -> {
+                result = usuarioRepository.findEstudianteByIdForEdit(id);
+            }
+            case Docente -> {
+                result = usuarioRepository.findDocenteByIdForEdit(id);
+            }
+            case Decano -> {
+                result = usuarioRepository.findDecanoByIdForEdit(id);
+            }
+            case Administrador,DirectorPrograma,CoordinadorPrograma,SecretariaAcreditacion -> {
+                result = usuarioRepository.findById(id);
+            }
+            default -> {
+                throw new RuntimeException("Rol de usuario desconocido ");
+            }
+        }
+        return result.orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+id));
     }
 
     public List<UsuarioInfoDTO> findAllUsersTable(){
@@ -285,3 +364,5 @@ public class UsuarioService {
         usuarioRepository.delete(usuario);
     }
 }
+
+
