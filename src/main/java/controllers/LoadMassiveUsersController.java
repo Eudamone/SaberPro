@@ -11,11 +11,10 @@ import javafx.stage.Stage;
 import model.ExternalGeneralResult; // Asegúrate de que este import esté
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import service.TxtReaderService; // ¡Importamos el lector de TXT!
+import service.FileProcessingService;
+import utils.LocalMultipartFile;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,7 @@ public class LoadMassiveUsersController {
     // --- INICIO DE LA SOLUCIÓN (Error 2) ---
     // Inyectamos el TxtReaderService directamente
     @Autowired
-    private TxtReaderService txtReaderService;
+    private FileProcessingService fileProcessingService;
     // --- FIN DE LA SOLUCIÓN (Error 2) ---
 
     @FXML
@@ -94,28 +93,28 @@ public class LoadMassiveUsersController {
             return;
         }
 
-        try (InputStream is = new FileInputStream(selectedFile)) {
+        try {
+            // envolver el File en un MultipartFile local para usar FileProcessingService
+            String name = selectedFile.getName().toLowerCase();
+            String contentType = "application/octet-stream";
+            if (name.endsWith(".txt")) contentType = "text/plain";
+            else if (name.endsWith(".xlsx")) contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-            // --- INICIO DE LA SOLUCIÓN (Error 2) ---
-            // Ya no llamamos a processFile, sino al TxtReaderService
+            LocalMultipartFile localFile = new LocalMultipartFile(selectedFile, contentType);
 
-            if (fileType.equals("EXTERNO_GENERAL") || fileType.equals("EXTERNO_ESPECIFICO")) {
-
-                // Llamamos directamente al servicio que SÍ existe
-                List<ExternalGeneralResult> results = txtReaderService.readTxtFile(is); // recibimos la lista de resultados
-
-                // Por ahora, solo confirmamos la lectura
-                // El siguiente paso sería guardar 'results' en la base de datos
-                showAlert(Alert.AlertType.INFORMATION, "Lectura Exitosa", "Se leyeron " + results.size() + " filas del archivo TXT.");
-
+            // Llamar al servicio de procesamiento de archivos
+            if (fileType.equals("EXTERNO_GENERAL")) {
+                List<ExternalGeneralResult> saved = fileProcessingService.parseAndSaveGeneral(localFile);
+                showAlert(Alert.AlertType.INFORMATION, "Carga Exitosa", "Se guardaron " + saved.size() + " filas en Resultado Externo (general). ");
+            } else if (fileType.equals("EXTERNO_ESPECIFICO")) {
+                // Para específicos pasamos null como periodo por ahora (FileProcessingService no lo requiere estrictamente)
+                List<?> saved = fileProcessingService.parseAndSaveSpecifics(localFile, null);
+                showAlert(Alert.AlertType.INFORMATION, "Carga Exitosa", "Se guardaron " + saved.size() + " filas en Resultado Externo (específico). ");
             } else if (fileType.equals("INTERNO")) {
-                // Aún no tienes un ExcelReaderService en tu paquete 'service'
                 showAlert(Alert.AlertType.ERROR, "No implementado", "El lector de archivos INTERNOS (Excel) aún no está implementado.");
-
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Tipo de archivo no reconocido.");
             }
-            // --- FIN DE LA SOLUCIÓN (Error 2) ---
 
         } catch (Exception e) {
             log.error("Error cargando archivo {}: {}", selectedFile != null ? selectedFile.getAbsolutePath() : "-", e.getMessage(), e);
