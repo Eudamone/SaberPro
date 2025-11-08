@@ -21,8 +21,6 @@ public class ExternalGeneralResult {
     @Column(name = "estu_discapacidad", nullable = true)
     private String estuDiscapacidad;
 
-    // Guardaremos los IDs normalizados en la tabla resultado_externo
-    // (se asume que la tabla en la BD tiene estos columnas con tipo numérico)
     @Column(name = "estu_inst_departamento", nullable = true)
     private String estuInstDepartamento;
 
@@ -36,60 +34,62 @@ public class ExternalGeneralResult {
     private String estuPrgmAcademico;
 
     @Column(name = "estu_snies_prgmacademico", nullable = true)
-    // cambiado a Integer para coincidir con la definición actual en la BD
     private Integer estuSniesPrgmacademico;
 
     @Column(name = "inst_cod_institucion", nullable = true)
-    // cambiar a Integer para coincidir con la definición en la BD
     private Integer instCodInstitucion;
 
     @Column(name = "inst_nombre_institucion", nullable = true)
     private String instNombreInstitucion;
 
-    // módulos y percentiles: cambiados a BigDecimal para preservar decimales
-    @Column(name = "mod_competen_ciudada_punt", nullable = true)
+    // Los campos de módulos fueron normalizados a tablas separadas (modulo / resultado_modulo_externo).
+    // Para evitar que Hibernate intente escribir columnas que ya no existen en resultado_externo
+    // los marcamos como @Transient: seguiremos manteniendo estos campos en la entidad para procesarlos
+    // en memoria y luego persistirlos en la tabla de módulos cuando corresponda.
+
+    @Transient
     private BigDecimal modCompetenCiudadaPunt;
 
-    @Column(name = "mod_competen_ciudada_pnbc", nullable = true)
+    @Transient
     private BigDecimal modCompetenCiudadaPnbc;
 
-    @Column(name = "mod_competen_ciudada_pnal", nullable = true)
+    @Transient
     private BigDecimal modCompetenCiudadaPnal;
 
-    @Column(name = "mod_comuni_escrita_punt", nullable = true)
+    @Transient
     private BigDecimal modComuniEscritaPunt;
 
-    @Column(name = "mod_comuni_escrita_pnbc", nullable = true)
+    @Transient
     private BigDecimal modComuniEscritaPnbc;
 
-    @Column(name = "mod_comuni_escrita_pnal", nullable = true)
+    @Transient
     private BigDecimal modComuniEscritaPnal;
 
-    @Column(name = "mod_ingles_punt", nullable = true)
+    @Transient
     private BigDecimal modInglesPunt;
 
-    @Column(name = "mod_ingles_pnbc", nullable = true)
+    @Transient
     private BigDecimal modInglesPnbc;
 
-    @Column(name = "mod_ingles_pnal", nullable = true)
+    @Transient
     private BigDecimal modInglesPnal;
 
-    @Column(name = "mod_lectura_critica_punt", nullable = true)
+    @Transient
     private BigDecimal modLecturaCriticaPunt;
 
-    @Column(name = "mod_lectura_critica_pnbc", nullable = true)
+    @Transient
     private BigDecimal modLecturaCriticaPnbc;
 
-    @Column(name = "mod_lectura_critica_pnal", nullable = true)
+    @Transient
     private BigDecimal modLecturaCriticaPnal;
 
-    @Column(name = "mod_razona_cuantitat_punt", nullable = true)
+    @Transient
     private BigDecimal modRazonaCuantitatPunt;
 
-    @Column(name = "mod_razona_cuantitativo_pnbc", nullable = true)
+    @Transient
     private BigDecimal modRazonaCuantitativoPnbc;
 
-    @Column(name = "mod_razona_cuantitativo_pnal", nullable = true)
+    @Transient
     private BigDecimal modRazonaCuantitativoPnal;
 
     @Column(name = "percentil_global", nullable = true)
@@ -107,65 +107,94 @@ public class ExternalGeneralResult {
 
     public ExternalGeneralResult() {}
 
-    // getters y setters
+    // getters y setters (nombres coinciden con uso en servicios)
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public Integer getPeriodo() { return periodo; }
     public void setPeriodo(Integer periodo) { this.periodo = periodo; }
+
     public String getEstConsecutivo() { return estConsecutivo; }
     public void setEstConsecutivo(String estConsecutivo) { this.estConsecutivo = estConsecutivo; }
+
     public String getEstuDiscapacidad() { return estuDiscapacidad; }
     public void setEstuDiscapacidad(String estuDiscapacidad) { this.estuDiscapacidad = estuDiscapacidad; }
+
     public String getEstuInstDepartamento() { return estuInstDepartamento; }
     public void setEstuInstDepartamento(String estuInstDepartamento) { this.estuInstDepartamento = estuInstDepartamento; }
+
     public String getEstuInstMunicipio() { return estuInstMunicipio; }
     public void setEstuInstMunicipio(String estuInstMunicipio) { this.estuInstMunicipio = estuInstMunicipio; }
+
     public String getEstuNucleoPregrado() { return estuNucleoPregrado; }
     public void setEstuNucleoPregrado(String estuNucleoPregrado) { this.estuNucleoPregrado = estuNucleoPregrado; }
+
     public String getEstuPrgmAcademico() { return estuPrgmAcademico; }
     public void setEstuPrgmAcademico(String estuPrgmAcademico) { this.estuPrgmAcademico = estuPrgmAcademico; }
+
     public Integer getEstuSniesPrgmacademico() { return estuSniesPrgmacademico; }
     public void setEstuSniesPrgmacademico(Integer estuSniesPrgmacademico) { this.estuSniesPrgmacademico = estuSniesPrgmacademico; }
+
     public Integer getInstCodInstitucion() { return instCodInstitucion; }
     public void setInstCodInstitucion(Integer instCodInstitucion) { this.instCodInstitucion = instCodInstitucion; }
+
     public String getInstNombreInstitucion() { return instNombreInstitucion; }
     public void setInstNombreInstitucion(String instNombreInstitucion) { this.instNombreInstitucion = instNombreInstitucion; }
+
     public BigDecimal getModCompetenCiudadaPunt() { return modCompetenCiudadaPunt; }
-    public void setModCompetenCiudadaPunt(BigDecimal modCompetenCiudadaPunt) { this.modCompetenCiudadaPunt = modCompetenCiudadaPunt; }
+    public void setModCompetenCiudadaPunt(BigDecimal v) { this.modCompetenCiudadaPunt = v; }
+
     public BigDecimal getModCompetenCiudadaPnbc() { return modCompetenCiudadaPnbc; }
-    public void setModCompetenCiudadaPnbc(BigDecimal modCompetenCiudadaPnbc) { this.modCompetenCiudadaPnbc = modCompetenCiudadaPnbc; }
+    public void setModCompetenCiudadaPnbc(BigDecimal v) { this.modCompetenCiudadaPnbc = v; }
+
     public BigDecimal getModCompetenCiudadaPnal() { return modCompetenCiudadaPnal; }
-    public void setModCompetenCiudadaPnal(BigDecimal modCompetenCiudadaPnal) { this.modCompetenCiudadaPnal = modCompetenCiudadaPnal; }
+    public void setModCompetenCiudadaPnal(BigDecimal v) { this.modCompetenCiudadaPnal = v; }
+
     public BigDecimal getModComuniEscritaPunt() { return modComuniEscritaPunt; }
-    public void setModComuniEscritaPunt(BigDecimal modComuniEscritaPunt) { this.modComuniEscritaPunt = modComuniEscritaPunt; }
+    public void setModComuniEscritaPunt(BigDecimal v) { this.modComuniEscritaPunt = v; }
+
     public BigDecimal getModComuniEscritaPnbc() { return modComuniEscritaPnbc; }
-    public void setModComuniEscritaPnbc(BigDecimal modComuniEscritaPnbc) { this.modComuniEscritaPnbc = modComuniEscritaPnbc; }
+    public void setModComuniEscritaPnbc(BigDecimal v) { this.modComuniEscritaPnbc = v; }
+
     public BigDecimal getModComuniEscritaPnal() { return modComuniEscritaPnal; }
-    public void setModComuniEscritaPnal(BigDecimal modComuniEscritaPnal) { this.modComuniEscritaPnal = modComuniEscritaPnal; }
+    public void setModComuniEscritaPnal(BigDecimal v) { this.modComuniEscritaPnal = v; }
+
     public BigDecimal getModInglesPunt() { return modInglesPunt; }
-    public void setModInglesPunt(BigDecimal modInglesPunt) { this.modInglesPunt = modInglesPunt; }
+    public void setModInglesPunt(BigDecimal v) { this.modInglesPunt = v; }
+
     public BigDecimal getModInglesPnbc() { return modInglesPnbc; }
-    public void setModInglesPnbc(BigDecimal modInglesPnbc) { this.modInglesPnbc = modInglesPnbc; }
+    public void setModInglesPnbc(BigDecimal v) { this.modInglesPnbc = v; }
+
     public BigDecimal getModInglesPnal() { return modInglesPnal; }
-    public void setModInglesPnal(BigDecimal modInglesPnal) { this.modInglesPnal = modInglesPnal; }
+    public void setModInglesPnal(BigDecimal v) { this.modInglesPnal = v; }
+
     public BigDecimal getModLecturaCriticaPunt() { return modLecturaCriticaPunt; }
-    public void setModLecturaCriticaPunt(BigDecimal modLecturaCriticaPunt) { this.modLecturaCriticaPunt = modLecturaCriticaPunt; }
+    public void setModLecturaCriticaPunt(BigDecimal v) { this.modLecturaCriticaPunt = v; }
+
     public BigDecimal getModLecturaCriticaPnbc() { return modLecturaCriticaPnbc; }
-    public void setModLecturaCriticaPnbc(BigDecimal modLecturaCriticaPnbc) { this.modLecturaCriticaPnbc = modLecturaCriticaPnbc; }
+    public void setModLecturaCriticaPnbc(BigDecimal v) { this.modLecturaCriticaPnbc = v; }
+
     public BigDecimal getModLecturaCriticaPnal() { return modLecturaCriticaPnal; }
-    public void setModLecturaCriticaPnal(BigDecimal modLecturaCriticaPnal) { this.modLecturaCriticaPnal = modLecturaCriticaPnal; }
+    public void setModLecturaCriticaPnal(BigDecimal v) { this.modLecturaCriticaPnal = v; }
+
     public BigDecimal getModRazonaCuantitatPunt() { return modRazonaCuantitatPunt; }
-    public void setModRazonaCuantitatPunt(BigDecimal modRazonaCuantitatPunt) { this.modRazonaCuantitatPunt = modRazonaCuantitatPunt; }
+    public void setModRazonaCuantitatPunt(BigDecimal v) { this.modRazonaCuantitatPunt = v; }
+
     public BigDecimal getModRazonaCuantitativoPnbc() { return modRazonaCuantitativoPnbc; }
-    public void setModRazonaCuantitativoPnbc(BigDecimal modRazonaCuantitativoPnbc) { this.modRazonaCuantitativoPnbc = modRazonaCuantitativoPnbc; }
+    public void setModRazonaCuantitativoPnbc(BigDecimal v) { this.modRazonaCuantitativoPnbc = v; }
+
     public BigDecimal getModRazonaCuantitativoPnal() { return modRazonaCuantitativoPnal; }
-    public void setModRazonaCuantitativoPnal(BigDecimal modRazonaCuantitativoPnal) { this.modRazonaCuantitativoPnal = modRazonaCuantitativoPnal; }
+    public void setModRazonaCuantitativoPnal(BigDecimal v) { this.modRazonaCuantitativoPnal = v; }
+
     public BigDecimal getPercentilGlobal() { return percentilGlobal; }
     public void setPercentilGlobal(BigDecimal percentilGlobal) { this.percentilGlobal = percentilGlobal; }
+
     public BigDecimal getPercentilNbc() { return percentilNbc; }
     public void setPercentilNbc(BigDecimal percentilNbc) { this.percentilNbc = percentilNbc; }
+
     public BigDecimal getPuntGlobal() { return puntGlobal; }
     public void setPuntGlobal(BigDecimal puntGlobal) { this.puntGlobal = puntGlobal; }
+
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 

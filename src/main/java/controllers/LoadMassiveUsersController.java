@@ -102,7 +102,7 @@ public class LoadMassiveUsersController {
             if (fileType.equals("EXTERNO_GENERAL") || fileType.equals("EXTERNO_ESPECIFICO")) {
 
                 // Llamamos directamente al servicio que SÍ existe
-                List<ExternalGeneralResult> results = txtReaderService.readTxtFile(is);
+                List<ExternalGeneralResult> results = txtReaderService.readTxtFile(is); // recibimos la lista de resultados
 
                 // Por ahora, solo confirmamos la lectura
                 // El siguiente paso sería guardar 'results' en la base de datos

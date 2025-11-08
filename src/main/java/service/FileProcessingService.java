@@ -31,7 +31,7 @@ import java.util.function.BiConsumer; // añadido
 @Service
 public class FileProcessingService {
 
-    private final ExternalGeneralResultRepository generalRepo;
+    private final ExternalGeneralResultRepository generalRepo; //solo tiene una asignacion (final)
     private final ExternalSpecificResultRepository specificRepo;
     private final InternalResultRepository internalRepo;
     private final CiudadRepository ciudadRepo;
@@ -39,8 +39,8 @@ public class FileProcessingService {
     private final ModuloRepository moduloRepo;
     private final ExternalSpecificModuleResultRepository moduleResultRepo;
 
-
-    private static final int BATCH_SIZE_GENERAL = 2000;
+    //Static: solo existe una copia compartida por todas las instancias de la clase
+    private static final int BATCH_SIZE_GENERAL = 2000; //
     private static final int BATCH_SIZE_SPEC = 500;
     private static final int BATCH_SIZE_INTERNAL = 1000;
 
@@ -60,13 +60,13 @@ public class FileProcessingService {
         this.moduleResultRepo = moduleResultRepo;
     }
 
-    // Split que usa sólo ';' o ',' (no soportamos espacio o tab)
+    // Split que usa sólo ';' o ','
     private String[] splitLine(String line) {
         if (line == null) return new String[0];
         String delimiter = ";";
         if (line.contains(";")) delimiter = ";";
         else if (line.contains(",")) delimiter = ",";
-        return line.split(java.util.regex.Pattern.quote(delimiter), -1);
+        return line.split(java.util.regex.Pattern.quote(delimiter), -1); //devuelve todas las columnas, incluso vacías
     }
 
     // Split usando el delimitador detectado (por ejemplo ';' o ',')
@@ -118,8 +118,9 @@ public class FileProcessingService {
         for (String t : requiredTokens) if (!low.contains(t)) return false;
         return true;
     }
-
-    @Transactional
+    //Detecta delimitador y headers, construye índices tolerantes a variaciones, parsea cada fila a ExternalGeneralResult, setea createdAt, agrupa en buffer,
+    // normaliza al final y persiste mediante generalRepo.saveAll(...) en batches. Devuelve la lista de entidades persistidas.
+    @Transactional //
     public List<ExternalGeneralResult> parseAndSaveGeneral(MultipartFile file) throws Exception {
         List<ExternalGeneralResult> savedAll = new ArrayList<>();
         List<ExternalGeneralResult> buffer = new ArrayList<>(BATCH_SIZE_GENERAL);
@@ -130,7 +131,7 @@ public class FileProcessingService {
 
             // Depuración: mostrar header leído y detectar delimitador (coherente con TxtReaderService)
             // Normalizar primera línea: quitar BOM y espacios, y crear versión en minúsculas para reconocimiento
-            String cleanedFirstLine = firstLine.replace("\uFEFF", "").trim();
+            String cleanedFirstLine = firstLine.replace("\uFEFF", "").trim(); // quitar BOM y espacios: Byte Order Mark carácter Unicode U+FEFF que algunos editores o exportadores añaden al inicio de un fichero para indicar la codificación/orden de bytes
             String detectedDelimiter = ";";
             if (cleanedFirstLine.contains(";")) detectedDelimiter = ";";
             else if (cleanedFirstLine.contains(",")) detectedDelimiter = ",";
@@ -144,9 +145,9 @@ public class FileProcessingService {
             for (int i = 0; i < headers.length; i++) {
                 String raw = headers[i] == null ? "" : headers[i].trim();
                 String lower = raw.toLowerCase().replace("\uFEFF", "");
-                headerMap.put(lower, i);
+                headerMap.put(lower, i); // clave en minúsculas y sin espacios alrededor sobreescribe
                 String norm = lower.replace(" ", "").replace("-", "").replace("_", "").replace("í", "i").replace("ó", "o");
-                normalizedMap.put(norm, i);
+                normalizedMap.put(norm, i); // clave normalizada sin espacios, guiones, tildes junto con la posición
             }
 
             // Intentar mapear columnas mínimas con tolerancia (variantes de nombres)
@@ -154,9 +155,9 @@ public class FileProcessingService {
             Integer idxEstu = null;
             if (normalizedMap.containsKey("periodo")) idxPeriodo = normalizedMap.get("periodo");
             else {
-                for (String k : normalizedMap.keySet())
+                for (String k : normalizedMap.keySet()) // buscar cualquier encabezado que contenga 'periodo'
                     if (k.contains("periodo")) {
-                        idxPeriodo = normalizedMap.get(k);
+                        idxPeriodo = normalizedMap.get(k); //
                         break;
                     }
             }
@@ -184,14 +185,13 @@ public class FileProcessingService {
                 String rawKey = e.getKey();
                 Integer pos = e.getValue();
                 idx.putIfAbsent(rawKey, pos);
-                // also add normalized form
+
                 String normKey = rawKey.replace(" ", "").replace("-", "").replace("_", "").replace("í", "i").replace("ó", "o");
                 idx.putIfAbsent(normKey, pos);
             }
-            // also ensure any normalizedMap entries are present
             for (Map.Entry<String, Integer> e : normalizedMap.entrySet()) {
                 idx.putIfAbsent(e.getKey(), e.getValue());
-            }
+            } // obtener columnas aun cuando el header del archivo tenga pequeñas diferencias de formato o acentuación.
 
             // Mostrar en logs el mapeo final de índices (clave -> posición) para depuración
             System.out.println("[FileProcessingService] mapeo final de índices: " + idx);
@@ -236,6 +236,23 @@ public class FileProcessingService {
 
             System.out.println("[FileProcessingService] Encabezados (map): " + headerMap.keySet());
 
+            // Detectar qué prefijos de módulo están presentes en el archivo (aunque las celdas estén vacías)
+            // Esto nos permitirá crear filas en resultado_modulo_externo con puntaje = NULL cuando las columnas existen pero las celdas están vacías.
+            List<String> modulePrefixes = Arrays.asList("mod_competen_ciudada", "mod_comuni_escrita", "mod_ingles", "mod_lectura_critica", "mod_razona_cuantitat"); // prefijos esperados de módulos
+            Set<String> presentModulePrefixes = new HashSet<>(); // prefijos de módulos detectados en el archivo
+            for (String pref : modulePrefixes) {
+                String compactPref = pref.replace("_", "");
+                boolean found = false;
+                for (String h : headerMap.keySet()) { //revisar si existe en headerMap o normalizedMap
+                    if (h.contains(pref) || h.replace("_", "").contains(compactPref)) { found = true; break; } // buscar coincidencia parcial
+                }
+                if (!found) {
+                    for (String h : normalizedMap.keySet()) {
+                        if (h.contains(compactPref)) { found = true; break; } //
+                    }
+                }
+                if (found) presentModulePrefixes.add(pref);
+            }
 
             // empezar a leer desde la siguiente línea (los datos)
             String line = br.readLine();
@@ -316,15 +333,23 @@ public class FileProcessingService {
                 buffer.add(r);
 
                 // Loguear las primeras 5 filas para depuración
-                if (rowNum < 5) {
+                /*if (rowNum < 5) {
                     System.out.println("[FileProcessingService] preview row " + rowNum + ": periodo=" + r.getPeriodo() + ", estu_consec=" + r.getEstConsecutivo() + ", estu_discapacidad='" + r.getEstuDiscapacidad() + "', inst_cod_institucion=" + r.getInstCodInstitucion() + ", inst_nombre_institucion='" + r.getInstNombreInstitucion() + "'");
                 }
-                rowNum++;
+                rowNum++; */
 
                 if (buffer.size() >= BATCH_SIZE_GENERAL) {
                     // Normalizar valores obligatorios antes de guardar (solo asegurar periodo y est_consecutivo)
                     for (ExternalGeneralResult gr : buffer) normalizeGeneralResult(gr);
                     List<ExternalGeneralResult> saved = generalRepo.saveAll(new ArrayList<>(buffer));
+
+                    // Extraer y persistir filas de módulos (normalización): por cada resultado general crear filas en resultado_modulo_externo
+                    List<ExternalSpecificResult> modulesToSave = new ArrayList<>();
+                    for (ExternalGeneralResult gr : saved) {
+                        modulesToSave.addAll(extractModuleRows(gr, presentModulePrefixes));
+                    }
+                    if (!modulesToSave.isEmpty()) specificRepo.saveAll(modulesToSave); // persistir módulos asociados
+
                     savedAll.addAll(saved);
                     buffer.clear();
                 }
@@ -334,6 +359,13 @@ public class FileProcessingService {
             if (!buffer.isEmpty()) {
                 for (ExternalGeneralResult gr : buffer) normalizeGeneralResult(gr);
                 List<ExternalGeneralResult> saved = generalRepo.saveAll(buffer);
+
+                List<ExternalSpecificResult> modulesToSave = new ArrayList<>();
+                for (ExternalGeneralResult gr : saved) {
+                    modulesToSave.addAll(extractModuleRows(gr, presentModulePrefixes));
+                }
+                if (!modulesToSave.isEmpty()) specificRepo.saveAll(modulesToSave);
+
                 savedAll.addAll(saved);
                 buffer.clear();
             }
@@ -361,22 +393,25 @@ public class FileProcessingService {
 
                 ExternalSpecificResult r = new ExternalSpecificResult();
                 // normalizamos el periodo recibido (si viene 20121 -> 2012)
-                r.setPeriodo(normalizePeriodo(periodo));
+                //r.setPeriodo(normalizePeriodo(periodo));
                 String estConsec = get(cols, idx, "estu_consecutivo");
-                r.setEstuConsecutivo(estConsec);
-                String prueba = get(cols, idx, "result_nombreprueba");
-                r.setResultNombrePrueba(prueba);
-                r.setResultPuntaje(parseInteger(get(cols, idx, "result_puntaje")));
-                r.setPercentilNacional(parseInteger(get(cols, idx, "percentil_nacional")));
-                r.setPercentilNbc(parseInteger(get(cols, idx, "percentil_nbc")));
+                //r.setEstuConsecutivo(estConsec);
 
+                // leer nombre de la prueba (si existe) y resolver/crear el módulo -> guardar sólo el id
+                String prueba = get(cols, idx, "result_nombreprueba");
                 Integer moduloId = resolveOrCreateModuloId(prueba);
                 r.setModuloId(moduloId);
 
-                if (r.getPeriodo() != null && estConsec != null) {
+                // el campo puntaje ahora es BigDecimal en la entidad (puede contener decimales)
+                r.setResultPuntaje(parseBigDecimal(get(cols, idx, "result_puntaje")));
+                r.setPercentilNacional(parseInteger(get(cols, idx, "percentil_nacional")));
+                r.setPercentilNbc(parseInteger(get(cols, idx, "percentil_nbc")));
+
+
+                /*if (r.getPeriodo() != null && estConsec != null) {
                     Optional<ExternalGeneralResult> og = generalRepo.findFirstByPeriodoAndEstConsecutivo(r.getPeriodo(), estConsec);
                     og.ifPresent(g -> r.setExternaId(g.getId()));
-                }
+                } */
 
                 buffer.add(r);
 
@@ -530,11 +565,11 @@ public class FileProcessingService {
     private Integer resolveOrCreateModuloId(String nombrePrueba) {
         if (nombrePrueba == null) return null;
         String normalized = nombrePrueba.trim();
-        Optional<Modulo> om = moduloRepo.findFirstByNombreIgnoreCase(normalized);
-        if (om.isPresent()) return om.get().getIdModulo();
-        Modulo nuevoModulo = new Modulo();
+        Optional<Modulo> om = moduloRepo.findFirstByNombreIgnoreCase(normalized);// busaca en la BD modulo con ese nombre (case insensitive)
+        if (om.isPresent()) return om.get().getIdModulo(); // si existe, devuelve su id
+        Modulo nuevoModulo = new Modulo();// si no existe, crea uno nuevo
         nuevoModulo.setNombre(normalized);
-        Modulo savedModulo = moduloRepo.save(nuevoModulo);
+        Modulo savedModulo = moduloRepo.save(nuevoModulo); // guarda el nuevo modulo en la BD
         return savedModulo.getIdModulo();
     }
 
@@ -588,10 +623,92 @@ public class FileProcessingService {
     }
 
     // Asegura que los campos que la BD espera no nulos tengan un valor por defecto
-    private void normalizeGeneralResult(ExternalGeneralResult r) {
+    private void normalizeGeneralResult(ExternalGeneralResult r) { // llamado antes de guardar en BD
         // Ahora no forzamos valores numéricos por defecto: si falta, quedará null en BD
-        if (r.getEstConsecutivo() == null) return; // sanity
+        if (r.getEstConsecutivo() == null) return; // no se puede normalizar sin est_consecutivo
         // Dejar strings como están (null si faltan) — el usuario pidió que faltantes sean NULL
         // No sobrescribir instCodInstitucion, ni puntajes si son null
     }
-}
+
+    // Helper: convierte BigDecimal a Integer redondeando, o devuelve null
+    private Integer bigDecimalToInteger(BigDecimal b) {
+        if (b == null) return null;
+        try {
+            return (int) Math.round(b.doubleValue());
+        } catch (Exception e) { return null; }
+    }
+
+    // Construye filas de resultado_modulo_externo a partir de un ExternalGeneralResult.
+    private List<ExternalSpecificResult> extractModuleRows(ExternalGeneralResult gr, Set<String> presentPrefixes) {
+         List<ExternalSpecificResult> out = new ArrayList<>();
+         if (gr == null) return out;
+         // mapa de prefijos de columna base a nombre legible
+         Map<String, String> prefixToName = new LinkedHashMap<>();
+         prefixToName.put("mod_competen_ciudada", "COMPETENCIAS CIUDADANAS");
+         prefixToName.put("mod_comuni_escrita", "COMUNICACION ESCRITA");
+         prefixToName.put("mod_ingles", "INGLES");
+         prefixToName.put("mod_lectura_critica", "LECTURA CRITICA");
+         prefixToName.put("mod_razona_cuantitat", "RAZONA CANTITATIVO");
+
+         for (Map.Entry<String, String> e : prefixToName.entrySet()) {
+             String pref = e.getKey();
+             String name = e.getValue();
+
+             BigDecimal punt = null;
+             BigDecimal pnal = null;
+             BigDecimal pnbc = null;
+             try {
+                 // obtener mediante los getters de ExternalGeneralResult (nombres concretos)
+                 switch (pref) {
+                     case "mod_competen_ciudada":
+                         punt = gr.getModCompetenCiudadaPunt();
+                         pnal = gr.getModCompetenCiudadaPnal();
+                         pnbc = gr.getModCompetenCiudadaPnbc();
+                         break;
+                     case "mod_comuni_escrita":
+                         punt = gr.getModComuniEscritaPunt();
+                         pnal = gr.getModComuniEscritaPnal();
+                         pnbc = gr.getModComuniEscritaPnbc();
+                         break;
+                     case "mod_ingles":
+                         punt = gr.getModInglesPunt();
+                         pnal = gr.getModInglesPnal();
+                         pnbc = gr.getModInglesPnbc();
+                         break;
+                     case "mod_lectura_critica":
+                         punt = gr.getModLecturaCriticaPunt();
+                         pnal = gr.getModLecturaCriticaPnal();
+                         pnbc = gr.getModLecturaCriticaPnbc();
+                         break;
+                     case "mod_razona_cuantitat":
+                         punt = gr.getModRazonaCuantitatPunt();
+                         pnal = gr.getModRazonaCuantitativoPnal();
+                         pnbc = gr.getModRazonaCuantitativoPnbc();
+                         break;
+                 }
+             } catch (Throwable ex) {
+                 // ignore getter errors
+             }
+
+             // Si el archivo contiene las columnas del módulo (aunque las celdas estén vacías), queremos crear
+             // una fila en resultado_modulo_externo con puntaje = NULL; si el archivo no contiene las columnas, saltar.
+             boolean columnsPresent = (presentPrefixes != null && presentPrefixes.contains(pref));
+             if (!columnsPresent && punt == null && pnal == null && pnbc == null) continue; // nada para guardar y no hay columnas
+
+             ExternalSpecificResult mr = new ExternalSpecificResult();
+             // asociar al resultado general (puede ser null si aún no tiene id, pero se guarda después de persistir)
+             mr.setExternaId(gr.getId());
+
+             Integer modId = resolveOrCreateModuloId(name);
+             mr.setModuloId(modId);
+             // puntaje y percentiles: punt puede contener decimales -> guardar directamente como BigDecimal
+             mr.setResultPuntaje(punt);
+             mr.setPercentilNacional(bigDecimalToInteger(pnal));
+             mr.setPercentilNbc(bigDecimalToInteger(pnbc));
+
+             out.add(mr);
+         }
+         return out;
+     }
+ }
+

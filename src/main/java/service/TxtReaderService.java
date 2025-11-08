@@ -82,7 +82,7 @@ public class TxtReaderService {
                 String raw = headers[i] == null ? "" : headers[i].trim();
                 // quitar BOM si existe y normalizar a minúsculas
                 raw = raw.replace("\uFEFF", "").toLowerCase();
-                headerMap.put(raw, i);
+                headerMap.put(raw, i); // (clave normalizada → índice)
             }
 
             log.debug("[TxtReaderService] Encabezados detectados (normalizados): {}", headerMap.keySet());
@@ -91,12 +91,12 @@ public class TxtReaderService {
             boolean hasPeriodo = headerMap.containsKey("periodo");
             boolean hasEstu = headerMap.containsKey("estu_consecutivo");
 
-            if (!hasPeriodo || !hasEstu) {
+            if (!hasPeriodo || !hasEstu) { // intentar encontrar variantes comunes de los nombres faltantes
                 // Intentar normalizar nombres: quitar espacios, guiones, acentos y underscores
                 Map<String,Integer> norm = new HashMap<>();
                 for (Map.Entry<String,Integer> e : headerMap.entrySet()) {
                     String k = e.getKey().replace(" ", "").replace("-", "").replace("_", "").replace("í","i").replace("ó","o");
-                    norm.put(k, e.getValue());
+                    norm.put(k, e.getValue());  //(clave normalizada → índice original).
                 }
                 if (!hasPeriodo) {
                     if (norm.containsKey("periodo")) { headerMap.put("periodo", norm.get("periodo")); hasPeriodo = true; }
@@ -131,10 +131,10 @@ public class TxtReaderService {
                     continue;
                 }
 
-                String[] values = line.split(java.util.regex.Pattern.quote(delimiter), -1);
+                String[] values = line.split(java.util.regex.Pattern.quote(delimiter), -1); // arreglo de cada linea separada por el delimiter y -1 para preservar campos vacíos al final
 
                 try {
-                    ExternalGeneralResult dto = new ExternalGeneralResult();
+                    ExternalGeneralResult dto = new ExternalGeneralResult(); //
 
                     // --- INICIO DEL MAPEO DINÁMICO ---
                     // Usamos el mapa para encontrar la columna, sin importar el orden
@@ -143,13 +143,14 @@ public class TxtReaderService {
                     if (headerMap.containsKey("periodo") && isValid(values, headerMap.get("periodo"))) {
                         try {
                             String rawPeriodo = values[headerMap.get("periodo")].trim();
+                            //int periodo = Integer.parseInt(rawPeriodo);
                             if (!rawPeriodo.isEmpty()) {
                                 try {
-                                    dto.setPeriodo((int) Long.parseLong(rawPeriodo));
+                                    dto.setPeriodo(parseIntegerSafe (rawPeriodo));
                                 } catch (NumberFormatException nfe) {
-                                    String cleaned = rawPeriodo.replaceAll("\\D+", "");
-                                    if (!cleaned.isEmpty()) dto.setPeriodo((int) Long.parseLong(cleaned));
-                                }
+                                    String cleaned = rawPeriodo.replaceAll("\\D+", ""); // quitar todo lo que no sea dígito
+                                    if (!cleaned.isEmpty()) dto.setPeriodo(parseIntegerSafe(cleaned)); // solo números
+                                } //
                             }
                         } catch (Exception ex) {
                             log.warn("no se pudo parsear 'periodo' en línea: {} -> {}", line, ex.getMessage());
