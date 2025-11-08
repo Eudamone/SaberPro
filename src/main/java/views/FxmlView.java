@@ -18,11 +18,11 @@ public enum FxmlView {
         @Override
         public String getFxmlFile(){return "/views/recoverPassword.fxml";}
     },
-    RECOVER_PASSWORD_CONFIRMATION{
+    CHANGE_PASSWORD {
         @Override
-        public String getTitle(){return "Confirmación de recuperación - Saber Pro";}
+        public String getTitle(){return "Cambiar contraseña - Saber Pro";}
         @Override
-        public String getFxmlFile(){return "/views/recoverPasswordFinal.fxml";}
+        public String getFxmlFile(){return "/views/changePassword.fxml";}
     },
     DASHBOARD_DEAN{
         @Override
@@ -54,6 +54,30 @@ public enum FxmlView {
         public String getTitle() { return "Editar usuarios - Saber Pro"; }
         @Override
         public String getFxmlFile() { return "/views/Dean/editAndDeleteUsers.fxml"; }
+    },
+    CONSULT_RESULTS_DEAN{
+        @Override
+        public String getTitle() { return "Consulta Resultados - Saber Pro"; }
+        @Override
+        public String getFxmlFile() { return "/views/Dean/consultResultsDean.fxml"; }
+    },
+    DASHBOARD_STUDENT{
+        @Override
+        public String getTitle() { return "Dashboard Estudiante - Saber Pro"; }
+        @Override
+        public String getFxmlFile() { return "views/Student/dashboardStudent.fxml"; }
+    },
+    FREQUENTLY_QUESTIONS_STUDENT{
+        @Override
+        public String getTitle() { return "Preguntas frecuentes - Saber Pro"; }
+        @Override
+        public String getFxmlFile() {return "views/Student/frequentlyQuestionsStudent.fxml";}
+    },
+    USER_MANUAL_STUDENT{
+        @Override
+        public String getTitle() { return "Manual de usuario - Saber Pro"; }
+        @Override
+        public String getFxmlFile() { return "views/Student/userManualStudent.fxml"; }
     };
 
     public abstract String getTitle();

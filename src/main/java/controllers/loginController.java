@@ -11,7 +11,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
-import model.Usuario;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import services.AuthService;
@@ -25,6 +24,7 @@ public class loginController {
 
     private final SceneManager sceneManager;
     private final AuthService authService;
+
 
     @Lazy
     public loginController(SceneManager sceneManager, AuthService authService) {
@@ -68,6 +68,7 @@ public class loginController {
             showError("Credenciales no válidas.");
             return;
         }
+
 
         // Política de acceso (demo): si es Decano → dashboard del decano; si no, dashboard genérico
         try {

@@ -3,6 +3,7 @@ package repository;
 import model.Usuario;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -42,6 +43,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
 
     boolean existsByUsername(String username);
 
+    boolean existsByEmail(String email);
+
     @EntityGraph(
             attributePaths = {"docente.facultad"},
             type = EntityGraph.EntityGraphType.LOAD
@@ -67,4 +70,22 @@ public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
         SELECT u FROM Usuario u
     """)
     List<Usuario> findAllUsuarios();
+
+    @Query("""
+        SELECT new dto.UsuarioInfoDTO(u.id,u.username,u.nombre,u.email,u.document,u.numIdentification,u.rol)
+        FROM Usuario u WHERE u.email = :email
+    """)
+    Optional<UsuarioInfoDTO> findUsuarioForEmail(@Param("email") String email);
+
+    @Query("""
+        SELECT new dto.UsuarioInfoDTO(u.id,u.username,u.nombre,u.email,u.document,u.numIdentification,u.rol)
+        FROM Usuario u WHERE u.id = :id
+    """)
+    Optional<UsuarioInfoDTO> findUserInfo(@Param("id") Long id);
+
+    @Modifying
+    @Query("""
+        UPDATE Usuario u SET u.pass = :passHash WHERE u.id = :id
+    """)
+    void updatePassword(@Param("passHash") String passHash,@Param("id") Long id);
 }

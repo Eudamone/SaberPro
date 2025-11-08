@@ -2,6 +2,19 @@
     -fx-background-color: #FC0610;
     -fx-background-radius: 25px;
     -fx-text-fill: #FFFFFF;
+    -fx-cursor: hand;
+}
+
+.bttCancel{
+    -fx-background-color: #E6E6E6;
+    -fx-background-radius: 25px;
+    -fx-text-fill: #5A6A85;
+    -fx-cursor: hand;
+}
+
+.bttCancel:hover{
+    -fx-effect: dropshadow(gaussian, #919EAB29, 20, 0.1, 0, 0);
+    -fx-translate-y: -2;
 }
 
 .bttLogin:hover {
@@ -28,6 +41,10 @@
 .labelLogin:hover {
    -fx-text-fill: #FFC1C4;
    -fx-cursor: hand;
+}
+
+.lbTitle{
+    -fx-text-fill: #FC0610;
 }
 
 .boxLogin {
@@ -57,4 +74,57 @@
 
 .textArea .content {
     -fx-background-color: #FFFFFF;
+}
+
+.lbTitleAlert{
+    -fx-text-fill: #FC0610;
+    -fx-font-family: "Montserrat";
+    -fx-font-weight: bold;
+    -fx-font-size: 20px;
+}
+
+.fieldToken{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+    -fx-pref-width: 100px;
+    -fx-pref-height: 30px;
+    -fx-max-width: 330px;
+    -fx-max-height: 30px;
+}
+
+.fieldToken:focused {
+    -fx-border-color: #FC0610;
+    -fx-border-width: 3px;
+}
+
+.lbText{
+    -fx-text-fill: #5A6A85;
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 12px;
+}
+
+.boxAlert{
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 15px;
+    -fx-border-radius: 15px;
+    -fx-effect: dropshadow(gaussian,rgba(145,158,171,0.12),15,0.2,0,0.5);
+    -fx-pref-width: 200px;
+    -fx-max-width: 350px;
+    -fx-max-height: 250px;
+    -fx-spacing: 10;
+}
+
+.fieldPass{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+    -fx-pref-width: 100px;
+    -fx-pref-height: 35px;
+    -fx-max-width: 350px;
+}
+
+.fieldPass:focused {
+    -fx-border-color: #FC0610;
+    -fx-border-width: 3px;
 }

@@ -3,6 +3,7 @@ package utils;
 import application.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
+import model.Usuario;
 import views.FxmlView;
 
 public class NavigationHelper {
@@ -25,6 +26,21 @@ public class NavigationHelper {
             System.err.println("Error: La fuente del evento no es un botón o el userData no es una cadena.");
         } catch(IllegalArgumentException e){
             System.err.println("Error: Valor de userData inválido. No coincide con ninguna constante en FxmlView.");
+        }
+    }
+
+    public static void changeSceneByRol(Usuario.rolType rol, SceneManager sceneManager) throws Exception{
+        try{
+            switch(rol){
+                case Decano -> {
+                    sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
+                }
+                case Estudiante -> {
+                    sceneManager.switchToNextScene(FxmlView.DASHBOARD_STUDENT);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 }

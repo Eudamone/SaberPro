@@ -100,6 +100,7 @@ public class loadMassiveUsersDeanController {
 
         if(cBoxUserType.getValue() == null){
             showError("Por favor, selecciona un tipo de usuario","Error de usuario");
+            return;
         }
 
         if (!cBoxUserType.getValue().equals("Estudiante")) {

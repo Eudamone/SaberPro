@@ -1,0 +1,53 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url("fonts/Montserrat-Regular.ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("fonts/Montserrat-Bold.ttf");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("fonts/Montserrat-SemiBold.ttf");
+    font-weight: 600;
+    font-style: normal;
+}
+
+.container{
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #FFFFFF;
+    -fx-padding: 15;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian,rgba(145,158,171,0.12),15,0.2,0,0.5);
+}
+
+.title{
+    -fx-font-family: "Montserrat";
+    -fx-font-weight: bold;
+    -fx-font-size: 25px;
+    -fx-text-fill: #DE0009;
+}
+
+.text{
+    -fx-font-family: "Montserrat";
+    -fx-text-fill: #5A6A85;
+}
+
+.bttSupport{
+    -fx-background-color: #FC0610;
+    -fx-background-radius: 12;
+    -fx-pref-height: 100;
+    -fx-pref-width: 320;
+    -fx-font-family: "Montserrat";
+    -fx-text-fill: #FFFFFF;
+    -fx-graphic-text-gap: 10;
+    -fx-cursor: hand;
+    -fx-font-size: 18;
+}

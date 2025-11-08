@@ -2,6 +2,7 @@ package services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -12,6 +13,14 @@ import org.springframework.stereotype.Service;
 import repository.UsuarioRepository;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class EmailService {
@@ -86,4 +95,48 @@ public class EmailService {
         System.out.println("Correo con credenciales y adjunto enviado a: " + toEmail);
     }
 
+    public void sendPasswordResetEmail(String email, String token) {
+        try{
+            JSONObject json = new JSONObject();
+            json.put("email", email);
+            json.put("token", token);
+            String payload = json.toString();
+
+            URL url = new URL("http://localhost:5678/webhook-test/recover-password");
+
+            System.out.println("Enviando POST a N8N: " + url);
+            System.out.println("Datos: "+payload);
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("Recover-Password", "application/json");
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.getBytes(StandardCharsets.UTF_8));
+            }
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("Código de respuesta: " + responseCode);
+            if(responseCode != 200){
+                throw new MessagingException("Error al enviar el correo: " + responseCode);
+            }
+
+            // Leer respuesta
+            try (var reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                System.out.println("Respuesta de N8N: " + response);
+            }
+            conn.disconnect();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
 }

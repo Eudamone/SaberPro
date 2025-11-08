@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.transaction.Transactional;
 import model.Estudiante;
 import model.Programa;
+import model.ResetToken;
 import model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -15,9 +16,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import repository.ResetTokenRepository;
 import repository.UsuarioRepository;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static utils.generateNameUser.generateUsername;
@@ -31,17 +34,20 @@ public class UsuarioService {
     private final UsuarioFactoryRegistry factoryRegistry;
     private final ProgramaService programaService;
     private UsuarioService self;
+    private final ResetTokenRepository resetTokenRepository;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             EmailService emailService, PasswordEncoder encoder,
             UsuarioFactoryRegistry factoryRegistry,
-            ProgramaService programaService) {
+            ProgramaService programaService,
+            ResetTokenRepository reteTokenRepository) {
         this.usuarioRepository = usuarioRepository;
         this.emailService = emailService;
         this.encoder = encoder;
         this.factoryRegistry = factoryRegistry;
         this.programaService = programaService;
+        this.resetTokenRepository = reteTokenRepository;
     }
 
     @Autowired
@@ -362,6 +368,42 @@ public class UsuarioService {
 
         // Eliminamos el usuario de la base de datos
         usuarioRepository.delete(usuario);
+    }
+
+    public boolean existEmailForUser(String email){
+        return usuarioRepository.existsByEmail(email);
+    }
+
+    public UsuarioInfoDTO findByEmail(String email){
+        return usuarioRepository.findUsuarioForEmail(email).orElse(null);
+    }
+
+    public void saveResetToken(Long userId, String token, LocalDateTime expiry){
+        ResetToken resetToken = new ResetToken();
+        resetToken.setUserId(userId);
+        resetToken.setToken(token);
+        resetToken.setExpiry(expiry);
+        resetToken.setUsed(false);
+
+        resetTokenRepository.save(resetToken);
+    }
+
+    @Transactional
+    public void updatePassword(Long id,String password){
+        String passHash = encoder.encode(password);
+        usuarioRepository.updatePassword(passHash,id);
+    }
+
+    public boolean isTokenValid(String token){
+        return resetTokenRepository.isTokenValid(token);
+    }
+
+    @Transactional
+    public void deleteResetToken(Long id){
+        Optional<ResetToken> token = resetTokenRepository.findByUserId(id);
+        token.ifPresent(resetTokenRepository::delete);
+        // Se limpia adicionalmente los tokens que ya están expirados
+        resetTokenRepository.deleteTokensExpired();
     }
 }
 

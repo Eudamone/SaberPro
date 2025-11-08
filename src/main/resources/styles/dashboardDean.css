@@ -15,6 +15,23 @@
     -fx-fill: #900C11;
 }
 
+.bttUser{
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 30px;
+    -fx-cursor: hand;
+}
+
+.iconUser{
+    -fx-fill: #5A6A85;
+}
+
+.bttUser:hover{
+
+}
+
+.bttUser:hover .iconUser{
+    -fx-fill: #900C11;
+}
 
 .bttMenu{
     -fx-background-color: #FFFFFF;
@@ -50,3 +67,11 @@
 .scroll-pane .viewport{
     -fx-background-color: #FFFFFF;
 }
+
+.bttUser-menuItem{
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 12px;
+    -fx-text-fill: #5A6A85;
+    -fx-padding: 6 12;
+}
+
