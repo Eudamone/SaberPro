@@ -4,12 +4,15 @@ import application.SceneManager;
 import application.SessionContext;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import model.Usuario;
+import javafx.scene.chart.LineChart;
+import javafx.scene.layout.VBox;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import utils.ChartCreator;
 import utils.NavigationHelper;
 import views.FxmlView;
 
+import java.awt.*;
 import java.io.IOException;
 
 @Component
@@ -17,6 +20,9 @@ public class dashboardDeanController {
 
     private final SceneManager sceneManager;
     private final SessionContext sessionContext;
+
+    @FXML
+    private VBox boxLineChartPromedio;
 
     @Lazy
     public dashboardDeanController(SceneManager sceneManager,SessionContext sessionContext) {
@@ -31,8 +37,10 @@ public class dashboardDeanController {
 
     @FXML
     public void initialize() {
-
+        LineChart<String,Number> chart = ChartCreator.createLineChart();
+        boxLineChartPromedio.getChildren().add(chart);
     }
+
 
     @FXML
     void logout(ActionEvent event) throws IOException {
