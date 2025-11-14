@@ -39,11 +39,10 @@ public class LoadMassiveUsersController {
     @FXML
     private Label lblFileName;
 
-    // --- INICIO DE LA SOLUCIÓN (Error 1) ---
-    // Declaramos las variables que faltaban
+
     private File selectedFile;
     private Stage stage;
-    // --- FIN DE LA SOLUCIÓN (Error 1) ---
+
 
 
     @FXML
@@ -63,9 +62,9 @@ public class LoadMassiveUsersController {
                 new FileChooser.ExtensionFilter("Archivos de Texto", "*.txt")
         );
 
-        // Esta fue la corrección anterior, que sigue siendo válida
+
         javafx.scene.Node source = (javafx.scene.Node) event.getSource();
-        this.stage = (Stage) source.getScene().getWindow(); // Ahora 'stage' sí existe
+        this.stage = (Stage) source.getScene().getWindow();
 
         // Esta línea ahora funciona
         this.selectedFile = fileChooser.showOpenDialog(stage);

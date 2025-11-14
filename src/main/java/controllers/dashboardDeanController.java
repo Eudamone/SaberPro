@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;
+import java.util.regex.Pattern;
 
 @Component
 public class dashboardDeanController {
@@ -84,7 +86,8 @@ public class dashboardDeanController {
                 @Override
                 protected Void call() throws Exception {
                     for (File f : files) {
-                        fileService.parseAndSaveSpecifics(new LocalMultipartFile(f, "text/plain"), periodoFinal);
+                        // Usar la nueva implementación que busca el resultado general y crea módulos si es necesario
+                        fileService.parseAndSaveSpecificsResults(new LocalMultipartFile(f, "text/plain"), periodoFinal);
                     }
                     return null;
                 }
@@ -118,10 +121,25 @@ public class dashboardDeanController {
         } else if ("Interno".equals(tipo)) {
             File file = fc.showOpenDialog(getWindow());
             if (file == null) return;
+
+            // Pedir periodo para el archivo interno
+            javafx.scene.control.TextInputDialog td = new javafx.scene.control.TextInputDialog();
+            td.setTitle("Periodo");
+            td.setHeaderText("Ingrese el periodo (ej: 20121)");
+            Optional<String> p = td.showAndWait();
+            if (p.isEmpty()) return;
+            final int periodoFinal;
+            try {
+                periodoFinal = Integer.parseInt(p.get().trim());
+            } catch (Exception ex) {
+                showAlert("Error", "Periodo inválido");
+                return;
+            }
+
             Task<Void> task = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
-                    fileService.parseAndSaveInternal(new LocalMultipartFile(file, "text/plain"));
+                    fileService.parseAndSaveInternal(new LocalMultipartFile(file, "text/plain"), periodoFinal);
                     return null;
                 }
             };

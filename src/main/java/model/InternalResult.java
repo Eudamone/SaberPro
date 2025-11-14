@@ -18,7 +18,7 @@ public class InternalResult {
     private String tipoDocumento;
 
     @Column(name = "documento", nullable = true)
-    private String documento;
+    private Long documento;
 
     @Column(name = "nombre", nullable = true)
     private String nombre;
@@ -38,8 +38,7 @@ public class InternalResult {
     @Column(name = "ciudad_id", nullable = true)
     private Integer ciudadId;
 
-    @Column(name = "departamento_id", nullable = true)
-    private Integer departamentoId;
+
 
     @Column(name = "grupo_referencia", nullable = true)
     private String grupoReferencia;
@@ -65,8 +64,8 @@ public class InternalResult {
     public void setPeriodo(Integer periodo) { this.periodo = periodo; }
     public String getTipoDocumento() { return tipoDocumento; }
     public void setTipoDocumento(String tipoDocumento) { this.tipoDocumento = tipoDocumento; }
-    public String getDocumento() { return documento; }
-    public void setDocumento(String documento) { this.documento = documento; }
+    public Long getDocumento() { return documento; }
+    public void setDocumento(Long documento) { this.documento = documento; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
     public String getNumeroRegistro() { return numeroRegistro; }
@@ -79,8 +78,7 @@ public class InternalResult {
     public void setPrograma(String programa) { this.programa = programa; }
     public Integer getCiudadId() { return ciudadId; }
     public void setCiudadId(Integer ciudadId) { this.ciudadId = ciudadId; }
-    public Integer getDepartamentoId() { return departamentoId; }
-    public void setDepartamentoId(Integer departamentoId) { this.departamentoId = departamentoId; }
+
     public String getGrupoReferencia() { return grupoReferencia; }
     public void setGrupoReferencia(String grupoReferencia) { this.grupoReferencia = grupoReferencia; }
     public Integer getPuntajeGlobal() { return puntajeGlobal; }

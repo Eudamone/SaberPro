@@ -1,24 +1,28 @@
 package service;
 
 import model.ExternalGeneralResult;
-import model.ExternalSpecificModuleResult;
-import model.ExternalSpecificResult;
+import model.InternalModuleResult;
+import model.ExternalModuleResult;
 import model.InternalResult;
 import model.Ciudad;
 import model.Departamento;
 import model.Modulo;
+import model.ExternalSpecificResult;
 
 import repository.ExternalGeneralResultRepository;
-import repository.ExternalSpecificModuleResultRepository;
+import repository.InternaModuleResultRepository;
+import repository.ExternalModuleResultRepository;
 import repository.ExternalSpecificResultRepository;
 import repository.InternalResultRepository;
 import repository.CiudadRepository;
 import repository.DepartamentoRepository;
 import repository.ModuloRepository;
 
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -27,17 +31,25 @@ import java.time.OffsetDateTime;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.BiConsumer; // añadido
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FileProcessingService {
 
     private final ExternalGeneralResultRepository generalRepo; //solo tiene una asignacion (final)
-    private final ExternalSpecificResultRepository specificRepo;
+    private final ExternalModuleResultRepository externalModuleRepo; // repo para resultado_modulo_externo
+    private final ExternalSpecificResultRepository externalSpecificRepo; // repo para resultado_especifico_externo (nueva tabla)
     private final InternalResultRepository internalRepo;
     private final CiudadRepository ciudadRepo;
     private final DepartamentoRepository departamentoRepo;
     private final ModuloRepository moduloRepo;
-    private final ExternalSpecificModuleResultRepository moduleResultRepo;
+    private final InternaModuleResultRepository moduleResultRepo;
+
+    // cache para módulos (nombre en mayúsculas -> id)
+    private final Map<String, Integer> moduloCache = new ConcurrentHashMap<>();
+
+    // Cache para ciudades (nombre en mayúsculas -> id)
+    private final Map<String, Integer> ciudadCache = new ConcurrentHashMap<>();
 
     //Static: solo existe una copia compartida por todas las instancias de la clase
     private static final int BATCH_SIZE_GENERAL = 2000; //
@@ -45,19 +57,47 @@ public class FileProcessingService {
     private static final int BATCH_SIZE_INTERNAL = 1000;
 
     public FileProcessingService(ExternalGeneralResultRepository generalRepo,
-                                 ExternalSpecificResultRepository specificRepo,
+                                 ExternalModuleResultRepository externalModuleRepo,
+                                 ExternalSpecificResultRepository externalSpecificRepo,
                                  InternalResultRepository internalRepo,
                                  CiudadRepository ciudadRepo,
                                  DepartamentoRepository departamentoRepo,
                                  ModuloRepository moduloRepo,
-                                 ExternalSpecificModuleResultRepository moduleResultRepo) {
+                                 InternaModuleResultRepository moduleResultRepo) {
         this.generalRepo = generalRepo;
-        this.specificRepo = specificRepo;
+        this.externalModuleRepo = externalModuleRepo;
+        this.externalSpecificRepo = externalSpecificRepo;
         this.internalRepo = internalRepo;
         this.ciudadRepo = ciudadRepo;
         this.departamentoRepo = departamentoRepo;
         this.moduloRepo = moduloRepo;
         this.moduleResultRepo = moduleResultRepo;
+
+        // precargar cache de módulos existentes para evitar consultas repetidas
+        try {
+            Iterable<Modulo> all = this.moduloRepo.findAll();
+            if (all != null) {
+                for (Modulo m : all) {
+                    if (m != null && m.getNombre() != null) {
+                        moduloCache.put(m.getNombre().trim().toUpperCase(), m.getIdModulo());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // si la carga falla (p. ej. DB no disponible en construcción), no interrumpir la app
+            System.err.println("Warning: no se pudo precargar cache de modulos: " + e.getMessage());
+        }
+
+        // Precargar cache de ciudades para optimizar
+        try {
+            for (Ciudad c : this.ciudadRepo.findAll()) {
+                if (c != null && c.getNombre() != null) {
+                    ciudadCache.put(normalizeCityName(c.getNombre()), c.getIdCiudad());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: no se pudo precargar cache de ciudades: " + e.getMessage());
+        }
     }
 
     // Split que usa sólo ';' o ','
@@ -115,9 +155,10 @@ public class FileProcessingService {
     private boolean looksLikeHeader(String headerLine, String[] requiredTokens) {
         if (headerLine == null) return false;
         String low = headerLine.toLowerCase();
-        for (String t : requiredTokens) if (!low.contains(t)) return false;
+        for (String t : requiredTokens) if (!low.contains(t)) return false; // si falta algún token requerido return false;
         return true;
     }
+
     //Detecta delimitador y headers, construye índices tolerantes a variaciones, parsea cada fila a ExternalGeneralResult, setea createdAt, agrupa en buffer,
     // normaliza al final y persiste mediante generalRepo.saveAll(...) en batches. Devuelve la lista de entidades persistidas.
     @Transactional //
@@ -146,7 +187,7 @@ public class FileProcessingService {
                 String raw = headers[i] == null ? "" : headers[i].trim();
                 String lower = raw.toLowerCase().replace("\uFEFF", "");
                 headerMap.put(lower, i); // clave en minúsculas y sin espacios alrededor sobreescribe
-                String norm = lower.replace(" ", "").replace("-", "").replace("_", "").replace("í", "i").replace("ó", "o");
+                String norm = lower.replace(" ", "").replace("-","\u2011").replace("_", "").replace("í", "i").replace("ó", "o");
                 normalizedMap.put(norm, i); // clave normalizada sin espacios, guiones, tildes junto con la posición
             }
 
@@ -191,7 +232,7 @@ public class FileProcessingService {
             }
             for (Map.Entry<String, Integer> e : normalizedMap.entrySet()) {
                 idx.putIfAbsent(e.getKey(), e.getValue());
-            } // obtener columnas aun cuando el header del archivo tenga pequeñas diferencias de formato o acentuación.
+            } // obtener columnas aun cuando el header del archivo tenga pequenas diferencias de formato o acentuación.
 
             // Mostrar en logs el mapeo final de índices (clave -> posición) para depuración
             System.out.println("[FileProcessingService] mapeo final de índices: " + idx);
@@ -332,24 +373,14 @@ public class FileProcessingService {
                 r.setCreatedAt(OffsetDateTime.now());
                 buffer.add(r);
 
-                // Loguear las primeras 5 filas para depuración
-                /*if (rowNum < 5) {
-                    System.out.println("[FileProcessingService] preview row " + rowNum + ": periodo=" + r.getPeriodo() + ", estu_consec=" + r.getEstConsecutivo() + ", estu_discapacidad='" + r.getEstuDiscapacidad() + "', inst_cod_institucion=" + r.getInstCodInstitucion() + ", inst_nombre_institucion='" + r.getInstNombreInstitucion() + "'");
-                }
-                rowNum++; */
-
                 if (buffer.size() >= BATCH_SIZE_GENERAL) {
-                    // Normalizar valores obligatorios antes de guardar (solo asegurar periodo y est_consecutivo)
                     for (ExternalGeneralResult gr : buffer) normalizeGeneralResult(gr);
                     List<ExternalGeneralResult> saved = generalRepo.saveAll(new ArrayList<>(buffer));
-
-                    // Extraer y persistir filas de módulos (normalización): por cada resultado general crear filas en resultado_modulo_externo
-                    List<ExternalSpecificResult> modulesToSave = new ArrayList<>();
+                    List<ExternalModuleResult> modulesToSave = new ArrayList<>();
                     for (ExternalGeneralResult gr : saved) {
                         modulesToSave.addAll(extractModuleRows(gr, presentModulePrefixes));
                     }
-                    if (!modulesToSave.isEmpty()) specificRepo.saveAll(modulesToSave); // persistir módulos asociados
-
+                    if (!modulesToSave.isEmpty()) externalModuleRepo.saveAll(modulesToSave);
                     savedAll.addAll(saved);
                     buffer.clear();
                 }
@@ -359,13 +390,11 @@ public class FileProcessingService {
             if (!buffer.isEmpty()) {
                 for (ExternalGeneralResult gr : buffer) normalizeGeneralResult(gr);
                 List<ExternalGeneralResult> saved = generalRepo.saveAll(buffer);
-
-                List<ExternalSpecificResult> modulesToSave = new ArrayList<>();
+                List<ExternalModuleResult> modulesToSave = new ArrayList<>();
                 for (ExternalGeneralResult gr : saved) {
                     modulesToSave.addAll(extractModuleRows(gr, presentModulePrefixes));
                 }
-                if (!modulesToSave.isEmpty()) specificRepo.saveAll(modulesToSave);
-
+                if (!modulesToSave.isEmpty()) externalModuleRepo.saveAll(modulesToSave);
                 savedAll.addAll(saved);
                 buffer.clear();
             }
@@ -373,10 +402,11 @@ public class FileProcessingService {
         return savedAll;
     }
 
+    //Se guarda los modulos normalizados
     @Transactional
-    public List<ExternalSpecificResult> parseAndSaveSpecifics(MultipartFile file, Integer periodo) throws Exception {
-        List<ExternalSpecificResult> savedAll = new ArrayList<>();
-        List<ExternalSpecificResult> buffer = new ArrayList<>(BATCH_SIZE_SPEC);
+    public List<ExternalModuleResult> parseAndSaveSpecifics(MultipartFile file, Integer periodo) throws Exception {
+        List<ExternalModuleResult> savedAll = new ArrayList<>();
+        List<ExternalModuleResult> buffer = new ArrayList<>(BATCH_SIZE_SPEC);
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String firstLine = br.readLine();
@@ -390,33 +420,18 @@ public class FileProcessingService {
             String line = hasHeader ? br.readLine() : firstLine;
             while (line != null) {
                 String[] cols = splitLine(line);
-
-                ExternalSpecificResult r = new ExternalSpecificResult();
-                // normalizamos el periodo recibido (si viene 20121 -> 2012)
-                //r.setPeriodo(normalizePeriodo(periodo));
+                ExternalModuleResult r = new ExternalModuleResult();
                 String estConsec = get(cols, idx, "estu_consecutivo");
-                //r.setEstuConsecutivo(estConsec);
-
-                // leer nombre de la prueba (si existe) y resolver/crear el módulo -> guardar sólo el id
                 String prueba = get(cols, idx, "result_nombreprueba");
                 Integer moduloId = resolveOrCreateModuloId(prueba);
                 r.setModuloId(moduloId);
-
-                // el campo puntaje ahora es BigDecimal en la entidad (puede contener decimales)
                 r.setResultPuntaje(parseBigDecimal(get(cols, idx, "result_puntaje")));
                 r.setPercentilNacional(parseInteger(get(cols, idx, "percentil_nacional")));
                 r.setPercentilNbc(parseInteger(get(cols, idx, "percentil_nbc")));
-
-
-                /*if (r.getPeriodo() != null && estConsec != null) {
-                    Optional<ExternalGeneralResult> og = generalRepo.findFirstByPeriodoAndEstConsecutivo(r.getPeriodo(), estConsec);
-                    og.ifPresent(g -> r.setExternaId(g.getId()));
-                } */
-
                 buffer.add(r);
 
                 if (buffer.size() >= BATCH_SIZE_SPEC) {
-                    List<ExternalSpecificResult> saved = specificRepo.saveAll(new ArrayList<>(buffer));
+                    List<ExternalModuleResult> saved = externalModuleRepo.saveAll(new ArrayList<>(buffer));
                     savedAll.addAll(saved);
                     buffer.clear();
                 }
@@ -424,7 +439,7 @@ public class FileProcessingService {
             }
 
             if (!buffer.isEmpty()) {
-                List<ExternalSpecificResult> saved = specificRepo.saveAll(buffer);
+                List<ExternalModuleResult> saved = externalModuleRepo.saveAll(buffer);
                 savedAll.addAll(saved);
                 buffer.clear();
             }
@@ -433,84 +448,168 @@ public class FileProcessingService {
     }
 
     @Transactional
-    public List<InternalResult> parseAndSaveInternal(MultipartFile file) throws Exception {
-        List<InternalResult> savedAll = new ArrayList<>();
-        List<InternalResult> buffer = new ArrayList<>(BATCH_SIZE_INTERNAL);
-        List<TempModuleResult> moduleTempBuffer = new ArrayList<>();
+    public List<ExternalSpecificResult> parseAndSaveSpecificsResults(MultipartFile file, int periodo) throws Exception {
+        List<ExternalSpecificResult> savedAll = new ArrayList<>();
+        List<ExternalSpecificResult> buffer = new ArrayList<>(BATCH_SIZE_SPEC);
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String firstLine = br.readLine();
             if (firstLine == null) return savedAll;
 
-            boolean hasHeader = looksLikeHeader(firstLine, new String[]{"tipo de documento", "documento"});
+            boolean hasHeader = looksLikeHeader(firstLine, new String[]{"estu_consecutivo", "result_nombreprueba", "result_puntaje"});
             String[] headers = hasHeader ? splitLine(firstLine) : null;
             Map<String, Integer> idx = new HashMap<>();
-            if (headers != null) for (int i = 0; i < headers.length; i++) idx.put(headers[i].trim().toLowerCase(), i);
+            if (headers != null) {
+                for (int i = 0; i < headers.length; i++) idx.put(headers[i].trim().toLowerCase(), i);
+            } else {
+                idx.put("estu_consecutivo", 0);
+                idx.put("result_nombreprueba", 1);
+                idx.put("result_puntaje", 2);
+            }
 
             String line = hasHeader ? br.readLine() : firstLine;
+
             while (line != null) {
+                if (line.trim().isEmpty()) { line = br.readLine(); continue; }
+
                 String[] cols = splitLine(line);
-
-                InternalResult r = new InternalResult();
-                r.setTipoDocumento(get(cols, idx, "tipo de documento"));
-                r.setDocumento(get(cols, idx, "documento"));
-                r.setNombre(get(cols, idx, "nombre"));
-                String numeroRegistro = get(cols, idx, "número de registro");
-                r.setNumeroRegistro(numeroRegistro);
-                r.setTipoEvaluado(get(cols, idx, "tipo de evaluado"));
-                r.setSniesPrograma(get(cols, idx, "snies programa académico"));
-                r.setPrograma(get(cols, idx, "programa"));
-
-                String rawCiudad = get(cols, idx, "ciudad");
-                String rawDepartamento = get(cols, idx, "departamento");
-                Integer ciudadId = resolveCiudadId(rawCiudad);
-                Integer departamentoId = resolveDepartamentoId(rawDepartamento);
-                r.setCiudadId(ciudadId);
-                r.setDepartamentoId(departamentoId);
-
-                r.setGrupoReferencia(get(cols, idx, "grupo de referencia"));
-                r.setPuntajeGlobal(parseInteger(get(cols, idx, "puntaje global")));
-                r.setPercentilNacionalGlobal(parseInteger(get(cols, idx, "percentil nacional global")));
-                r.setPercentilGrupoReferencia(parseInteger(get(cols, idx, "percentil grupo de referencia")));
-                r.setCreatedAt(OffsetDateTime.now());
-
-                int bufferIndex = buffer.size();
-                buffer.add(r);
-
-                String moduloNombre = get(cols, idx, "módulo");
-                if (moduloNombre == null) moduloNombre = get(cols, idx, "modulo");
-                Integer puntajeModulo = parseInteger(get(cols, idx, "puntaje módulo"));
-                Integer percentilNacModulo = parseInteger(get(cols, idx, "percentil nacional modulo"));
-                Integer percentilGrupoModulo = parseInteger(get(cols, idx, "percentil grupo de referencia modulo"));
-
-                if (moduloNombre != null || puntajeModulo != null || percentilNacModulo != null || percentilGrupoModulo != null) {
-                    TempModuleResult tmp = new TempModuleResult();
-                    tmp.internalIndex = bufferIndex;
-                    tmp.moduloNombre = moduloNombre;
-                    tmp.puntaje = puntajeModulo;
-                    tmp.percentilNacional = percentilNacModulo;
-                    tmp.percentilGrupoReferencia = percentilGrupoModulo;
-                    moduleTempBuffer.add(tmp);
+                if (headers != null && cols.length < headers.length) {
+                    String[] tmp = new String[headers.length];
+                    System.arraycopy(cols, 0, tmp, 0, cols.length);
+                    for (int i = cols.length; i < tmp.length; i++) tmp[i] = "";
+                    cols = tmp;
                 }
 
-                if (buffer.size() >= BATCH_SIZE_INTERNAL) {
-                    List<InternalResult> saved = internalRepo.saveAll(new ArrayList<>(buffer));
-                    // link module results by preserving order
-                    linkAndSaveModuleResults(saved, moduleTempBuffer);
+                String estConsec = get(cols, idx, "estu_consecutivo");
+                String prueba = get(cols, idx, "result_nombreprueba");
+                String puntStr = get(cols, idx, "result_puntaje");
+
+                Integer moduloId = resolveOrCreateModuloId(prueba);
+
+                Integer puntInt = null;
+                if (puntStr != null) {
+                    BigDecimal bd = parseBigDecimal(puntStr);
+                    if (bd != null) puntInt = (int) Math.round(bd.doubleValue());
+                }
+
+                if (estConsec == null || moduloId == null || puntInt == null) {
+                    System.err.println("Warning: fila especifica ignorada por datos incompletos: estuConsec=" + estConsec + " moduloId=" + moduloId + " punt=" + puntStr);
+                } else {
+                    ExternalSpecificResult rs = new ExternalSpecificResult();
+                    rs.setEstuConsecutivo(estConsec);
+                    rs.setResultNombrePrueba(moduloId);
+                    rs.setResultPuntaje(puntInt);
+                    buffer.add(rs);
+                }
+
+                if (buffer.size() >= BATCH_SIZE_SPEC) {
+                    List<ExternalSpecificResult> saved = externalSpecificRepo.saveAll(new ArrayList<>(buffer));
                     savedAll.addAll(saved);
                     buffer.clear();
-                    moduleTempBuffer.clear();
                 }
 
                 line = br.readLine();
             }
 
             if (!buffer.isEmpty()) {
-                List<InternalResult> saved = internalRepo.saveAll(buffer);
-                linkAndSaveModuleResults(saved, moduleTempBuffer);
+                List<ExternalSpecificResult> saved = externalSpecificRepo.saveAll(buffer);
                 savedAll.addAll(saved);
                 buffer.clear();
-                moduleTempBuffer.clear();
+            }
+        }
+
+        return savedAll;
+    }
+
+    @Transactional
+    public List<InternalResult> parseAndSaveInternal(MultipartFile file, int periodo) throws Exception {
+        List<InternalResult> savedAll = new ArrayList<>();
+        List<InternalResult> buffer = new ArrayList<>(BATCH_SIZE_INTERNAL);
+        List<TempModuleResult> moduleTempBuffer = new ArrayList<>();
+
+        String fileName = file.getOriginalFilename();
+        if (fileName != null && (fileName.endsWith(".xlsx") || fileName.endsWith(".xls"))) {
+            // Lógica para archivos Excel
+            try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+                Sheet sheet = workbook.getSheetAt(0);
+                Map<String, Integer> headerMap = new HashMap<>();
+                Row headerRow = sheet.getRow(0);
+                if (headerRow != null) {
+                    for (Cell cell : headerRow) {
+                        String header = getCellValueAsString(cell);
+                        if (header != null && !header.trim().isEmpty()) {
+                            String normalizedHeader = header.trim().toLowerCase()
+                                .replace(" ", "")
+                                .replace("í", "i")
+                                .replace("ó", "o")
+                                .replace("ú", "u")
+                                .replace("é", "e")
+                                .replace("á", "a");
+                            headerMap.put(normalizedHeader, cell.getColumnIndex());
+                        }
+                    }
+                }
+
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row == null) continue;
+
+                    InternalResult r = new InternalResult();
+                    r.setPeriodo(periodo);
+                    r.setTipoDocumento(getCellValueByHeader(row, headerMap, "tipodedocumento"));
+                    String documentoRaw = getCellValueByHeader(row, headerMap, "documento");
+                    r.setDocumento(parseLongOrNull(documentoRaw));
+                    r.setNombre(getCellValueByHeader(row, headerMap, "nombre"));
+                    r.setNumeroRegistro(getCellValueByHeader(row, headerMap, "numeroderegistro"));
+                    r.setTipoEvaluado(getCellValueByHeader(row, headerMap, "tipodeevaluado"));
+                    r.setSniesPrograma(getCellValueByHeader(row, headerMap, "sniesprogramaacademico"));
+                    r.setPrograma(getCellValueByHeader(row, headerMap, "programa"));
+                    // Resolver la ciudad por nombre y crearla si no existe (evita FK violations como (ciudad_id)=83 no existe)
+                    String ciudadRaw = getCellValueByHeader(row, headerMap, "ciudad");
+                    Integer ciudadIdResolved = resolveCiudadId(ciudadRaw);
+                    // Si no se pudo resolver, dejar null para que la base de datos valide o se maneje en otro paso
+                    r.setCiudadId(ciudadIdResolved);
+                    r.setGrupoReferencia(getCellValueByHeader(row, headerMap, "grupodereferencia"));
+                    r.setPuntajeGlobal(parseInteger(getCellValueByHeader(row, headerMap, "puntajeglobal")));
+                    r.setPercentilNacionalGlobal(parseInteger(getCellValueByHeader(row, headerMap, "percentilnacionalglobal")));
+                    r.setPercentilGrupoReferencia(parseInteger(getCellValueByHeader(row, headerMap, "percentilgrupodereferencia")));
+                    r.setCreatedAt(OffsetDateTime.now());
+
+                    int bufferIndex = buffer.size();
+                    buffer.add(r);
+
+                    String moduloNombre = getCellValueByHeader(row, headerMap, "módulo");
+                    if (moduloNombre == null) moduloNombre = getCellValueByHeader(row, headerMap, "modulo");
+                    Integer puntajeModulo = parseInteger(getCellValueByHeader(row, headerMap, "puntajemodulo"));
+                    Integer percentilNacModulo = parseInteger(getCellValueByHeader(row, headerMap, "percentilnacionalmodulo"));
+                    Integer percentilGrupoModulo = parseInteger(getCellValueByHeader(row, headerMap, "percentilgrupodereferenciamodulo"));
+
+                    if (moduloNombre != null || puntajeModulo != null || percentilNacModulo != null || percentilGrupoModulo != null) {
+                        TempModuleResult tmp = new TempModuleResult();
+                        tmp.internalIndex = bufferIndex;
+                        tmp.moduloNombre = moduloNombre;
+                        tmp.puntaje = puntajeModulo;
+                        tmp.percentilNacional = percentilNacModulo;
+                        tmp.percentilGrupoReferencia = percentilGrupoModulo;
+                        moduleTempBuffer.add(tmp);
+                    }
+
+                    if (buffer.size() >= BATCH_SIZE_INTERNAL) {
+                        List<InternalResult> saved = internalRepo.saveAll(new ArrayList<>(buffer));
+                        linkAndSaveModuleResults(saved, moduleTempBuffer);
+                        savedAll.addAll(saved);
+                        buffer.clear();
+                        moduleTempBuffer.clear();
+                    }
+                }
+
+                if (!buffer.isEmpty()) {
+                    List<InternalResult> saved = internalRepo.saveAll(buffer);
+                    linkAndSaveModuleResults(saved, moduleTempBuffer);
+                    savedAll.addAll(saved);
+                    buffer.clear();
+                    moduleTempBuffer.clear();
+                }
             }
         }
         return savedAll;
@@ -529,21 +628,153 @@ public class FileProcessingService {
         String v = cols[i].trim();
         return v.isEmpty() ? null : v;
     }
+    private Long parseLongOrNull(String value) {
+        if (value == null) return null;
+        String s = value.trim();
+        if (s.isEmpty()) return null;
+        // eliminar espacios no separables y otros caracteres comunes
+        s = s.replace("\u00A0", "").replace(" ", "").replace(".", ""); // quitar puntos de formato miles
+        try {
+            return Long.valueOf(s);
+        } catch (NumberFormatException e) {
+            try {
+                // intentar con decimal y redondear
+                double d = Double.parseDouble(s.replace(',', '.'));
+                return (long) Math.round(d);
+            } catch (Exception ex) {
+                // no se pudo parsear
+                return null;
+            }
+        }
+    }
 
-    private Integer resolveCiudadId(String raw) {
-        if (raw == null) return null;
-        Integer asInt = parseInteger(raw);
-        if (asInt != null) return asInt;
-        String name = raw.trim();
-        Optional<Ciudad> oc = ciudadRepo.findFirstByNombreIgnoreCase(name);
-        if (oc.isPresent()) return oc.get().getIdCiudad();
-        String n2 = name.replace("í", "i").replace("ó", "o").trim();
-        oc = ciudadRepo.findFirstByNombreIgnoreCase(n2);
-        if (oc.isPresent()) return oc.get().getIdCiudad();
-        Ciudad nueva = new Ciudad();
-        nueva.setNombre(name);
-        Ciudad saved = ciudadRepo.save(nueva);
-        return saved.getIdCiudad();
+    // Nuevo helper: obtener el valor de una celda como String manejando tipos comunes de Apache POI
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) return null;
+        DataFormatter df = new DataFormatter();
+        try {
+            switch (cell.getCellType()) {
+                case STRING:
+                    String s = cell.getStringCellValue();
+                    return s == null ? null : s.trim();
+                case NUMERIC:
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        // devolver la representación por defecto de la fecha (se puede adaptar si se requiere formato específico)
+                        return cell.getDateCellValue().toString();
+                    }
+                    return df.formatCellValue(cell).trim();
+                case BOOLEAN:
+                    return Boolean.toString(cell.getBooleanCellValue());
+                case FORMULA:
+                    // DataFormatter aplicará la fórmula y devolverá el valor formateado
+                    return df.formatCellValue(cell).trim();
+                case BLANK:
+                    return null;
+                default:
+                    return df.formatCellValue(cell).trim();
+            }
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    // Obtener el valor de una celda por nombre de encabezado (headerMap puede contener claves normalizadas o sin acentos)
+    private String getCellValueByHeader(Row row, Map<String, Integer> headerMap, String headerName) {
+        if (row == null || headerMap == null || headerName == null) return null;
+        // intentar búsqueda directa por la clave tal cual (lower-case)
+        Integer col = headerMap.get(headerName.toLowerCase());
+        if (col == null) {
+            // intentar versión normalizada: quitar espacios y normalizar acentos
+            String want = headerName.toLowerCase().replace(" ", "").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("é", "e").replace("á", "a");
+            for (Map.Entry<String, Integer> e : headerMap.entrySet()) {
+                String key = e.getKey();
+                if (key == null) continue;
+                String k = key.toLowerCase().replace(" ", "").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("é", "e").replace("á", "a");
+                if (k.equals(want)) { col = e.getValue(); break; }
+            }
+        }
+        if (col == null) return null;
+        Cell c = row.getCell(col);
+        String v = getCellValueAsString(c);
+        if (v == null) return null;
+        v = v.trim();
+        return v.isEmpty() ? null : v;
+    }
+
+    // Nuevo método para normalizar nombres de ciudades de forma consistente
+    private String normalizeCityName(String rawName) {
+        if (rawName == null) return "";
+        return java.text.Normalizer.normalize(rawName, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "") // Quita tildes y diacríticos
+                .trim()
+                .toUpperCase();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED) // Cambiado de REQUIRES_NEW a REQUIRED
+    public Integer resolveCiudadId(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        String original = raw.trim();
+        String normalizedName = normalizeCityName(original);
+
+        // 1. revisar cache
+        Integer cached = ciudadCache.get(normalizedName);
+        if (cached != null) {
+            // comprobar que la ciudad aún existe (evita cache stale)
+            try {
+                if (ciudadRepo.existsById(cached)) return cached;
+                else ciudadCache.remove(normalizedName);
+            } catch (Exception e) {
+                // si existe problema al comprobar, seguir y buscar en BD
+            }
+        }
+
+        // 2. buscar en BD por nombre (ignore case)
+        Optional<Ciudad> oc = ciudadRepo.findFirstByNombreIgnoreCase(original);
+        if (!oc.isPresent()) {
+            // intentar buscar por versión normalizada (sin tildes)
+            for (Ciudad c : ciudadRepo.findAll()) {
+                if (c.getNombre() != null && normalizeCityName(c.getNombre()).equals(normalizedName)) {
+                    ciudadCache.put(normalizedName, c.getIdCiudad());
+                    return c.getIdCiudad();
+                }
+            }
+        } else {
+            Integer id = oc.get().getIdCiudad();
+            ciudadCache.put(normalizedName, id);
+            return id;
+        }
+
+        // 3. Si no existe, crear la ciudad. Intentar asignar un departamento por defecto seguro.
+        synchronized (ciudadCache) {
+            if (ciudadCache.containsKey(normalizedName)) return ciudadCache.get(normalizedName);
+
+            Ciudad nueva = new Ciudad();
+            nueva.setNombre(original);
+            // intentar asignar un departamento con id 1 si existe, si no buscar cualquier departamento o dejar null
+            Integer deptId = null;
+            try {
+                if (departamentoRepo.count() > 0) {
+                    // usar el primer departamento existente (evitar FK violación si id 1 no existe)
+                    Optional<Departamento> any = Optional.empty();
+                    for (Departamento d : departamentoRepo.findAll()) { any = Optional.of(d); break; }
+                    if (any.isPresent()) deptId = any.get().getIdDepartamento().intValue();
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+            if (deptId != null) nueva.setIdDepartamento(deptId);
+            try {
+                Ciudad saved = ciudadRepo.saveAndFlush(nueva);
+                ciudadCache.put(normalizedName, saved.getIdCiudad());
+                System.out.println("[FileProcessingService] Ciudad creada: '" + original + "' -> id=" + saved.getIdCiudad());
+                return saved.getIdCiudad();
+            } catch (Exception e) {
+                System.err.println("[FileProcessingService] Error al crear ciudad '" + original + "': " + e.getMessage());
+                return null;
+            }
+        }
     }
 
     private Integer resolveDepartamentoId(String raw) {
@@ -565,12 +796,36 @@ public class FileProcessingService {
     private Integer resolveOrCreateModuloId(String nombrePrueba) {
         if (nombrePrueba == null) return null;
         String normalized = nombrePrueba.trim();
-        Optional<Modulo> om = moduloRepo.findFirstByNombreIgnoreCase(normalized);// busaca en la BD modulo con ese nombre (case insensitive)
-        if (om.isPresent()) return om.get().getIdModulo(); // si existe, devuelve su id
-        Modulo nuevoModulo = new Modulo();// si no existe, crea uno nuevo
-        nuevoModulo.setNombre(normalized);
-        Modulo savedModulo = moduloRepo.save(nuevoModulo); // guarda el nuevo modulo en la BD
-        return savedModulo.getIdModulo();
+        String key = normalized.toUpperCase();
+
+        Integer cached = moduloCache.get(key);
+        if (cached != null) return cached;
+
+        Optional<Modulo> om = moduloRepo.findFirstByNombreIgnoreCase(normalized);
+        if (om.isPresent()) {
+            Integer id = om.get().getIdModulo();
+            moduloCache.put(key, id);
+            return id;
+        }
+
+        synchronized (moduloCache) {
+            Integer recheck = moduloCache.get(key);
+            if (recheck != null) return recheck;
+
+            om = moduloRepo.findFirstByNombreIgnoreCase(normalized);
+            if (om.isPresent()) {
+                Integer id = om.get().getIdModulo();
+                moduloCache.put(key, id);
+                return id;
+            }
+
+            Modulo nuevoModulo = new Modulo();
+            nuevoModulo.setNombre(normalized);
+            Modulo savedModulo = moduloRepo.save(nuevoModulo);
+            Integer newId = savedModulo.getIdModulo();
+            moduloCache.put(key, newId);
+            return newId;
+        }
     }
 
     // Normaliza el periodo para almacenar solo el año.
@@ -590,13 +845,13 @@ public class FileProcessingService {
     }
 
     private void linkAndSaveModuleResults(List<InternalResult> savedInternals, List<TempModuleResult> tempModules) {
-        List<ExternalSpecificModuleResult> toSave = new ArrayList<>();
+        List<InternalModuleResult> toSave = new ArrayList<>();
         for (TempModuleResult t : tempModules) {
             if (t.internalIndex >= 0 && t.internalIndex < savedInternals.size()) {
                 InternalResult related = savedInternals.get(t.internalIndex);
                 if (related != null) {
-                    ExternalSpecificModuleResult rm = new ExternalSpecificModuleResult();
-                    rm.setInternoId(related.getId());
+                    InternalModuleResult rm = new InternalModuleResult();
+                    rm.setInternoId(related.getDocumento());
                     Integer modId = resolveOrCreateModuloId(t.moduloNombre);
                     rm.setModuloId(modId);
                     rm.setPuntaje(t.puntaje);
@@ -606,7 +861,14 @@ public class FileProcessingService {
                 }
             }
         }
-        if (!toSave.isEmpty()) moduleResultRepo.saveAll(toSave);
+        if (!toSave.isEmpty()) {
+            try {
+                moduleResultRepo.saveAll(toSave);
+            } catch (Exception e) {
+                System.err.println("[FileProcessingService] Error guardando resultado_modulo_interno: " + e.getMessage());
+                throw e;
+            }
+        }
     }
 
     private static class TempModuleResult {
@@ -639,8 +901,8 @@ public class FileProcessingService {
     }
 
     // Construye filas de resultado_modulo_externo a partir de un ExternalGeneralResult.
-    private List<ExternalSpecificResult> extractModuleRows(ExternalGeneralResult gr, Set<String> presentPrefixes) {
-         List<ExternalSpecificResult> out = new ArrayList<>();
+    private List<ExternalModuleResult> extractModuleRows(ExternalGeneralResult gr, Set<String> presentPrefixes) {
+         List<ExternalModuleResult> out = new ArrayList<>();
          if (gr == null) return out;
          // mapa de prefijos de columna base a nombre legible
          Map<String, String> prefixToName = new LinkedHashMap<>();
@@ -690,18 +952,14 @@ public class FileProcessingService {
                  // ignore getter errors
              }
 
-             // Si el archivo contiene las columnas del módulo (aunque las celdas estén vacías), queremos crear
-             // una fila en resultado_modulo_externo con puntaje = NULL; si el archivo no contiene las columnas, saltar.
              boolean columnsPresent = (presentPrefixes != null && presentPrefixes.contains(pref));
-             if (!columnsPresent && punt == null && pnal == null && pnbc == null) continue; // nada para guardar y no hay columnas
+             if (!columnsPresent && punt == null && pnal == null && pnbc == null) continue;
 
-             ExternalSpecificResult mr = new ExternalSpecificResult();
-             // asociar al resultado general (puede ser null si aún no tiene id, pero se guarda después de persistir)
+             ExternalModuleResult mr = new ExternalModuleResult();
              mr.setExternaId(gr.getId());
 
              Integer modId = resolveOrCreateModuloId(name);
              mr.setModuloId(modId);
-             // puntaje y percentiles: punt puede contener decimales -> guardar directamente como BigDecimal
              mr.setResultPuntaje(punt);
              mr.setPercentilNacional(bigDecimalToInteger(pnal));
              mr.setPercentilNbc(bigDecimalToInteger(pnbc));
@@ -711,4 +969,3 @@ public class FileProcessingService {
          return out;
      }
  }
-

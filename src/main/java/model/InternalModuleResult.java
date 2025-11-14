@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "resultado_modulo_interno")
-public class ExternalSpecificModuleResult {
+public class InternalModuleResult {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class ExternalSpecificModuleResult {
     @Column(name = "percentil_grupo_referencia", nullable = true)
     private Integer percentilGrupoReferencia;
 
-    public ExternalSpecificModuleResult() {}
+    public InternalModuleResult() {}
 
     // getters y setters
     public Long getId() { return id; }
