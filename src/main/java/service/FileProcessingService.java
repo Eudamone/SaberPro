@@ -531,89 +531,99 @@ public class FileProcessingService {
         if (fileName != null && (fileName.endsWith(".xlsx") || fileName.endsWith(".xls"))) {
             // Lógica para archivos Excel
             try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
-                Sheet sheet = workbook.getSheetAt(0);
-                Map<String, Integer> headerMap = new HashMap<>();
-                Row headerRow = sheet.getRow(0);
-                if (headerRow != null) {
-                    for (Cell cell : headerRow) {
-                        String header = getCellValueAsString(cell);
-                        if (header != null && !header.trim().isEmpty()) {
-                            String normalizedHeader = header.trim().toLowerCase()
-                                .replace(" ", "")
-                                .replace("í", "i")
-                                .replace("ó", "o")
-                                .replace("ú", "u")
-                                .replace("é", "e")
-                                .replace("á", "a");
-                            headerMap.put(normalizedHeader, cell.getColumnIndex());
+                // Procesar todas las hojas del workbook (cada hoja puede representar un programa)
+                int sheets = workbook.getNumberOfSheets();
+                for (int sh = 0; sh < sheets; sh++) {
+                    Sheet shSheet = workbook.getSheetAt(sh);
+                    if (shSheet == null) continue;
+
+                    Map<String, Integer> headerMap = new HashMap<>();
+                    Row headerRow = shSheet.getRow(0);
+                    if (headerRow != null) {
+                        for (Cell cell : headerRow) {
+                            String header = getCellValueAsString(cell);
+                            if (header != null && !header.trim().isEmpty()) {
+                                String normalizedHeader = header.trim().toLowerCase()
+                                    .replace(" ", "")
+                                    .replace("í", "i")
+                                    .replace("ó", "o")
+                                    .replace("ú", "u")
+                                    .replace("é", "e")
+                                    .replace("á", "a");
+                                headerMap.put(normalizedHeader, cell.getColumnIndex());
+                            }
                         }
                     }
-                }
 
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                    Row row = sheet.getRow(i);
-                    if (row == null) continue;
+                    // Procesar filas de esta hoja
+                    for (int i = 1; i <= shSheet.getLastRowNum(); i++) {
+                        Row row = shSheet.getRow(i);
+                        if (row == null) continue;
 
-                    InternalResult r = new InternalResult();
-                    r.setPeriodo(periodo);
-                    r.setTipoDocumento(getCellValueByHeader(row, headerMap, "tipodedocumento"));
-                    String documentoRaw = getCellValueByHeader(row, headerMap, "documento");
-                    r.setDocumento(parseLongOrNull(documentoRaw));
-                    r.setNombre(getCellValueByHeader(row, headerMap, "nombre"));
-                    r.setNumeroRegistro(getCellValueByHeader(row, headerMap, "numeroderegistro"));
-                    r.setTipoEvaluado(getCellValueByHeader(row, headerMap, "tipodeevaluado"));
-                    r.setSniesPrograma(getCellValueByHeader(row, headerMap, "sniesprogramaacademico"));
-                    r.setPrograma(getCellValueByHeader(row, headerMap, "programa"));
-                    // Resolver la ciudad por nombre y crearla si no existe (evita FK violations como (ciudad_id)=83 no existe)
-                    String ciudadRaw = getCellValueByHeader(row, headerMap, "ciudad");
-                    Integer ciudadIdResolved = resolveCiudadId(ciudadRaw);
-                    // Si no se pudo resolver, dejar null para que la base de datos valide o se maneje en otro paso
-                    r.setCiudadId(ciudadIdResolved);
-                    r.setGrupoReferencia(getCellValueByHeader(row, headerMap, "grupodereferencia"));
-                    r.setPuntajeGlobal(parseInteger(getCellValueByHeader(row, headerMap, "puntajeglobal")));
-                    r.setPercentilNacionalGlobal(parseInteger(getCellValueByHeader(row, headerMap, "percentilnacionalglobal")));
-                    r.setPercentilGrupoReferencia(parseInteger(getCellValueByHeader(row, headerMap, "percentilgrupodereferencia")));
-                    r.setCreatedAt(OffsetDateTime.now());
+                        InternalResult r = new InternalResult();
+                        r.setPeriodo(periodo);
+                        r.setTipoDocumento(getCellValueByHeader(row, headerMap, "tipodedocumento"));
+                        String documentoRaw = getCellValueByHeader(row, headerMap, "documento");
+                        r.setDocumento(parseLongOrNull(documentoRaw));
+                        r.setNombre(getCellValueByHeader(row, headerMap, "nombre"));
+                        r.setNumeroRegistro(getCellValueByHeader(row, headerMap, "numeroderegistro"));
+                        r.setTipoEvaluado(getCellValueByHeader(row, headerMap, "tipodeevaluado"));
+                        r.setSniesPrograma(getCellValueByHeader(row, headerMap, "sniesprogramaacademico"));
+                        r.setPrograma(getCellValueByHeader(row, headerMap, "programa"));
+                        // Resolver la ciudad por nombre y crearla si no existe
+                        String ciudadRaw = getCellValueByHeader(row, headerMap, "ciudad");
+                        Integer ciudadIdResolved = resolveCiudadId(ciudadRaw);
+                        r.setCiudadId(ciudadIdResolved);
+                        r.setGrupoReferencia(getCellValueByHeader(row, headerMap, "grupodereferencia"));
+                        r.setPuntajeGlobal(parseInteger(getCellValueByHeader(row, headerMap, "puntajeglobal")));
+                        r.setPercentilNacionalGlobal(parseInteger(getCellValueByHeader(row, headerMap, "percentilnacionalglobal")));
+                        r.setPercentilGrupoReferencia(parseInteger(getCellValueByHeader(row, headerMap, "percentilgrupodereferencia")));
+                        r.setCreatedAt(OffsetDateTime.now());
 
-                    int bufferIndex = buffer.size();
-                    buffer.add(r);
+                        int bufferIndex = buffer.size();
+                        buffer.add(r);
 
-                    String moduloNombre = getCellValueByHeader(row, headerMap, "módulo");
-                    if (moduloNombre == null) moduloNombre = getCellValueByHeader(row, headerMap, "modulo");
-                    Integer puntajeModulo = parseInteger(getCellValueByHeader(row, headerMap, "puntajemodulo"));
-                    Integer percentilNacModulo = parseInteger(getCellValueByHeader(row, headerMap, "percentilnacionalmodulo"));
-                    Integer percentilGrupoModulo = parseInteger(getCellValueByHeader(row, headerMap, "percentilgrupodereferenciamodulo"));
+                        String moduloNombre = getCellValueByHeader(row, headerMap, "módulo");
+                        if (moduloNombre == null) moduloNombre = getCellValueByHeader(row, headerMap, "modulo");
+                        Integer puntajeModulo = parseInteger(getCellValueByHeader(row, headerMap, "puntajemodulo"));
+                        Integer percentilNacModulo = parseInteger(getCellValueByHeader(row, headerMap, "percentilnacionalmodulo"));
+                        Integer percentilGrupoModulo = parseInteger(getCellValueByHeader(row, headerMap, "percentilgrupodereferenciamodulo"));
 
-                    if (moduloNombre != null || puntajeModulo != null || percentilNacModulo != null || percentilGrupoModulo != null) {
-                        TempModuleResult tmp = new TempModuleResult();
-                        tmp.internalIndex = bufferIndex;
-                        tmp.moduloNombre = moduloNombre;
-                        tmp.puntaje = puntajeModulo;
-                        tmp.percentilNacional = percentilNacModulo;
-                        tmp.percentilGrupoReferencia = percentilGrupoModulo;
-                        moduleTempBuffer.add(tmp);
+                        if (moduloNombre != null || puntajeModulo != null || percentilNacModulo != null || percentilGrupoModulo != null) {
+                            TempModuleResult tmp = new TempModuleResult();
+                            tmp.internalIndex = bufferIndex;
+                            tmp.moduloNombre = moduloNombre;
+                            tmp.puntaje = puntajeModulo;
+                            tmp.percentilNacional = percentilNacModulo;
+                            tmp.percentilGrupoReferencia = percentilGrupoModulo;
+                            moduleTempBuffer.add(tmp);
+                        }
+
+                        if (buffer.size() >= BATCH_SIZE_INTERNAL) {
+                            List<InternalResult> saved = internalRepo.saveAll(new ArrayList<>(buffer));
+                            linkAndSaveModuleResults(saved, moduleTempBuffer);
+                            savedAll.addAll(saved);
+                            buffer.clear();
+                            moduleTempBuffer.clear();
+                        }
                     }
 
-                    if (buffer.size() >= BATCH_SIZE_INTERNAL) {
+                    // Al terminar de procesar todas las hojas, persistir cualquier resto en buffer
+                    if (!buffer.isEmpty()) {
                         List<InternalResult> saved = internalRepo.saveAll(new ArrayList<>(buffer));
+                        // los índices en moduleTempBuffer fueron calculados con respecto a `buffer` antes del guardado,
+                        // por eso al pasar `saved` (mismo orden) se puede usar directamente internalIndex
                         linkAndSaveModuleResults(saved, moduleTempBuffer);
                         savedAll.addAll(saved);
                         buffer.clear();
                         moduleTempBuffer.clear();
                     }
-                }
 
-                if (!buffer.isEmpty()) {
-                    List<InternalResult> saved = internalRepo.saveAll(buffer);
-                    linkAndSaveModuleResults(saved, moduleTempBuffer);
-                    savedAll.addAll(saved);
-                    buffer.clear();
-                    moduleTempBuffer.clear();
-                }
-            }
-        }
-        return savedAll;
-    }
+                 }
+             }
+         }
+         return savedAll;
+     }
 
     private String get(String[] cols, Map<String, Integer> idx, String key) {
         Integer i = idx.get(key.toLowerCase());
@@ -716,6 +726,21 @@ public class FileProcessingService {
             return null;
         }
         String original = raw.trim();
+
+        // Si el valor parece un id numérico, comprobar existencia y devolverlo solo si existe.
+        Integer asInt = parseInteger(original);
+        if (asInt != null) {
+            try {
+                if (ciudadRepo.existsById(asInt)) return asInt;
+                else {
+                    System.err.println("[FileProcessingService] Ciudad indicada por id no existe en DB: " + asInt + " (valor de entrada: '" + original + "')");
+                    // continuar tratando original como nombre en vez de devolver este id inválido
+                }
+            } catch (Exception e) {
+                // si existe problema al comprobar, seguir y tratar como nombre
+            }
+        }
+
         String normalizedName = normalizeCityName(original);
 
         // 1. revisar cache
