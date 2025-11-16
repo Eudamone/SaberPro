@@ -1,10 +1,7 @@
 package utils;
 
 import javafx.collections.FXCollections;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
+import javafx.scene.chart.*;
 
 public class ChartCreator {
     public static LineChart<String, Number> createLineChart() {
@@ -46,5 +43,45 @@ public class ChartCreator {
         lineChart.getStylesheets().add(css);
 
         return lineChart;
+    }
+
+    public static BarChart<Number,String> boxChartPromedyProgram(){
+        // Se definen ejes
+        final NumberAxis xAxis = new NumberAxis();
+        final CategoryAxis yAxis = new CategoryAxis();
+
+        xAxis.setAutoRanging(false);
+        xAxis.setLowerBound(0);
+        xAxis.setUpperBound(300.0);
+        xAxis.setTickUnit(50.0);
+        xAxis.setAnimated(false);
+        xAxis.setMinorTickVisible(false);
+        xAxis.setTickMarkVisible(false);
+
+        yAxis.setCategories(FXCollections.observableArrayList("Programa 1", "Programa 2", "Programa 3", "Programa 4", "Programa 5"));
+        yAxis.setAnimated(false);
+
+        final BarChart<Number,String> barChart = new BarChart(xAxis, yAxis);
+        barChart.setTitle(null);
+        barChart.setLegendVisible(false);
+
+
+        // Datos de prueba temporales
+        XYChart.Series<Number,String> series = new XYChart.Series<>();
+        series.setName("Promedio Programa");
+        series.getData().add(new XYChart.Data<>(158.0,"Programa 1"));
+        series.getData().add(new XYChart.Data<>(190.0,"Programa 2"));
+        series.getData().add(new XYChart.Data<>(250.0,"Programa 3"));
+        series.getData().add(new XYChart.Data<>(210.0,"Programa 4"));
+        series.getData().add(new XYChart.Data<>(120.0,"Programa 5"));
+
+        barChart.getData().add(series);
+        barChart.setVerticalGridLinesVisible(false);
+        barChart.setHorizontalGridLinesVisible(false);
+
+        String css = ChartCreator.class.getResource("/styles/barChartProgram.css").toExternalForm();
+        barChart.getStylesheets().add(css);
+
+        return barChart;
     }
 }

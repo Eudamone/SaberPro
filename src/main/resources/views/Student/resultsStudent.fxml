@@ -4,6 +4,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -13,7 +15,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.dashboardDeanController">
+<HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Student.resultsStudentController">
    <children>
       <VBox prefHeight="200.0" prefWidth="250.0">
          <children>
@@ -52,12 +54,12 @@
                                           <Insets bottom="2.0" left="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button alignment="TOP_LEFT" graphicTextGap="12.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados">
+                                    <Button alignment="TOP_LEFT" graphicTextGap="12.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados">
                                        <VBox.margin>
                                           <Insets bottom="10.0" left="5.0" />
                                        </VBox.margin>
                                        <graphic>
-                                          <FontAwesomeIconView glyphName="EYE" size="18" styleClass="icon" />
+                                          <FontAwesomeIconView glyphName="EYE" size="18" styleClass="icon-bttMenuSelected" />
                                        </graphic>
                                     </Button>
                                     <Line endX="80.0" focusTraversable="true" layoutX="121.0" layoutY="191.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
@@ -73,7 +75,7 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button fx:id="bttCreateUser" alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Manual de usuario">
+                                    <Button alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#changeScene" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Manual de usuario">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="BOOK" size="18" styleClass="icon" />
                                        </graphic>
@@ -81,15 +83,15 @@
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Preguntas frecuentes">
+                                    <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#changeScene" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Preguntas frecuentes">
                                        <graphic>
-                                          <FontAwesomeIconView fill="#5a6a85" glyphName="QUESTION_CIRCLE" size="19" styleClass="icon-bttMenuSelected" />
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="QUESTION_CIRCLE" size="19" styleClass="icon" />
                                        </graphic>
                                        <VBox.margin>
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Reportar incidencia">
+                                    <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#changeScene" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Reportar incidencia">
                                        <VBox.margin>
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
@@ -111,17 +113,36 @@
       <Line endY="-620.0" startY="100.0" stroke="#eaeff4" />
       <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="1065.0" style="-fx-background-color: #FFFFFF;" HBox.hgrow="ALWAYS">
          <children>
-            <HBox alignment="TOP_CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="32.0" prefWidth="1022.0">
+            <HBox alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="1058.0">
                <children>
-                  <FontAwesomeIconView fill="#5a6a85" glyphName="BELL" size="24">
+                  <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                      <HBox.margin>
-                        <Insets left="20.0" top="15.0" />
-                     </HBox.margin></FontAwesomeIconView>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                     <children>
+                        <Button mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
+                           <graphic>
+                              <FontAwesomeIconView fill="#5a6a85" glyphName="BELL" size="24" styleClass="iconUser" />
+                           </graphic>
+                        </Button>
+                     </children>
+                  </VBox>
                   <Region prefHeight="42.0" prefWidth="946.0" />
-                  <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32">
+                  <VBox alignment="CENTER">
                      <HBox.margin>
-                        <Insets top="15.0" />
-                     </HBox.margin></FontAwesomeIconView>
+                        <Insets right="25.0" />
+                     </HBox.margin>
+                     <children>
+                        <MenuButton mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
+                          <items>
+                            <MenuItem mnemonicParsing="false" onAction="#logout" text="Cerrar Sesión" />
+                          </items>
+                           <graphic>
+                              <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32" styleClass="iconUser" />
+                           </graphic>
+                        </MenuButton>
+                     </children>
+                  </VBox>
                </children>
             </HBox>
          </children>

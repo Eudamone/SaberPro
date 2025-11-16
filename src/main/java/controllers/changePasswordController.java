@@ -59,14 +59,16 @@ public class changePasswordController {
             return;
         }
 
-        if(sessionContext.getUserTemp() != null){
+        if(sessionContext.getUserTemp() != null){ // Para usuarios no logueados que quieren restablecer la contraseña
             usuarioService.updatePassword(sessionContext.getUserTemp().getId(),password);
             //Se borra el token del restablecer contraseña y adicionalmente se borran todos los tokens ya expirados
             usuarioService.deleteResetToken(sessionContext.getUserTemp().getId());
             sessionContext.setUserTemp(null);
             sceneManager.switchToNextScene(FxmlView.LOGIN);
-        } else if (sessionContext.getCurrentUser() != null) {
+        } else if (sessionContext.getCurrentUser() != null) { // Para usuarios logueados por primera vez
             usuarioService.updatePassword(sessionContext.getCurrentUser().getId(),password);
+            usuarioService.deleteNewUser(sessionContext.getCurrentUser().getId()); // Eliminar el registro en la tabla nuevousuario
+            System.out.println("Rol usuario: "+sessionContext.getCurrentUser().getRol());
             NavigationHelper.changeSceneByRol(sessionContext.getCurrentUser().getRol(),sceneManager);
         } else{
             // Error al tratar de cambiar la contraseña

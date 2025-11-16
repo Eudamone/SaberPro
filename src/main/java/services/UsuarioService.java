@@ -3,19 +3,15 @@ package services;
 import dto.EstudianteLoad;
 import dto.UsuarioInfoDTO;
 import factories.UsuarioFactoryRegistry;
-import jakarta.mail.MessagingException;
-import jakarta.persistence.Column;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import model.Estudiante;
-import model.Programa;
-import model.ResetToken;
-import model.Usuario;
+import model.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import repository.NewUsuarioRepository;
 import repository.ResetTokenRepository;
 import repository.UsuarioRepository;
 
@@ -35,19 +31,25 @@ public class UsuarioService {
     private final ProgramaService programaService;
     private UsuarioService self;
     private final ResetTokenRepository resetTokenRepository;
+    private final NewUsuarioRepository newUsuarioRepository;
+
+    @PersistenceContext
+    EntityManager entityManager;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             EmailService emailService, PasswordEncoder encoder,
             UsuarioFactoryRegistry factoryRegistry,
             ProgramaService programaService,
-            ResetTokenRepository reteTokenRepository) {
+            ResetTokenRepository reteTokenRepository,
+            NewUsuarioRepository newUsuarioRepository) {
         this.usuarioRepository = usuarioRepository;
         this.emailService = emailService;
         this.encoder = encoder;
         this.factoryRegistry = factoryRegistry;
         this.programaService = programaService;
         this.resetTokenRepository = reteTokenRepository;
+        this.newUsuarioRepository = newUsuarioRepository;
     }
 
     @Autowired
@@ -90,7 +92,11 @@ public class UsuarioService {
         String passTemporal = generatePasswordAleatory();
         usuario.setPass(encoder.encode(passTemporal));
         // Se guarda al usuario
-        Usuario userSaved = usuarioRepository.save(usuario);
+        Usuario userSaved = usuarioRepository.saveAndFlush(usuario);
+        // Se crea el newUser
+        NewUsuario newUsuario = new NewUsuario();
+        newUsuario.setUsuario(userSaved);
+        newUsuarioRepository.save(newUsuario);
         // Creamos el usuario especializado según el rol
         factoryRegistry.createUserSpecificFactory(userSaved,datos);
 
@@ -106,6 +112,14 @@ public class UsuarioService {
             );
 
         return userSaved;
+    }
+
+    @Transactional
+    public void setNewUser(Usuario usuario){
+        Usuario usuarioManaged = entityManager.merge(usuario);
+        NewUsuario newUser = new NewUsuario();
+        newUser.setUsuario(usuarioManaged);
+        newUsuarioRepository.save(newUser);
     }
 
     private String generateHtmlCredentials(String username,String password){
@@ -404,6 +418,15 @@ public class UsuarioService {
         token.ifPresent(resetTokenRepository::delete);
         // Se limpia adicionalmente los tokens que ya están expirados
         resetTokenRepository.deleteTokensExpired();
+    }
+
+    public boolean hasUserNew(Long id){
+        return usuarioRepository.isNewUser(id);
+    }
+
+    @Transactional
+    public void deleteNewUser(Long id){
+        usuarioRepository.deleteNewUsuarioById(id);
     }
 }
 

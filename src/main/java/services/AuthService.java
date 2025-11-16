@@ -3,7 +3,6 @@ package services;
 import application.SessionContext;
 import dto.UsuarioInfoDTO;
 import dto.UsuarioSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import repository.UsuarioRepository;

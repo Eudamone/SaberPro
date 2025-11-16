@@ -88,4 +88,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
         UPDATE Usuario u SET u.pass = :passHash WHERE u.id = :id
     """)
     void updatePassword(@Param("passHash") String passHash,@Param("id") Long id);
+
+    @Query("SELECT CASE WHEN COUNT(nu) > 0 THEN TRUE ELSE FALSE END "+
+            "FROM NewUsuario nu WHERE nu.usuario.id = :id")
+    boolean isNewUser(Long id);
+
+    @Modifying
+    @Query("DELETE FROM NewUsuario nu WHERE nu.usuario.id = :id")
+    void deleteNewUsuarioById(Long id);
 }

@@ -1,0 +1,12 @@
+.chart{
+    -fx-background-color: transparent;
+    -fx-font-family: "Montserrat";
+}
+
+.chart-bar {
+    -fx-background-color: #FC0610;
+}
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}

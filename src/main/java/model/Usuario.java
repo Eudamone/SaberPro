@@ -127,6 +127,9 @@ public class Usuario {
         }
     }
 
+    @OneToOne(mappedBy = "usuario",optional = true)
+    private NewUsuario newUsuario;
+
     public Long getId() {
         return id;
     }

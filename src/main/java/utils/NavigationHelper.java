@@ -36,7 +36,10 @@ public class NavigationHelper {
                     sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
                 }
                 case Estudiante -> {
-                    sceneManager.switchToNextScene(FxmlView.DASHBOARD_STUDENT);
+                    sceneManager.switchToNextScene(FxmlView.RESULTS_STUDENT);
+                }
+                default -> {
+                    System.out.println("No existe escena principal para ese usuario");
                 }
             }
         }catch (Exception e){

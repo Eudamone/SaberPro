@@ -14,6 +14,7 @@ import javafx.scene.shape.Rectangle;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import services.AuthService;
+import services.UsuarioService;
 import views.FxmlView;
 
 import java.io.IOException;
@@ -24,12 +25,13 @@ public class loginController {
 
     private final SceneManager sceneManager;
     private final AuthService authService;
-
+    private final UsuarioService usuarioService;
 
     @Lazy
-    public loginController(SceneManager sceneManager, AuthService authService) {
+    public loginController(SceneManager sceneManager, AuthService authService, UsuarioService usuarioService) {
         this.sceneManager = sceneManager;
         this.authService = authService;
+        this.usuarioService = usuarioService;
     }
 
     @FXML
@@ -53,7 +55,7 @@ public class loginController {
     }
 
     @FXML
-    void accessIn(ActionEvent event) {
+    void accessIn(ActionEvent event) throws IOException {
         String username = (txtUser != null) ? txtUser.getText() : null;
         String password = (txtPassword != null) ? txtPassword.getText() : null;
 
@@ -67,15 +69,26 @@ public class loginController {
         if (session == null) {
             showError("Credenciales no válidas.");
             return;
+        } else if (usuarioService.hasUserNew(session.id())){
+            sceneManager.switchToNextScene(FxmlView.CHANGE_PASSWORD); // Si el usuario es nuevo cambia a la vista de cambiar contraseña
+            return;
         }
-
 
         // Política de acceso (demo): si es Decano → dashboard del decano; si no, dashboard genérico
         try {
-            if ("Decano".equalsIgnoreCase(session.getRol().getTipo())) {
-                sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
-            } else {
-                sceneManager.switchToNextScene(FxmlView.DASHBOARD_USER);
+            switch (session.getRol()){
+                case Decano -> {
+                    sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
+                }
+                case Estudiante -> {
+                    sceneManager.switchToNextScene(FxmlView.RESULTS_STUDENT);
+                }
+                case Administrador -> {
+                    sceneManager.switchToNextScene(FxmlView.LOAD_RESULTS_ADMIN);
+                }
+                default -> {
+                    showError("No existe una vista para el usuario ingresado");
+                }
             }
         } catch (Exception e) {
             showError("No se puede abrir la siguiente vista.");

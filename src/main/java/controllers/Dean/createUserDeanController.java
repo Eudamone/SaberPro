@@ -20,11 +20,12 @@ import services.ProgramaService;
 import services.UsuarioService;
 import utils.FormValidator;
 import utils.NavigationHelper;
+import utils.UtilsComboBox;
 
 import java.util.*;
 
 import static utils.Alerts.*;
-import static utils.UtilsComboBox.limpiarComboBox;
+import static utils.UtilsComboBox.*;
 import static utils.generateNameUser.generateUsername;
 
 @Component
@@ -235,6 +236,7 @@ public class createUserDeanController {
             bttCreateUser.setDisable(false);
 
             Usuario user = task.getValue();
+            //usuarioService.setNewUser(user); // Se agrega el nuevo usuario
 
             if(user != null){
                 showInformation("Se envió el correo con las credenciales a "+ email +" con éxito","Correo enviado con éxito");
@@ -257,26 +259,13 @@ public class createUserDeanController {
         new Thread(task).start();
     }
 
-    private final String[] comboRol = {"Estudiante","Administrador","Docente","Decano","Director Programa","Secretaria Acreditacion","Coordinador Saber Pro"};
-    private final String[] comboTeacher = {"Planta","Ocasional","Catedrático"};
-    private final String[] comboTypeDocument = {"CC","TI","CE"};
-    private final String[] comboStateAcademic = {"Activo","Egresado","Retirado"};
-
-    public void comboBox(ComboBox<String> comboBox,String [] items){
-        List<String> list = new ArrayList<>();
-        for(String data:items){
-            list.add(data);
-        }
-        ObservableList<String> dataList = FXCollections.observableArrayList(list);
-        comboBox.setItems(dataList);
-    };
 
     @FXML
     public void initialize(){
-        comboBox(cBoxRol,comboRol);
-        comboBox(cBoxTypeDocument,comboTypeDocument);
-        comboBox(cBoxTeaching,comboTeacher);
-        comboBox(cBoxStateAcademy,comboStateAcademic);
+        comboBoxInitializer(cBoxRol,UtilsComboBox.comboRol);
+        comboBoxInitializer(cBoxTypeDocument,UtilsComboBox.comboTypeDocument);
+        comboBoxInitializer(cBoxTeaching,UtilsComboBox.comboTeacher);
+        comboBoxInitializer(cBoxStateAcademy,UtilsComboBox.comboStateAcademic);
 
         tfName.textProperty().addListener((obs,oldVal,newVal) -> generateUsername(tfNameUser,tfName.getText(),tfNumberDocument.getText(),usuarioService));
         tfNumberDocument.textProperty().addListener((obs,oldVal,newVal) -> generateUsername(tfNameUser,tfName.getText(),tfNumberDocument.getText(),usuarioService));
@@ -348,12 +337,8 @@ public class createUserDeanController {
         tfCodeTeaching.setText("");
         tfCodeEstudent.setText("");
 
-        limpiarComboBox(cBoxRol);
-        limpiarComboBox(cBoxTypeDocument);
-        limpiarComboBox(cBoxFaculty);
-        limpiarComboBox(cBoxProgram);
-        limpiarComboBox(cBoxTeaching);
-        limpiarComboBox(cBoxStateAcademy);
+        List<ComboBox<?>> listaCombox = Arrays.asList(cBoxRol,cBoxTypeDocument,cBoxFaculty,cBoxProgram,cBoxTeaching,cBoxStateAcademy);
+        cleanComboBox(listaCombox);
     }
 
 

@@ -29,12 +29,14 @@ import services.ProgramaService;
 import services.UsuarioService;
 import utils.Alerts;
 import utils.NavigationHelper;
+import utils.UtilsComboBox;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 
 import static utils.Alerts.*;
+import static utils.UtilsComboBox.comboBoxInitializer;
 import static utils.UtilsComboBox.limpiarComboBox;
 import static utils.generateNameUser.generateUsername;
 
@@ -204,26 +206,13 @@ public class editAndDeleteUsersDeanController {
         return data;
     }
 
-    private final String[] comboRol = {"Estudiante", "Administrador", "Docente", "Decano", "Director Programa", "Secretaria Acreditacion", "Coordinador Saber Pro"};
-    private final String[] comboTeacher = {"Planta", "Ocasional", "Catedrático"};
-    private final String[] comboTypeDocument = {"CC", "TI", "CE"};
-
-    public void comboBox(ComboBox<String> comboBox, String[] items) {
-        List<String> list = new ArrayList<>();
-        Collections.addAll(list, items);
-        ObservableList<String> dataList = FXCollections.observableArrayList(list);
-        comboBox.setItems(dataList);
-    }
-
-    ;
-
     @FXML
     public void initialize() {
         editForm.setVisible(false);
 
-        comboBox(cBoxRol, comboRol);
-        comboBox(cBoxTypeDocument, comboTypeDocument);
-        comboBox(cBoxTypeTeaching, comboTeacher);
+        comboBoxInitializer(cBoxRol, UtilsComboBox.comboRol);
+        comboBoxInitializer(cBoxTypeDocument,UtilsComboBox.comboTypeDocument);
+        comboBoxInitializer(cBoxTypeTeaching,UtilsComboBox.comboTeacher);
 
         // Para cambiar el username automáticamente
         tfNameUser.textProperty().addListener((obs, oldVal, newVal) -> generateUsername(tfNameUser, tfName.getText(), tfNumberDocument.getText(), usuarioService));
