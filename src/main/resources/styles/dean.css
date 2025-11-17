@@ -43,3 +43,14 @@
     -fx-border-color: #de0009;
     -fx-cursor: hand;
 }
+
+.containerReport{
+    -fx-background-color: #FFFFFF;
+    -fx-effect: dropshadow(gaussian,rgba(145,158,171,0.25),30,0.3,0,0.4);
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-pref-height: 400px;
+    -fx-max-height: 400px;
+    -fx-pref-width: 400px;
+    -fx-max-width: 400px;
+}

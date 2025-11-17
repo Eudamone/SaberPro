@@ -16,264 +16,275 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.consultResultsDeanController">
+
+<StackPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.consultResultsDeanController">
    <children>
-      <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" prefHeight="746.0" prefWidth="250.0" spacing="10.0" style="-fx-background-color: #FFFFFF; -fx-pref-height: 100%;" HBox.hgrow="NEVER">
+      <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;">
          <children>
-            <HBox alignment="CENTER" prefHeight="80.0" prefWidth="250.0" VBox.vgrow="NEVER">
+            <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" prefHeight="746.0" prefWidth="250.0" spacing="10.0" style="-fx-background-color: #FFFFFF; -fx-pref-height: 100%;" HBox.hgrow="NEVER">
                <children>
-                  <ImageView fitHeight="50.0" fitWidth="70.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../images/logo_unillanos.png" />
-                     </image>
-                  </ImageView>
-                  <Label alignment="CENTER" contentDisplay="CENTER" text="SABER PRO" textFill="#de0009">
-                     <HBox.margin>
-                        <Insets left="10.0" />
-                     </HBox.margin>
-                     <font>
-                        <Font name="Montserrat ExtraBold" size="22.0" />
-                     </font>
-                  </Label>
-               </children>
-            </HBox>
-            <HBox prefHeight="100.0" prefWidth="250.0" style="-fx-background-color: #FFFFFF;" VBox.vgrow="ALWAYS">
-               <children>
-                  <ScrollPane focusTraversable="false" prefHeight="200.0" prefWidth="250.0" style="-fx-background-color: #FFFFFF;" stylesheets="@../../styles/dashboardDean.css" HBox.hgrow="ALWAYS">
-                     <content>
-                        <VBox prefHeight="493.0" prefWidth="243.0" spacing="2.0" style="-fx-background-color: #FFFFFF;">
-                           <children>
-                              <Label text="INICIO" textFill="#5a6a85" VBox.vgrow="ALWAYS">
-                                 <font>
-                                    <Font name="Montserrat-Regular" size="14.0" />
-                                 </font>
-                                 <padding>
-                                    <Insets left="5.0" />
-                                 </padding>
-                                 <VBox.margin>
-                                    <Insets bottom="2.0" left="10.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <Button alignment="TOP_LEFT" graphicTextGap="14.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Dashboard" userData="DASHBOARD_DEAN">
-                                 <VBox.margin>
-                                    <Insets bottom="10.0" left="5.0" />
-                                 </VBox.margin>
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#900c11" glyphName="HOME" size="18" styleClass="icon" />
-                                 </graphic>
-                              </Button>
-                              <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="191.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
-                                 <VBox.margin>
-                                    <Insets left="10.0" />
-                                 </VBox.margin>
-                              </Line>
-                              <Label text="GESTION DE USUARIOS" textFill="#5a6a85" VBox.vgrow="ALWAYS">
-                                 <font>
-                                    <Font name="Montserrat-Regular" size="14.0" />
-                                 </font>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="10.0" top="10.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <Button alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleViewChange" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear usuario" userData="CREATE_USER_DEAN">
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="USER_PLUS" size="18" styleClass="icon" />
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="USER" size="19" styleClass="icon" />
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Button>
-                              <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon" text="" />
-                                 </graphic>
-                              </Button>
-                              <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
-                                 <VBox.margin>
-                                    <Insets left="10.0" />
-                                 </VBox.margin>
-                              </Line>
-                              <Label layoutX="20.0" layoutY="231.0" text="RESULTADOS" textFill="#5a6a85">
-                                 <font>
-                                    <Font name="Montserrat-Regular" size="14.0" />
-                                 </font>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="10.0" top="10.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <Button graphicTextGap="14.0" layoutX="15.0" layoutY="280.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados">
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon-bttMenuSelected" />
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Button>
-                              <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0" />
-                              <Label layoutX="20.0" layoutY="231.0" text="ACCIONES DE MEJORAMIENTO" textFill="#5a6a85">
-                                 <font>
-                                    <Font name="Montserrat-Regular" size="14.0" />
-                                 </font>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="10.0" top="10.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Visualizar acciones">
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon" />
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Button>
-                              <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="362.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
-                                 <VBox.margin>
-                                    <Insets left="10.0" />
-                                 </VBox.margin>
-                              </Line>
-                              <Label layoutX="20.0" layoutY="375.0" text="AYUDA Y SOPORTE" textFill="#5a6a85">
-                                 <font>
-                                    <Font name="Montserrat-Regular" size="14.0" />
-                                 </font>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="10.0" top="10.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <Button graphicTextGap="12.0" layoutX="15.0" layoutY="470.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Manual de usuario">
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="BOOK" size="18" styleClass="icon" />
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Button>
-                              <Button graphicTextGap="12.0" layoutX="10.0" layoutY="385.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Preguntas frecuentes">
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="QUESTION_CIRCLE" size="18" styleClass="icon" />
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Button>
-                              <Button graphicTextGap="12.0" layoutX="10.0" layoutY="415.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Reportar incidencia">
-                                 <graphic>
-                                    <FontAwesomeIconView fill="#5a6a85" glyphName="EXCLAMATION_CIRCLE" size="18" styleClass="icon" />
-                                 </graphic>
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Button>
-                           </children>
-                        </VBox>
-                     </content>
-                  </ScrollPane>
-               </children>
-            </HBox>
-         </children>
-      </VBox>
-      <Line endY="-620.0" startY="100.0" stroke="#eaeff4" />
-      <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
-         <children>
-            <HBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="49.0" prefWidth="1049.0">
-               <children>
-                  <VBox alignment="CENTER" prefWidth="100.0">
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin>
+                  <HBox alignment="CENTER" prefHeight="80.0" prefWidth="250.0" VBox.vgrow="NEVER">
                      <children>
-                        <Button mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
-                           <graphic>
-                              <FontAwesomeIconView fill="#5a6a85" glyphName="BELL" size="24" styleClass="iconUser" />
-                           </graphic>
-                        </Button>
+                        <ImageView fitHeight="50.0" fitWidth="70.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../images/logo_unillanos.png" />
+                           </image>
+                        </ImageView>
+                        <Label alignment="CENTER" contentDisplay="CENTER" text="SABER PRO" textFill="#de0009">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                           <font>
+                              <Font name="Montserrat ExtraBold" size="22.0" />
+                           </font>
+                        </Label>
                      </children>
-                  </VBox>
-                  <Region prefHeight="52.0" prefWidth="905.0" HBox.hgrow="NEVER" />
-                  <VBox alignment="CENTER">
-                     <HBox.margin>
-                        <Insets right="30.0" />
-                     </HBox.margin>
+                  </HBox>
+                  <HBox prefHeight="100.0" prefWidth="250.0" style="-fx-background-color: #FFFFFF;" VBox.vgrow="ALWAYS">
                      <children>
-                        <MenuButton mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
-                          <items>
-                            <MenuItem mnemonicParsing="false" onAction="#closeSession" text="Cerrar Sesión" />
-                          </items>
-                           <graphic>
-                              <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32" styleClass="iconUser" />
-                           </graphic>
-                        </MenuButton>
-                     </children>
-                  </VBox>
-               </children>
-            </HBox>
-            <HBox prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-               <children>
-                  <VBox styleClass="boxLineChartPromedy" stylesheets="@../../styles/dashboardDean.css" HBox.hgrow="ALWAYS">
-                     <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
-                     </HBox.margin>
-                     <children>
-                        <VBox alignment="CENTER" prefHeight="80.0" prefWidth="1017.0">
-                           <children>
-                              <Label styleClass="lbTitleResults" stylesheets="@../../styles/dean.css" text="CONSULTAR RESULTADOS" />
-                              <Label prefHeight="20.0" prefWidth="368.0" styleClass="lbSubTitleResults" stylesheets="@../../styles/dean.css" text="Bienvenido a la consulta de resultados del sistema Saber Pro" />
-                           </children>
-                        </VBox>
-                        <VBox alignment="TOP_CENTER" prefHeight="59.0" prefWidth="1017.0">
-                           <children>
-                              <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="1017.0" spacing="10.0">
+                        <ScrollPane focusTraversable="false" prefHeight="200.0" prefWidth="250.0" style="-fx-background-color: #FFFFFF;" stylesheets="@../../styles/dashboardDean.css" HBox.hgrow="ALWAYS">
+                           <content>
+                              <VBox prefHeight="493.0" prefWidth="243.0" spacing="2.0" style="-fx-background-color: #FFFFFF;">
                                  <children>
-                                    <HBox fx:id="boxPrueba" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="226.0" stylesheets="@../../styles/multiselect.css" />
-                                    <ComboBox prefWidth="150.0" promptText="Semestre" styleClass="comboSemestre" stylesheets="@../../styles/dean.css" />
-                                    <HBox fx:id="boxArea" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="225.0" stylesheets="@../../styles/multiselect.css" />
-                                    <HBox fx:id="boxNBC" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="254.0" stylesheets="@../../styles/multiselect.css" />
-                                    <Button mnemonicParsing="false" onMouseClicked="#filter" styleClass="bttFiltrar" stylesheets="@../../styles/dean.css" text="Filtrar">
-                                       <HBox.margin>
-                                          <Insets left="25.0" />
-                                       </HBox.margin>
+                                    <Label text="INICIO" textFill="#5a6a85" VBox.vgrow="ALWAYS">
+                                       <font>
+                                          <Font name="Montserrat-Regular" size="14.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets left="5.0" />
+                                       </padding>
+                                       <VBox.margin>
+                                          <Insets bottom="2.0" left="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button alignment="TOP_LEFT" graphicTextGap="14.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Dashboard" userData="DASHBOARD_DEAN">
+                                       <VBox.margin>
+                                          <Insets bottom="10.0" left="5.0" />
+                                       </VBox.margin>
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#900c11" glyphName="HOME" size="18" styleClass="icon" />
+                                       </graphic>
+                                    </Button>
+                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="191.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                       <VBox.margin>
+                                          <Insets left="10.0" />
+                                       </VBox.margin>
+                                    </Line>
+                                    <Label text="GESTION DE USUARIOS" textFill="#5a6a85" VBox.vgrow="ALWAYS">
+                                       <font>
+                                          <Font name="Montserrat-Regular" size="14.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="10.0" top="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleViewChange" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear usuario" userData="CREATE_USER_DEAN">
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="USER_PLUS" size="18" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Editar / Eliminar" userData="EDIT_AND_DELETE_USERS_DEAN">
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="USER" size="19" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_DEAN">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon" text="" />
+                                       </graphic>
+                                    </Button>
+                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                       <VBox.margin>
+                                          <Insets left="10.0" />
+                                       </VBox.margin>
+                                    </Line>
+                                    <Label layoutX="20.0" layoutY="231.0" text="RESULTADOS" textFill="#5a6a85">
+                                       <font>
+                                          <Font name="Montserrat-Regular" size="14.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="10.0" top="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button graphicTextGap="14.0" layoutX="15.0" layoutY="280.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados">
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon-bttMenuSelected" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0" />
+                                    <Label layoutX="20.0" layoutY="231.0" text="ACCIONES DE MEJORAMIENTO" textFill="#5a6a85">
+                                       <font>
+                                          <Font name="Montserrat-Regular" size="14.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="10.0" top="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Visualizar acciones">
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="362.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                       <VBox.margin>
+                                          <Insets left="10.0" />
+                                       </VBox.margin>
+                                    </Line>
+                                    <Label layoutX="20.0" layoutY="375.0" text="AYUDA Y SOPORTE" textFill="#5a6a85">
+                                       <font>
+                                          <Font name="Montserrat-Regular" size="14.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="10.0" top="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="470.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Manual de usuario">
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="BOOK" size="18" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Button graphicTextGap="12.0" layoutX="10.0" layoutY="385.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Preguntas frecuentes">
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="QUESTION_CIRCLE" size="18" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Button graphicTextGap="12.0" layoutX="10.0" layoutY="415.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Reportar incidencia">
+                                       <graphic>
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="EXCLAMATION_CIRCLE" size="18" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
                                     </Button>
                                  </children>
-                              </HBox>
-                           </children>
-                        </VBox>
-                        <ScrollPane hbarPolicy="NEVER" prefHeight="498.0" prefWidth="1017.0" vbarPolicy="ALWAYS">
-                          <content>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="578.0" prefWidth="1004.0">
-                                 <children>
-                                    <Pagination fx:id="pagination" maxPageIndicatorCount="6" pageCount="20" prefHeight="571.0" prefWidth="1011.0" />
-                                    <TableView fx:id="internResultTable" prefHeight="518.0" prefWidth="1007.0" stylesheets="@../../styles/editAndDeleteUsers.css">
-                                      <columns>
-                                        <TableColumn fx:id="periodColumn" prefWidth="119.0" text="Periodo" />
-                                          <TableColumn fx:id="nombreColumn" prefWidth="439.0" text="Nombre" />
-                                        <TableColumn fx:id="numberRegisterColumn" minWidth="0.0" prefWidth="139.0" text="Numero registro" />
-                                          <TableColumn fx:id="programColumn" prefWidth="198.0" text="Programa" />
-                                          <TableColumn fx:id="puntajeColumn" prefWidth="92.0" text="Ptje. Global" />
-                                      </columns>
-                                    </TableView>
-                                 </children>
-                              </AnchorPane>
-                          </content>
+                              </VBox>
+                           </content>
                         </ScrollPane>
                      </children>
-                  </VBox>
+                  </HBox>
                </children>
-            </HBox>
+            </VBox>
+            <Line endY="-620.0" startY="100.0" stroke="#eaeff4" />
+            <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <HBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="49.0" prefWidth="1049.0">
+                     <children>
+                        <VBox alignment="CENTER" prefWidth="100.0">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                           <children>
+                              <Button mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
+                                 <graphic>
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="BELL" size="24" styleClass="iconUser" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </VBox>
+                        <Region prefHeight="52.0" prefWidth="905.0" HBox.hgrow="NEVER" />
+                        <VBox alignment="CENTER">
+                           <HBox.margin>
+                              <Insets right="30.0" />
+                           </HBox.margin>
+                           <children>
+                              <MenuButton mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
+                                <items>
+                                  <MenuItem mnemonicParsing="false" onAction="#closeSession" text="Cerrar Sesión" />
+                                </items>
+                                 <graphic>
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32" styleClass="iconUser" />
+                                 </graphic>
+                              </MenuButton>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                     <children>
+                        <VBox styleClass="boxLineChartPromedy" stylesheets="@../../styles/dashboardDean.css" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
+                           </HBox.margin>
+                           <children>
+                              <VBox alignment="CENTER" prefHeight="80.0" prefWidth="1017.0">
+                                 <children>
+                                    <Label styleClass="lbTitleResults" stylesheets="@../../styles/dean.css" text="CONSULTAR RESULTADOS" />
+                                    <Label prefHeight="20.0" prefWidth="368.0" styleClass="lbSubTitleResults" stylesheets="@../../styles/dean.css" text="Bienvenido a la consulta de resultados del sistema Saber Pro" />
+                                 </children>
+                              </VBox>
+                              <VBox alignment="TOP_CENTER" prefHeight="59.0" prefWidth="1017.0">
+                                 <children>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="1017.0" spacing="10.0">
+                                       <children>
+                                          <HBox fx:id="boxPrueba" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="226.0" stylesheets="@../../styles/multiselect.css" />
+                                          <ComboBox prefWidth="150.0" promptText="Semestre" styleClass="comboSemestre" stylesheets="@../../styles/dean.css" />
+                                          <HBox fx:id="boxArea" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="225.0" stylesheets="@../../styles/multiselect.css" />
+                                          <HBox fx:id="boxNBC" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="254.0" stylesheets="@../../styles/multiselect.css" />
+                                          <Button mnemonicParsing="false" onMouseClicked="#filter" styleClass="bttFiltrar" stylesheets="@../../styles/dean.css" text="Filtrar">
+                                             <HBox.margin>
+                                                <Insets left="25.0" />
+                                             </HBox.margin>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <ScrollPane hbarPolicy="NEVER" prefHeight="498.0" prefWidth="1017.0" vbarPolicy="ALWAYS">
+                                <content>
+                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="578.0" prefWidth="1004.0">
+                                       <children>
+                                          <Pagination fx:id="pagination" maxPageIndicatorCount="6" pageCount="20" prefHeight="571.0" prefWidth="1011.0" />
+                                          <TableView fx:id="internResultTable" prefHeight="518.0" prefWidth="1007.0" stylesheets="@../../styles/editAndDeleteUsers.css">
+                                            <columns>
+                                              <TableColumn fx:id="periodColumn" prefWidth="119.0" text="Periodo" />
+                                                <TableColumn fx:id="nombreColumn" prefWidth="439.0" text="Nombre" />
+                                              <TableColumn fx:id="numberRegisterColumn" minWidth="0.0" prefWidth="139.0" text="Numero registro" />
+                                                <TableColumn fx:id="programColumn" prefWidth="198.0" text="Programa" />
+                                                <TableColumn fx:id="puntajeColumn" prefWidth="92.0" text="Ptje. Global" />
+                                            </columns>
+                                          </TableView>
+                                       </children>
+                                    </AnchorPane>
+                                </content>
+                              </ScrollPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+      <VBox fx:id="containerReport" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="containerReport" stylesheets="@../../styles/dean.css" visible="false">
+         <children>
+            <Label styleClass="lbTitleResults" stylesheets="@../../styles/dean.css" text="REPORTE" />
          </children>
       </VBox>
    </children>
-</HBox>
+</StackPane>

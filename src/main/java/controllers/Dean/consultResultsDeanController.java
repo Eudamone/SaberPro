@@ -13,6 +13,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import javafx.scene.Node;
-import utils.Normalized;
 
 @Component
 public class consultResultsDeanController {
@@ -38,6 +38,10 @@ public class consultResultsDeanController {
 
     @FXML
     private HBox boxPrueba,boxArea,boxNBC;
+
+    @FXML
+    private VBox containerReport;
+
     @FXML
     private TableView<InternResultInfo> internResultTable;
 
