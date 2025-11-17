@@ -27,4 +27,7 @@ public interface ProgramaRepository extends JpaRepository<Programa,String> {
      * @return Una lista de Programas.
      */
     List<Programa> findByFacultad_CodeFaculty(String codeFaculty);
+
+    @Query("SELECT p.name FROM Programa p WHERE p.facultad.decano.id = :id")
+    List<String> findByCodeDean(@Param("id") Long id);
 }

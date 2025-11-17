@@ -1,0 +1,45 @@
+.tfPeriodo{
+    -fx-border-color: #5A6A85;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 14px;
+    -fx-pref-height: 35px;
+    -fx-pref-width: 280px;
+}
+
+.lbTitleResults {
+    -fx-font-family: "Montserrat ExtraBold";
+    -fx-font-size: 28px;
+    -fx-text-fill: #de0009;
+}
+
+.lbSubTitleResults {
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 12px;
+    -fx-text-fill: #5A6A85;
+}
+
+.comboSemestre{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #5A6A85;
+    -fx-pref-height: 35px;
+    -fx-pref-width: 110px;
+    -fx-background-color: #FFFFFF;
+    -fx-font-family: "Montserrat";
+    -fx-text-fill: #5A6A85;
+}
+
+.bttFiltrar{
+    -fx-background-radius: 25px;
+    -fx-border-radius: 25px;
+    -fx-pref-height: 35px;
+    -fx-pref-width: 110px;
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 14px;
+    -fx-text-fill: #FFFFFF;
+    -fx-background-color: #de0009;
+    -fx-border-color: #de0009;
+    -fx-cursor: hand;
+}

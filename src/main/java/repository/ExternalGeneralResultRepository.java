@@ -19,4 +19,10 @@ public interface ExternalGeneralResultRepository extends JpaRepository<model.Ext
         and re.estuNucleoPregrado  != '[NULL]'
     """)
     List<String> findNBC(String nombrePrograma);
+
+    @Query("""
+        SELECT DISTINCT eg.estuNucleoPregrado FROM ExternalGeneralResult eg
+        WHERE eg.estuPrgmAcademico = :nombrePrograma AND eg.estuPrgmAcademico != '[NULL]' AND eg.estuPrgmAcademico IS NOT NULL 
+    """)
+    List<String> getNBCs(String nombrePrograma);
 }

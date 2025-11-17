@@ -5,7 +5,7 @@
     -fx-pref-height: 36px;
     -fx-pref-width: 230px;
     -fx-max-width: 230px;
-    -fx-font-family: Montserrat;
+    -fx-font-family: "Montserrat";
     -fx-text-fill: #5A6A85;
 }
 
@@ -17,7 +17,7 @@
     -fx-pref-width: 225px;
     -fx-max-width: 250px;
     -fx-background-color: #FFFFFF;
-    -fx-font-family: Montserrat;
+    -fx-font-family: "Montserrat";
     -fx-font-size: 13px;
     -fx-text-fill: #5A6A85;
     -fx-cursor: hand;
@@ -68,14 +68,14 @@
 
 .table-view .column-header .label {
     -fx-text-fill: #5A6A85;
-    -fx-font-family: Montserrat;
+    -fx-font-family: "Montserrat";
     -fx-font-size: 14px;
     -fx-alignment: center;
 }
 
 .table-cell{
     -fx-background-color: #FFFFFF;
-    -fx-font-family: Montserrat;
+    -fx-font-family: "Montserrat";
     -fx-font-size: 13px;
     -fx-text-fill: #5A6A85;
     -fx-alignment: center-left;

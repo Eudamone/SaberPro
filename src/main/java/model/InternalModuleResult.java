@@ -25,6 +25,10 @@ public class InternalModuleResult {
     @Column(name = "percentil_grupo_referencia", nullable = true)
     private Integer percentilGrupoReferencia;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "modulo_id",insertable = false, updatable = false)
+    private Modulo modulo;
+
     public InternalModuleResult() {}
 
     // getters y setters
