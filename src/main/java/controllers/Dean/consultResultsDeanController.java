@@ -1,6 +1,7 @@
 package controllers.Dean;
 
 import application.SessionContext;
+import dto.InternResultFilter;
 import dto.InternResultInfo;
 import javafx.animation.FadeTransition;
 import javafx.collections.FXCollections;
@@ -31,13 +32,15 @@ import javafx.scene.Node;
 @Component
 public class consultResultsDeanController {
 
-    private N8NClientService  n8NClientService;
+    private static final int PAGE_SIZE = 15;
+
+    private final N8NClientService n8NClientService;
     private final EmailService emailService;
     private final CatalogService catalogService;
     private final SessionContext sessionContext;
 
     @FXML
-    private HBox boxPrueba,boxArea,boxNBC;
+    private HBox boxPrueba, boxArea, boxNBC;
 
     @FXML
     private VBox containerReport;
@@ -63,6 +66,11 @@ public class consultResultsDeanController {
     @FXML
     private Pagination pagination;
 
+    private MultiSelectComboBox multiPeriodCombo;
+    private MultiSelectComboBox multiAreaCombo;
+    private MultiSelectComboBox multiNBCCombo;
+
+    private InternResultFilter currentFilter = new InternResultFilter();
 
     consultResultsDeanController(
             N8NClientService n8NClientService,
@@ -87,16 +95,15 @@ public class consultResultsDeanController {
     }
 
     @FXML
-    public void initialize(){
-        setupColumns(); // Se inician columnas
-        setupPagination(); // Configura la paginación de consultas
-        setupPeriods(); //
+    public void initialize() {
+        setupColumns();
+        setupPagination();
+        setupPeriods();
         setupAreas();
         setupNBC();
     }
 
-    private void setupColumns(){
-        // Configurar columnas
+    private void setupColumns() {
         periodColumn.setCellValueFactory(new PropertyValueFactory<>("periodo"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         numberRegisterColumn.setCellValueFactory(new PropertyValueFactory<>("numeroRegistro"));
@@ -104,62 +111,83 @@ public class consultResultsDeanController {
         puntajeColumn.setCellValueFactory(new PropertyValueFactory<>("ptjeGlobal"));
     }
 
-    private void setupPagination(){
-        pagination.setCurrentPageIndex(0);
+    private void setupPagination() {
         pagination.setMaxPageIndicatorCount(10);
-        Integer total = catalogService.sizeInternResults();
-        System.out.println("Total resultados internos: " + total);
-        // calcular número de páginas
-        int pageCount = (int) Math.ceil((double) total / 15);
-        pagination.setPageCount(pageCount);
-
-        // Callback que se usa al cambiar de pagina
         pagination.setPageFactory(this::createPage);
+        updatePagination();
+        pagination.setCurrentPageIndex(0);
     }
 
-    private Node createPage(int pageIndex){
-        Page<InternResultInfo> resultPage = catalogService.findInternResults(pageIndex,15);
+    private void updatePagination() {
+        long total = catalogService.countInternResults(currentFilter);
+        int pageCount = total == 0 ? 1 : (int) Math.ceil((double) total / PAGE_SIZE);
+        pagination.setPageCount(pageCount);
+    }
+
+    private Node createPage(int pageIndex) {
+        Page<InternResultInfo> resultPage = fetchPage(pageIndex);
         ObservableList<InternResultInfo> data = FXCollections.observableArrayList(resultPage.getContent());
 
         internResultTable.setItems(data);
 
-        // transición de desplazamiento
         FadeTransition fade = new FadeTransition(Duration.millis(250), internResultTable);
-        fade.setFromValue(0.7); // empieza casi visible
-        fade.setToValue(1.0);   // termina totalmente visible
+        fade.setFromValue(0.7);
+        fade.setToValue(1.0);
         fade.play();
 
         return internResultTable;
     }
 
-    private void setupPeriods(){
+    private Page<InternResultInfo> fetchPage(int pageIndex) {
+        return catalogService.findInternResults(pageIndex, PAGE_SIZE, currentFilter);
+    }
+
+    private void setupPeriods() {
         List<Integer> periods = catalogService.getPeriodsResult();
         List<String> periodString = new ArrayList<>();
-        for(Integer i : periods){
-            periodString.add(String.valueOf(i));
+        for (Integer period : periods) {
+            periodString.add(String.valueOf(period));
         }
-        MultiSelectComboBox multi = new MultiSelectComboBox("Seleccione periodos",periodString);
-        boxPrueba.getChildren().addAll(multi);
+        multiPeriodCombo = new MultiSelectComboBox("Seleccione periodos", periodString);
+        boxPrueba.getChildren().addAll(multiPeriodCombo);
     }
 
-    private void setupAreas(){
+    private void setupAreas() {
         List<String> areas = catalogService.getAreas();
-        MultiSelectComboBox multiProgram =  new MultiSelectComboBox("Seleccione areás",areas);
-        boxArea.getChildren().addAll(multiProgram);
+        multiAreaCombo = new MultiSelectComboBox("Seleccione areás", areas);
+        boxArea.getChildren().addAll(multiAreaCombo);
     }
 
-    private void setupNBC(){
+    private void setupNBC() {
         Set<String> nbc = catalogService.getNBCDean(sessionContext.getCurrentUser().getId());
         List<String> data = new ArrayList<>(nbc);
-        MultiSelectComboBox multiNBC = new MultiSelectComboBox("Seleccione NBC",data);
-        boxNBC.getChildren().addAll(multiNBC);
+        multiNBCCombo = new MultiSelectComboBox("Seleccione NBC", data);
+        boxNBC.getChildren().addAll(multiNBCCombo);
     }
 
     @FXML
     void filter(MouseEvent event) {
-        Node node = boxPrueba.getChildren().get(0);
-        MultiSelectComboBox multiPeriod = (MultiSelectComboBox) node;
-        System.out.println("Elecciones periodo: " + multiPeriod.getSelectedItems());
+        List<String> periods = collectSelections(multiPeriodCombo);
+        List<String> areas = collectSelections(multiAreaCombo);
+        List<String> nbc = collectSelections(multiNBCCombo);
 
+        currentFilter = new InternResultFilter(parsePeriods(periods), areas, nbc);
+        updatePagination();
+        pagination.setCurrentPageIndex(0);
+    }
+
+    private List<Integer> parsePeriods(List<String> selections) {
+        List<Integer> parsed = new ArrayList<>();
+        for (String selection : selections) {
+            try {
+                parsed.add(Integer.valueOf(selection));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return parsed;
+    }
+
+    private List<String> collectSelections(MultiSelectComboBox combo) {
+        return combo == null ? new ArrayList<>() : new ArrayList<>(combo.getSelectedItems());
     }
 }

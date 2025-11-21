@@ -1,7 +1,9 @@
 package model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "resultado_interno")
@@ -55,6 +57,10 @@ public class InternalResult {
     @Column(name = "created_at", nullable = true)
     private OffsetDateTime createdAt;
 
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interno_id", referencedColumnName = "id")
+    private List<InternalModuleResult> internalModuleResults = new ArrayList<>();
+
     public InternalResult() {}
 
     // getters y setters
@@ -89,5 +95,8 @@ public class InternalResult {
     public void setPercentilGrupoReferencia(Integer percentilGrupoReferencia) { this.percentilGrupoReferencia = percentilGrupoReferencia; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public List<InternalModuleResult> getInternalModuleResults() { return internalModuleResults; }
+    public void setInternalModuleResults(List<InternalModuleResult> internalModuleResults) { this.internalModuleResults = internalModuleResults; }
 
 }
