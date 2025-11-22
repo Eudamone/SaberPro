@@ -16,6 +16,9 @@ public class InternalResult {
     @Column(name = "periodo", nullable = true)
     private Integer periodo;
 
+    @Column(name = "semestre", nullable = true)
+    private Integer semestre;
+
     @Column(name = "tipo_documento", nullable = true)
     private String tipoDocumento;
 
@@ -58,7 +61,7 @@ public class InternalResult {
     private OffsetDateTime createdAt;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interno_id", referencedColumnName = "id")
+    @JoinColumn(name = "interno_id", referencedColumnName = "documento")
     private List<InternalModuleResult> internalModuleResults = new ArrayList<>();
 
     public InternalResult() {}
@@ -68,6 +71,8 @@ public class InternalResult {
     public void setId(Long id) { this.id = id; }
     public Integer getPeriodo() { return periodo; }
     public void setPeriodo(Integer periodo) { this.periodo = periodo; }
+    public Integer getSemestre() { return semestre; }
+    public void setSemestre(Integer semestre) { this.semestre = semestre; }
     public String getTipoDocumento() { return tipoDocumento; }
     public void setTipoDocumento(String tipoDocumento) { this.tipoDocumento = tipoDocumento; }
     public Long getDocumento() { return documento; }

@@ -41,6 +41,8 @@ public class consultResultsDeanController {
 
     @FXML
     private HBox boxPrueba, boxArea, boxNBC;
+    @FXML
+    private HBox boxSemestre;
 
     @FXML
     private VBox containerReport;
@@ -58,6 +60,9 @@ public class consultResultsDeanController {
     private TableColumn<InternResultInfo, Integer> periodColumn;
 
     @FXML
+    private TableColumn<InternResultInfo, Integer> semesterColumn;
+
+    @FXML
     private TableColumn<InternResultInfo, String> programColumn;
 
     @FXML
@@ -69,6 +74,7 @@ public class consultResultsDeanController {
     private MultiSelectComboBox multiPeriodCombo;
     private MultiSelectComboBox multiAreaCombo;
     private MultiSelectComboBox multiNBCCombo;
+    private MultiSelectComboBox multiSemesterCombo;
 
     private InternResultFilter currentFilter = new InternResultFilter();
 
@@ -99,12 +105,14 @@ public class consultResultsDeanController {
         setupColumns();
         setupPagination();
         setupPeriods();
+        setupSemesters();
         setupAreas();
         setupNBC();
     }
 
     private void setupColumns() {
         periodColumn.setCellValueFactory(new PropertyValueFactory<>("periodo"));
+        semesterColumn.setCellValueFactory(new PropertyValueFactory<>("semestre"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         numberRegisterColumn.setCellValueFactory(new PropertyValueFactory<>("numeroRegistro"));
         programColumn.setCellValueFactory(new PropertyValueFactory<>("programa"));
@@ -152,6 +160,16 @@ public class consultResultsDeanController {
         boxPrueba.getChildren().addAll(multiPeriodCombo);
     }
 
+    private void setupSemesters() {
+        List<Integer> semesters = catalogService.getSemesters();
+        List<String> semesterString = new ArrayList<>();
+        for (Integer semester : semesters) {
+            semesterString.add(String.valueOf(semester));
+        }
+        multiSemesterCombo = new MultiSelectComboBox("Seleccione semestres", semesterString);
+        boxSemestre.getChildren().addAll(multiSemesterCombo);
+    }
+
     private void setupAreas() {
         List<String> areas = catalogService.getAreas();
         multiAreaCombo = new MultiSelectComboBox("Seleccione areás", areas);
@@ -170,13 +188,31 @@ public class consultResultsDeanController {
         List<String> periods = collectSelections(multiPeriodCombo);
         List<String> areas = collectSelections(multiAreaCombo);
         List<String> nbc = collectSelections(multiNBCCombo);
+        List<String> semesters = collectSelections(multiSemesterCombo);
 
-        currentFilter = new InternResultFilter(parsePeriods(periods), areas, nbc);
+        currentFilter = new InternResultFilter(
+                parsePeriods(periods),
+                areas,
+                nbc,
+                parseSemesters(semesters)
+        );
         updatePagination();
         pagination.setCurrentPageIndex(0);
+        createPage(0);
     }
 
     private List<Integer> parsePeriods(List<String> selections) {
+        List<Integer> parsed = new ArrayList<>();
+        for (String selection : selections) {
+            try {
+                parsed.add(Integer.valueOf(selection));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return parsed;
+    }
+
+    private List<Integer> parseSemesters(List<String> selections) {
         List<Integer> parsed = new ArrayList<>();
         for (String selection : selections) {
             try {

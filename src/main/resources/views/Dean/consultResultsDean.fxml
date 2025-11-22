@@ -243,7 +243,7 @@
                                     <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="1017.0" spacing="10.0">
                                        <children>
                                           <HBox fx:id="boxPrueba" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="226.0" stylesheets="@../../styles/multiselect.css" />
-                                          <ComboBox prefWidth="150.0" promptText="Semestre" styleClass="comboSemestre" stylesheets="@../../styles/dean.css" />
+                                          <HBox fx:id="boxSemestre" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="150.0" stylesheets="@../../styles/multiselect.css" />
                                           <HBox fx:id="boxArea" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="225.0" stylesheets="@../../styles/multiselect.css" />
                                           <HBox fx:id="boxNBC" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="254.0" stylesheets="@../../styles/multiselect.css" />
                                           <Button mnemonicParsing="false" onMouseClicked="#filter" styleClass="bttFiltrar" stylesheets="@../../styles/dean.css" text="Filtrar">
@@ -263,6 +263,7 @@
                                           <TableView fx:id="internResultTable" prefHeight="518.0" prefWidth="1007.0" stylesheets="@../../styles/editAndDeleteUsers.css">
                                             <columns>
                                               <TableColumn fx:id="periodColumn" prefWidth="119.0" text="Periodo" />
+                                              <TableColumn fx:id="semesterColumn" prefWidth="95.0" text="Semestre" />
                                                 <TableColumn fx:id="nombreColumn" prefWidth="439.0" text="Nombre" />
                                               <TableColumn fx:id="numberRegisterColumn" minWidth="0.0" prefWidth="139.0" text="Numero registro" />
                                                 <TableColumn fx:id="programColumn" prefWidth="198.0" text="Programa" />

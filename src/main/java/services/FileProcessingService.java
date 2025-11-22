@@ -506,7 +506,7 @@ public class FileProcessingService {
     }
 
     @Transactional
-    public List<InternalResult> parseAndSaveInternal(MultipartFile file, int periodo) throws Exception {
+    public List<InternalResult> parseAndSaveInternal(MultipartFile file, int periodo, int semestre) throws Exception {
         List<InternalResult> savedAll = new ArrayList<>();
         List<InternalResult> buffer = new ArrayList<>(BATCH_SIZE_INTERNAL);
         List<TempModuleResult> moduleTempBuffer = new ArrayList<>();
@@ -558,6 +558,7 @@ public class FileProcessingService {
 
                         InternalResult r = new InternalResult();
                         r.setPeriodo(periodo);
+                        r.setSemestre(semestre);
                         r.setTipoDocumento(getCellValueByHeader(row, headerMap, "tipodedocumento"));
                         String documentoRaw = getCellValueByHeader(row, headerMap, "documento");
                         r.setDocumento(parseLongOrNull(documentoRaw));

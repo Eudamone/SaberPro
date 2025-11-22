@@ -72,7 +72,7 @@ public class CatalogService {
     }
 
     public Page<InternResultInfo> findInternResults(int page,int size, InternResultFilter filter){
-        PageRequest pageable = PageRequest.of(page,size, Sort.by("id").ascending());
+        PageRequest pageable = PageRequest.of(page, size);
         return internalResultRepository.findResults(pageable, filter);
     }
 
@@ -103,5 +103,9 @@ public class CatalogService {
 
     public List<String> getAreas(){
         return internalModuleResultRepository.getAreas();
+    }
+
+    public List<Integer> getSemesters(){
+        return internalResultRepository.getSemesters();
     }
 }

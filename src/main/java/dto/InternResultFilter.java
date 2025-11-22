@@ -9,17 +9,24 @@ public class InternResultFilter {
     private final List<Integer> periods;
     private final List<String> areas;
     private final List<String> nbc;
+    private final List<Integer> semesters;
 
     public InternResultFilter() {
         this.periods = new ArrayList<>();
         this.areas = new ArrayList<>();
         this.nbc = new ArrayList<>();
+        this.semesters = new ArrayList<>();
     }
 
     public InternResultFilter(List<Integer> periods, List<String> areas, List<String> nbc) {
+        this(periods, areas, nbc, null);
+    }
+
+    public InternResultFilter(List<Integer> periods, List<String> areas, List<String> nbc, List<Integer> semesters) {
         this.periods = periods == null ? new ArrayList<>() : new ArrayList<>(periods);
         this.areas = areas == null ? new ArrayList<>() : new ArrayList<>(areas);
         this.nbc = nbc == null ? new ArrayList<>() : new ArrayList<>(nbc);
+        this.semesters = semesters == null ? new ArrayList<>() : new ArrayList<>(semesters);
     }
 
     public boolean hasPeriods() {
@@ -34,6 +41,10 @@ public class InternResultFilter {
         return !nbc.isEmpty();
     }
 
+    public boolean hasSemesters() {
+        return !semesters.isEmpty();
+    }
+
     public List<Integer> getPeriods() {
         return Collections.unmodifiableList(periods);
     }
@@ -45,5 +56,8 @@ public class InternResultFilter {
     public List<String> getNbc() {
         return Collections.unmodifiableList(nbc);
     }
-}
 
+    public List<Integer> getSemesters() {
+        return Collections.unmodifiableList(semesters);
+    }
+}

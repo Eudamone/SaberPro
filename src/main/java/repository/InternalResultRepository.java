@@ -14,7 +14,7 @@ public interface InternalResultRepository extends JpaRepository<InternalResult, 
     Optional<InternalResult> findFirstByPeriodoAndNumeroRegistro(Integer periodo, String numeroRegistro);
 
     @Query("""
-        select  new dto.InternResultInfo(ir.periodo,ir.nombre,ir.numeroRegistro,ir.programa,ir.puntajeGlobal)
+        select  new dto.InternResultInfo(ir.periodo, ir.semestre, ir.nombre, ir.numeroRegistro, ir.programa, ir.puntajeGlobal, ir.grupoReferencia)
         from InternalResult ir
         order by ir.id
     """)
@@ -25,5 +25,8 @@ public interface InternalResultRepository extends JpaRepository<InternalResult, 
 
     @Query("SELECT DISTINCT ir.periodo FROM InternalResult ir order by ir.periodo asc ")
     List<Integer> getPeriods();
+
+    @Query("SELECT DISTINCT ir.semestre FROM InternalResult ir WHERE ir.semestre IS NOT NULL ORDER BY ir.semestre ASC")
+    List<Integer> getSemesters();
 
 }
