@@ -2,6 +2,7 @@ package services;
 
 import dto.InternResultFilter;
 import dto.InternResultInfo;
+import dto.InternResultReport;
 import dto.UsuarioInfoDTO;
 import model.Facultad;
 import model.Programa;
@@ -107,5 +108,9 @@ public class CatalogService {
 
     public List<Integer> getSemesters(){
         return internalResultRepository.getSemesters();
+    }
+
+    public InternResultReport generateInternReport(InternResultFilter filter) {
+        return internalResultRepository.generateReport(filter == null ? new InternResultFilter() : filter);
     }
 }

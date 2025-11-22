@@ -3,11 +3,16 @@ package controllers.Dean;
 import application.SessionContext;
 import dto.InternResultFilter;
 import dto.InternResultInfo;
+import dto.InternResultReport;
+import dto.ModulePerformance;
+import dto.ScoreStatistics;
 import javafx.animation.FadeTransition;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -26,6 +31,7 @@ import utils.MultiSelectComboBox;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javafx.scene.Node;
 
@@ -71,6 +77,45 @@ public class consultResultsDeanController {
     @FXML
     private Pagination pagination;
 
+    @FXML
+    private Label reportContextLabel;
+
+    @FXML
+    private Label reportPopulationLabel;
+
+    @FXML
+    private Label reportAverageLabel;
+
+    @FXML
+    private Label reportTrendLabel;
+
+    @FXML
+    private Label reportBestModuleLabel;
+
+    @FXML
+    private Label reportCriticalModuleLabel;
+
+    @FXML
+    private TableView<ModulePerformance> moduleReportTable;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> moduleNameColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> moduleAverageColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> moduleStdDevColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> moduleMinColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> moduleMaxColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> moduleSampleColumn;
+
     private MultiSelectComboBox multiPeriodCombo;
     private MultiSelectComboBox multiAreaCombo;
     private MultiSelectComboBox multiNBCCombo;
@@ -108,6 +153,7 @@ public class consultResultsDeanController {
         setupSemesters();
         setupAreas();
         setupNBC();
+        setupReportTable();
     }
 
     private void setupColumns() {
@@ -117,6 +163,27 @@ public class consultResultsDeanController {
         numberRegisterColumn.setCellValueFactory(new PropertyValueFactory<>("numeroRegistro"));
         programColumn.setCellValueFactory(new PropertyValueFactory<>("programa"));
         puntajeColumn.setCellValueFactory(new PropertyValueFactory<>("ptjeGlobal"));
+    }
+
+    private void setupReportTable() {
+        moduleNameColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getModuleName()));
+        moduleAverageColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getAverage())));
+        moduleStdDevColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getStandardDeviation())));
+        moduleMinColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMin())));
+        moduleMaxColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMax())));
+        moduleSampleColumn.setCellValueFactory(cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getStatistics().getSampleSize())));
+        moduleReportTable.setItems(FXCollections.observableArrayList());
+    }
+
+    private String formatDecimal(Double value) {
+        if (value == null) {
+            return "-";
+        }
+        return String.format("%.2f", value);
+    }
+
+    private String formatInteger(Integer value) {
+        return value == null ? "-" : String.valueOf(value);
     }
 
     private void setupPagination() {
@@ -185,20 +252,74 @@ public class consultResultsDeanController {
 
     @FXML
     void filter(MouseEvent event) {
+        currentFilter = buildFilterFromSelections();
+        updatePagination();
+        pagination.setCurrentPageIndex(0);
+        createPage(0);
+    }
+
+    @FXML
+    void generateReport(ActionEvent event) {
+        InternResultReport report = catalogService.generateInternReport(currentFilter);
+        if (report == null) {
+            return;
+        }
+        populateReport(report);
+        containerReport.setVisible(true);
+    }
+
+    @FXML
+    void hideReport(ActionEvent event) {
+        containerReport.setVisible(false);
+    }
+
+    private InternResultFilter buildFilterFromSelections() {
         List<String> periods = collectSelections(multiPeriodCombo);
         List<String> areas = collectSelections(multiAreaCombo);
         List<String> nbc = collectSelections(multiNBCCombo);
         List<String> semesters = collectSelections(multiSemesterCombo);
 
-        currentFilter = new InternResultFilter(
+        return new InternResultFilter(
                 parsePeriods(periods),
                 areas,
                 nbc,
                 parseSemesters(semesters)
         );
-        updatePagination();
-        pagination.setCurrentPageIndex(0);
-        createPage(0);
+    }
+
+    private void populateReport(InternResultReport report) {
+        reportContextLabel.setText(buildContextText(report.getContext()));
+        reportPopulationLabel.setText(String.valueOf(report.getContext().getEvaluatedCount()));
+        reportAverageLabel.setText(formatDecimal(report.getGlobalStatistics().getAverage()));
+        reportTrendLabel.setText(String.format("%.2f%%", report.getTrendVariation()));
+        reportBestModuleLabel.setText(report.getBestModule().map(ModulePerformance::getModuleName).orElse("N/A"));
+        reportCriticalModuleLabel.setText(report.getCriticalModule().map(ModulePerformance::getModuleName).orElse("N/A"));
+        ObservableList<ModulePerformance> moduleData = FXCollections.observableArrayList(report.getModulePerformances());
+        moduleReportTable.setItems(moduleData);
+        containerReport.setVisible(true);
+    }
+
+    private String buildContextText(dto.ReportContext context) {
+        List<String> parts = new ArrayList<>();
+        if (!context.getPeriods().isEmpty()) {
+            parts.add("Periodos: " + joinList(context.getPeriods()));
+        }
+        if (!context.getSemesters().isEmpty()) {
+            parts.add("Semestres: " + joinList(context.getSemesters()));
+        }
+        if (!context.getAreas().isEmpty()) {
+            parts.add("Áreas: " + joinList(context.getAreas()));
+        }
+        if (!context.getNbc().isEmpty()) {
+            parts.add("NBC: " + joinList(context.getNbc()));
+        }
+        return parts.isEmpty() ? "Sin filtros" : String.join(" | ", parts);
+    }
+
+    private String joinList(List<?> values) {
+        return values.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
     }
 
     private List<Integer> parsePeriods(List<String> selections) {
