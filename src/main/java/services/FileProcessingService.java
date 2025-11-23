@@ -932,7 +932,7 @@ public class FileProcessingService {
         prefixToName.put("mod_comuni_escrita", "COMUNICACION ESCRITA");
         prefixToName.put("mod_ingles", "INGLES");
         prefixToName.put("mod_lectura_critica", "LECTURA CRITICA");
-        prefixToName.put("mod_razona_cuantitat", "RAZONA CANTITATIVO");
+        prefixToName.put("mod_razona_cuantitat", "RAZONA CUANTITATIVO");
 
         for (Map.Entry<String, String> e : prefixToName.entrySet()) {
             String pref = e.getKey();

@@ -85,7 +85,7 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         Root<InternalResult> root = query.from(InternalResult.class);
         List<Predicate> predicates = buildPredicates(safeFilter, builder, root, query);
 
-        query.select(builder.countDistinct(root));
+        query.select(builder.countDistinct(root.get("documento")));
         if (!predicates.isEmpty()) {
             query.where(predicates.toArray(new Predicate[0]));
         }

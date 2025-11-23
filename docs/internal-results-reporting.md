@@ -60,3 +60,20 @@ Este documento resume los cambios recientes relacionados con la carga de resulta
 3. Integrar este reporte como insumo para el informe IA (serializar `InternResultReport` y enviarlo al servicio de generación automatizada).
 
 Con estas notas cualquier desarrollador puede entender qué cambios se hicieron, cómo se configuran los filtros y cuál es la base para extender el reporte final.
+
+
+## Columna `semestre` en `resultado_interno`
+
+La entidad `model.InternalResult` expone el atributo `semestre`, mapeado con `@Column(name = "semestre")`. Para evitar desajustes entre el modelo y la base de datos:
+
+1. **Migración**  
+   Ejecuta `ALTER TABLE resultado_interno ADD COLUMN semestre INTEGER;` (o el script equivalente en tu herramienta de migraciones) y registra el cambio en el control de versiones de la BD.
+
+2. **Fuentes de datos**  
+   Actualiza cualquier proceso ETL/CSV para poblar el campo `semestre` cuando se disponga del dato. Si no existe en la fuente, documenta el valor por defecto (por ejemplo `NULL`) dentro del flujo de carga.
+
+3. **Auditoría**  
+   Incluye en los reportes internos una nota aclarando desde qué versión se consolidó el campo y cómo impacta los cálculos de poblaciones evaluadas.
+
+4. **Verificación**  
+   Añade una verificación automatizada (prueba o checklist) que confirme la existencia de la columna antes de desplegar nuevas versiones.v

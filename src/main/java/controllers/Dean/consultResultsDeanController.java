@@ -200,7 +200,8 @@ public class consultResultsDeanController {
     }
 
     private Node createPage(int pageIndex) {
-        Page<InternResultInfo> resultPage = fetchPage(pageIndex);
+        Page<InternResultInfo> resultPage = fetchValidPage(pageIndex);
+        adjustPageCount(resultPage);
         ObservableList<InternResultInfo> data = FXCollections.observableArrayList(resultPage.getContent());
 
         internResultTable.setItems(data);
@@ -215,6 +216,32 @@ public class consultResultsDeanController {
 
     private Page<InternResultInfo> fetchPage(int pageIndex) {
         return catalogService.findInternResults(pageIndex, PAGE_SIZE, currentFilter);
+    }
+
+    private Page<InternResultInfo> fetchValidPage(int pageIndex) {
+        Page<InternResultInfo> page = fetchPage(pageIndex);
+        if (needsPageClamp(page, pageIndex)) {
+            int lastIndex = Math.max(0, page.getTotalPages() - 1);
+            if (lastIndex != pageIndex) {
+                pagination.setCurrentPageIndex(lastIndex);
+                page = fetchPage(lastIndex);
+            }
+        }
+        return page;
+    }
+
+    private boolean needsPageClamp(Page<InternResultInfo> page, int requestedIndex) {
+        return page.getContent().isEmpty()
+                && page.getTotalElements() > 0
+                && page.getTotalPages() > 0
+                && (requestedIndex >= page.getTotalPages());
+    }
+
+    private void adjustPageCount(Page<InternResultInfo> page) {
+        int totalPages = page.getTotalPages() == 0 ? 1 : page.getTotalPages();
+        if (pagination.getPageCount() != totalPages) {
+            pagination.setPageCount(totalPages);
+        }
     }
 
     private void setupPeriods() {
