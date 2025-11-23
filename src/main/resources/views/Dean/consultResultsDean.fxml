@@ -227,120 +227,124 @@
                   </HBox>
                   <HBox prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                      <children>
-                        <VBox styleClass="boxLineChartPromedy" stylesheets="@../../styles/dashboardDean.css" HBox.hgrow="ALWAYS">
-                           <HBox.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
-                           </HBox.margin>
+                        <StackPane prefWidth="1100.0" HBox.hgrow="ALWAYS" stylesheets="@../../styles/dashboardDean.css">
                            <children>
-                              <VBox alignment="CENTER" prefHeight="80.0" prefWidth="1017.0">
+                              <VBox styleClass="boxLineChartPromedy" HBox.hgrow="ALWAYS">
+                                 <HBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
+                                 </HBox.margin>
                                  <children>
-                                    <Label styleClass="lbTitleResults" stylesheets="@../../styles/dean.css" text="CONSULTAR RESULTADOS" />
-                                    <Label prefHeight="20.0" prefWidth="368.0" styleClass="lbSubTitleResults" stylesheets="@../../styles/dean.css" text="Bienvenido a la consulta de resultados del sistema Saber Pro" />
-                                 </children>
-                              </VBox>
-                              <VBox alignment="TOP_CENTER" prefHeight="59.0" prefWidth="1017.0">
-                                 <children>
-                                    <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="1017.0" spacing="10.0">
+                                    <VBox alignment="CENTER" prefHeight="80.0" prefWidth="1017.0">
                                        <children>
-                                          <HBox fx:id="boxPrueba" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="226.0" stylesheets="@../../styles/multiselect.css" />
-                                          <HBox fx:id="boxSemestre" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="150.0" stylesheets="@../../styles/multiselect.css" />
-                                          <HBox fx:id="boxArea" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="225.0" stylesheets="@../../styles/multiselect.css" />
-                                          <HBox fx:id="boxNBC" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="254.0" stylesheets="@../../styles/multiselect.css" />
-                                          <Button mnemonicParsing="false" onMouseClicked="#filter" styleClass="bttFiltrar" stylesheets="@../../styles/dean.css" text="Filtrar">
-                                             <HBox.margin>
-                                                <Insets left="25.0" />
-                                             </HBox.margin>
-                                          </Button>
+                                          <Label styleClass="lbTitleResults" stylesheets="@../../styles/dean.css" text="CONSULTAR RESULTADOS" />
+                                          <Label prefHeight="20.0" prefWidth="368.0" styleClass="lbSubTitleResults" stylesheets="@../../styles/dean.css" text="Bienvenido a la consulta de resultados del sistema Saber Pro" />
+                                       </children>
+                                    </VBox>
+                                    <VBox alignment="TOP_CENTER" prefHeight="59.0" prefWidth="1017.0">
+                                       <children>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="1017.0" spacing="10.0">
+                                             <children>
+                                                <HBox fx:id="boxPrueba" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="226.0" stylesheets="@../../styles/multiselect.css" />
+                                                <HBox fx:id="boxSemestre" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="150.0" stylesheets="@../../styles/multiselect.css" />
+                                                <HBox fx:id="boxArea" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="225.0" stylesheets="@../../styles/multiselect.css" />
+                                                <HBox fx:id="boxNBC" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="254.0" stylesheets="@../../styles/multiselect.css" />
+                                                <Button mnemonicParsing="false" onMouseClicked="#filter" styleClass="bttFiltrar" stylesheets="@../../styles/dean.css" text="Filtrar">
+                                                   <HBox.margin>
+                                                      <Insets left="25.0" />
+                                                   </HBox.margin>
+                                                </Button>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                    <ScrollPane hbarPolicy="NEVER" prefHeight="498.0" prefWidth="1017.0" vbarPolicy="ALWAYS">
+                                       <content>
+                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="578.0" prefWidth="1004.0">
+                                             <children>
+                                                <Pagination fx:id="pagination" maxPageIndicatorCount="6" pageCount="20" prefHeight="571.0" prefWidth="1011.0" />
+                                                <TableView fx:id="internResultTable" prefHeight="518.0" prefWidth="1007.0" stylesheets="@../../styles/editAndDeleteUsers.css">
+                                                   <columns>
+                                                      <TableColumn fx:id="periodColumn" prefWidth="119.0" text="Periodo" />
+                                                      <TableColumn fx:id="semesterColumn" prefWidth="95.0" text="Semestre" />
+                                                      <TableColumn fx:id="nombreColumn" prefWidth="439.0" text="Nombre" />
+                                                      <TableColumn fx:id="numberRegisterColumn" minWidth="0.0" prefWidth="139.0" text="Numero registro" />
+                                                      <TableColumn fx:id="programColumn" prefWidth="198.0" text="Programa" />
+                                                      <TableColumn fx:id="puntajeColumn" prefWidth="92.0" text="Ptje. Global" />
+                                                   </columns>
+                                                </TableView>
+                                             </children>
+                                          </AnchorPane>
+                                       </content>
+                                    </ScrollPane>
+                                    <HBox alignment="CENTER_RIGHT" prefWidth="1017.0" spacing="10.0">
+                                       <padding>
+                                          <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+                                       </padding>
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#generateReport" styleClass="bttFiltrar" stylesheets="@../../styles/dean.css" text="Generar reporte" />
                                        </children>
                                     </HBox>
                                  </children>
                               </VBox>
-                              <ScrollPane hbarPolicy="NEVER" prefHeight="498.0" prefWidth="1017.0" vbarPolicy="ALWAYS">
-                                <content>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="578.0" prefWidth="1004.0">
-                                       <children>
-                                          <Pagination fx:id="pagination" maxPageIndicatorCount="6" pageCount="20" prefHeight="571.0" prefWidth="1011.0" />
-                                          <TableView fx:id="internResultTable" prefHeight="518.0" prefWidth="1007.0" stylesheets="@../../styles/editAndDeleteUsers.css">
-                                            <columns>
-                                              <TableColumn fx:id="periodColumn" prefWidth="119.0" text="Periodo" />
-                                              <TableColumn fx:id="semesterColumn" prefWidth="95.0" text="Semestre" />
-                                                <TableColumn fx:id="nombreColumn" prefWidth="439.0" text="Nombre" />
-                                              <TableColumn fx:id="numberRegisterColumn" minWidth="0.0" prefWidth="139.0" text="Numero registro" />
-                                                <TableColumn fx:id="programColumn" prefWidth="198.0" text="Programa" />
-                                                <TableColumn fx:id="puntajeColumn" prefWidth="92.0" text="Ptje. Global" />
-                                            </columns>
-                                          </TableView>
-                                       </children>
-                                    </AnchorPane>
-                                </content>
-                              </ScrollPane>
-                              <HBox alignment="CENTER_RIGHT" prefWidth="1017.0" spacing="10.0">
-                                 <padding>
-                                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
-                                 </padding>
+                              <VBox fx:id="containerReport" alignment="TOP_CENTER" prefWidth="1060.0" spacing="15.0" style="-fx-background-color: rgba(255,255,255,0.95); -fx-border-color: #5a6a85; -fx-border-width: 2px; -fx-padding: 20px;" visible="false" StackPane.alignment="CENTER">
                                  <children>
-                                    <Button mnemonicParsing="false" onAction="#generateReport" styleClass="bttFiltrar" stylesheets="@../../styles/dean.css" text="Generar reporte" />
+                                    <HBox alignment="CENTER_RIGHT" spacing="10.0" prefWidth="1060.0">
+                                       <children>
+                                          <Label text="Reporte estadístico" styleClass="lbTitleResults" />
+                                          <Button fx:id="reportCloseButton" styleClass="bttFiltrar" text="Cerrar" onAction="#hideReport" />
+                                       </children>
+                                    </HBox>
+                                    <HBox spacing="20.0" prefWidth="1060.0" alignment="CENTER_LEFT">
+                                       <children>
+                                          <VBox>
+                                             <Label text="Filtros aplicados" styleClass="lbSubtitle" />
+                                             <Label fx:id="reportContextLabel" text="" wrapText="true" prefWidth="230.0" />
+                                          </VBox>
+                                          <VBox>
+                                             <Label text="Población evaluada" styleClass="lbSubtitle" />
+                                             <Label fx:id="reportPopulationLabel" text="" />
+                                          </VBox>
+                                          <VBox>
+                                             <Label text="Promedio global" styleClass="lbSubtitle" />
+                                             <Label fx:id="reportAverageLabel" text="" />
+                                          </VBox>
+                                          <VBox>
+                                             <Label text="Variación" styleClass="lbSubtitle" />
+                                             <Label fx:id="reportTrendLabel" text="" />
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                    <HBox spacing="20.0" prefWidth="1060.0">
+                                       <children>
+                                          <VBox>
+                                             <Label text="Mejor competencia" styleClass="lbSubtitle" />
+                                             <Label fx:id="reportBestModuleLabel" text="" wrapText="true" prefWidth="220.0" />
+                                          </VBox>
+                                          <VBox>
+                                             <Label text="Competencia crítica" styleClass="lbSubtitle" />
+                                             <Label fx:id="reportCriticalModuleLabel" text="" wrapText="true" prefWidth="220.0" />
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                    <TableView fx:id="moduleReportTable" prefHeight="240.0" prefWidth="1060.0">
+                                       <columns>
+                                          <TableColumn fx:id="moduleNameColumn" prefWidth="280.0" text="Competencia" />
+                                          <TableColumn fx:id="moduleAverageColumn" prefWidth="120.0" text="Promedio" />
+                                          <TableColumn fx:id="moduleStdDevColumn" prefWidth="120.0" text="Desv. estándar" />
+                                          <TableColumn fx:id="moduleMinColumn" prefWidth="120.0" text="Mínimo" />
+                                          <TableColumn fx:id="moduleMaxColumn" prefWidth="120.0" text="Máximo" />
+                                          <TableColumn fx:id="moduleSampleColumn" prefWidth="120.0" text="Estudiantes" />
+                                       </columns>
+                                    </TableView>
                                  </children>
-                              </HBox>
+                              </VBox>
                            </children>
-                        </VBox>
+                        </StackPane>
                      </children>
                   </HBox>
                </children>
             </VBox>
          </children>
       </HBox>
-      <VBox fx:id="containerReport" alignment="TOP_CENTER" prefWidth="1100.0" spacing="15.0" style="-fx-background-color: rgba(255,255,255,0.95); -fx-border-color: #5a6a85; -fx-border-width: 2px; -fx-padding: 20px;" StackPane.alignment="CENTER" visible="false">
-         <children>
-            <HBox alignment="CENTER_RIGHT" spacing="10.0" prefWidth="1060.0">
-               <children>
-                  <Label text="Reporte estadístico" styleClass="lbTitleResults" />
-                  <Button fx:id="reportCloseButton" styleClass="bttFiltrar" text="Cerrar" onAction="#hideReport" />
-               </children>
-            </HBox>
-            <HBox spacing="20.0" prefWidth="1060.0" alignment="CENTER_LEFT">
-               <children>
-                  <VBox>
-                     <Label text="Filtros aplicados" styleClass="lbSubtitle" />
-                     <Label fx:id="reportContextLabel" text="" wrapText="true" prefWidth="230.0" />
-                  </VBox>
-                  <VBox>
-                     <Label text="Población evaluada" styleClass="lbSubtitle" />
-                     <Label fx:id="reportPopulationLabel" text="" />
-                  </VBox>
-                  <VBox>
-                     <Label text="Promedio global" styleClass="lbSubtitle" />
-                     <Label fx:id="reportAverageLabel" text="" />
-                  </VBox>
-                  <VBox>
-                     <Label text="Variación" styleClass="lbSubtitle" />
-                     <Label fx:id="reportTrendLabel" text="" />
-                  </VBox>
-               </children>
-            </HBox>
-            <HBox spacing="20.0" prefWidth="1060.0">
-               <children>
-                  <VBox>
-                     <Label text="Mejor competencia" styleClass="lbSubtitle" />
-                     <Label fx:id="reportBestModuleLabel" text="" wrapText="true" prefWidth="220.0" />
-                  </VBox>
-                  <VBox>
-                     <Label text="Competencia crítica" styleClass="lbSubtitle" />
-                     <Label fx:id="reportCriticalModuleLabel" text="" wrapText="true" prefWidth="220.0" />
-                  </VBox>
-               </children>
-            </HBox>
-            <TableView fx:id="moduleReportTable" prefHeight="240.0" prefWidth="1060.0">
-               <columns>
-                  <TableColumn fx:id="moduleNameColumn" prefWidth="280.0" text="Competencia" />
-                  <TableColumn fx:id="moduleAverageColumn" prefWidth="120.0" text="Promedio" />
-                  <TableColumn fx:id="moduleStdDevColumn" prefWidth="120.0" text="Desv. estándar" />
-                  <TableColumn fx:id="moduleMinColumn" prefWidth="120.0" text="Mínimo" />
-                  <TableColumn fx:id="moduleMaxColumn" prefWidth="120.0" text="Máximo" />
-                  <TableColumn fx:id="moduleSampleColumn" prefWidth="120.0" text="Estudiantes" />
-               </columns>
-            </TableView>
-         </children>
-      </VBox>
    </children>
 </StackPane>
