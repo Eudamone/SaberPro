@@ -29,6 +29,10 @@ public class InternalModuleResult {
     @JoinColumn(name = "modulo_id",insertable = false, updatable = false)
     private Modulo modulo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interno_id", referencedColumnName = "documento", insertable = false, updatable = false)
+    private InternalResult internalResult;
+
     public InternalModuleResult() {}
 
     // getters y setters
@@ -44,4 +48,11 @@ public class InternalModuleResult {
     public void setPercentilNacional(Integer percentilNacional) { this.percentilNacional = percentilNacional; }
     public Integer getPercentilGrupoReferencia() { return percentilGrupoReferencia; }
     public void setPercentilGrupoReferencia(Integer percentilGrupoReferencia) { this.percentilGrupoReferencia = percentilGrupoReferencia; }
+    public InternalResult getInternalResult() {
+        return internalResult;
+    }
+
+    public void setInternalResult(InternalResult internalResult) {
+        this.internalResult = internalResult;
+    }
 }

@@ -60,6 +60,15 @@ public class InternalResult {
     @Column(name = "created_at", nullable = true)
     private OffsetDateTime createdAt;
 
+    @Column(name = "presento_prueba")
+    private Boolean presentoPrueba;
+
+    @Column(name = "participantes_grupo")
+    private Integer participantesGrupo;
+
+    @Column(name = "participantes_institucion")
+    private Integer participantesInstitucion;
+
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "interno_id", referencedColumnName = "documento")
     private List<InternalModuleResult> internalModuleResults = new ArrayList<>();
@@ -100,6 +109,30 @@ public class InternalResult {
     public void setPercentilGrupoReferencia(Integer percentilGrupoReferencia) { this.percentilGrupoReferencia = percentilGrupoReferencia; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Boolean getPresentoPrueba() {
+        return presentoPrueba;
+    }
+
+    public void setPresentoPrueba(Boolean presentoPrueba) {
+        this.presentoPrueba = presentoPrueba;
+    }
+
+    public Integer getParticipantesGrupo() {
+        return participantesGrupo;
+    }
+
+    public void setParticipantesGrupo(Integer participantesGrupo) {
+        this.participantesGrupo = participantesGrupo;
+    }
+
+    public Integer getParticipantesInstitucion() {
+        return participantesInstitucion;
+    }
+
+    public void setParticipantesInstitucion(Integer participantesInstitucion) {
+        this.participantesInstitucion = participantesInstitucion;
+    }
 
     public List<InternalModuleResult> getInternalModuleResults() { return internalModuleResults; }
     public void setInternalModuleResults(List<InternalModuleResult> internalModuleResults) { this.internalModuleResults = internalModuleResults; }

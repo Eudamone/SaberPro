@@ -7,6 +7,7 @@ import dto.ModulePerformance;
 import dto.PeriodTrend;
 import dto.ReportContext;
 import dto.ScoreStatistics;
+import dto.ReportContextStats;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Tuple;
@@ -20,6 +21,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import model.ExternalGeneralResult;
+import model.ExternalModuleResult;
 import model.InternalModuleResult;
 import model.InternalResult;
 import model.Modulo;
@@ -28,9 +30,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public class InternalResultRepositoryImpl implements InternalResultRepositoryCustom {
@@ -96,20 +102,37 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
     @Override
     public InternResultReport generateReport(InternResultFilter filter) {
         InternResultFilter safeFilter = filter == null ? new InternResultFilter() : filter;
-        long evaluatedCount = countResults(safeFilter);
-        ReportContext context = new ReportContext(
-                safeFilter.getPeriods(),
-                safeFilter.getSemesters(),
-                safeFilter.getAreas(),
-                safeFilter.getNbc(),
-                evaluatedCount
-        );
-        ScoreStatistics globalStatistics = buildGlobalStatistics(safeFilter);
-        List<ModulePerformance> modulePerformances = buildModulePerformances(safeFilter);
+        ReportContextStats stats = buildContextStats(safeFilter);
+        ScoreStatistics internalGlobal = buildGlobalStatistics(safeFilter);
+        ScoreStatistics externalGlobal = buildExternalGlobalStatistics(safeFilter);
+        List<ModulePerformance> internalModules = buildModulePerformances(safeFilter);
+        List<ModulePerformance> externalModules = buildExternalModulePerformances(safeFilter);
         List<PeriodTrend> periodTrends = buildPeriodTrends(safeFilter);
-        double trendVariation = computeTrendVariation(periodTrends);
+        double variation = computeTrendVariation(periodTrends);
 
-        return new InternResultReport(context, globalStatistics, modulePerformances, periodTrends, trendVariation);
+        return new InternResultReport(stats, internalGlobal, externalGlobal, internalModules, externalModules, periodTrends, variation);
+    }
+
+    private ReportContextStats buildContextStats(InternResultFilter filter) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> query = builder.createTupleQuery();
+        Root<InternalResult> root = query.from(InternalResult.class);
+        List<Predicate> predicates = buildPredicates(filter, builder, root, query);
+
+        query.multiselect(
+                builder.countDistinct(root.get("documento")),
+                builder.sum(builder.<Integer>selectCase().when(builder.isTrue(root.get("presentoPrueba")), 1).otherwise(0)),
+                builder.avg(root.get("puntajeGlobal"))
+        );
+        if (!predicates.isEmpty()) {
+            query.where(predicates.toArray(new Predicate[0]));
+        }
+        Tuple tuple = entityManager.createQuery(query).getSingleResult();
+        Number evaluatedNumber = tuple.get(0, Number.class);
+        Number attendeesNumber = tuple.get(1, Number.class);
+        long evaluated = evaluatedNumber == null ? 0L : evaluatedNumber.longValue();
+        long attendees = attendeesNumber == null ? evaluated : attendeesNumber.longValue();
+        return new ReportContextStats(filter.getPeriods(), filter.getSemesters(), filter.getAreas(), filter.getNbc(), evaluated, attendees);
     }
 
     private ScoreStatistics buildGlobalStatistics(InternResultFilter filter) {
@@ -122,7 +145,7 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         query.multiselect(
                 builder.avg(globalScore),
                 builder.function("stddev_pop", Double.class, globalScore),
-                builder.min(globalScore),
+                builder.min(builder.coalesce(globalScore, 0)),
                 builder.max(globalScore),
                 builder.count(globalScore)
         );
@@ -140,6 +163,33 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         );
     }
 
+    private ScoreStatistics buildExternalGlobalStatistics(InternResultFilter filter) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> query = builder.createTupleQuery();
+        Root<ExternalGeneralResult> root = query.from(ExternalGeneralResult.class);
+        List<Predicate> predicates = buildExternalPredicates(filter, builder, root);
+
+        Expression<BigDecimal> scoreExpression = root.get("puntGlobal");
+        query.multiselect(
+                builder.avg(scoreExpression),
+                builder.function("stddev_pop", Double.class, scoreExpression),
+                builder.min(scoreExpression),
+                builder.max(scoreExpression),
+                builder.count(scoreExpression)
+        );
+        if (!predicates.isEmpty()) {
+            query.where(predicates.toArray(new Predicate[0]));
+        }
+        Tuple tuple = entityManager.createQuery(query).getSingleResult();
+        return ScoreStatistics.fromAggregate(
+                tuple.get(0, Double.class),
+                tuple.get(1, Double.class),
+                tuple.get(2, BigDecimal.class),
+                tuple.get(3, BigDecimal.class),
+                tuple.get(4, Long.class)
+        );
+    }
+
     private List<ModulePerformance> buildModulePerformances(InternResultFilter filter) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> query = builder.createTupleQuery();
@@ -148,16 +198,20 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         Join<InternalModuleResult, Modulo> moduloJoin = moduleJoin.join("modulo", JoinType.LEFT);
 
         List<Predicate> predicates = buildPredicates(filter, builder, root, query, moduleJoin);
+        Predicate scorePresent = builder.greaterThan(moduleJoin.get("puntaje"), 0);
+        predicates.add(scorePresent);
 
+        Expression<Integer> sanitizedScore = builder.<Integer>selectCase()
+                .when(scorePresent, moduleJoin.get("puntaje"))
+                .otherwise((Integer) null);
         Expression<String> moduleName = builder.upper(builder.trim(moduloJoin.get("nombre")));
-        Expression<Integer> moduleScore = moduleJoin.get("puntaje");
         query.multiselect(
                 moduleName,
-                builder.avg(moduleScore),
-                builder.function("stddev_pop", Double.class, moduleScore),
-                builder.min(moduleScore),
-                builder.max(moduleScore),
-                builder.count(moduleScore)
+                builder.avg(sanitizedScore),
+                builder.function("stddev_pop", Double.class, sanitizedScore),
+                builder.min(sanitizedScore),
+                builder.max(sanitizedScore),
+                builder.countDistinct(moduleJoin.get("internoId"))
         );
 
         if (!predicates.isEmpty()) {
@@ -169,25 +223,30 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         List<Tuple> tuples = entityManager.createQuery(query).getResultList();
         List<ModulePerformance> results = new ArrayList<>();
         for (Tuple tuple : tuples) {
-            String normalizedName = tuple.get(0, String.class);
-            if (normalizedName == null) {
-                continue;
-            }
-            Double avg = tuple.get(1, Double.class);
-            Double stddev = tuple.get(2, Double.class);
-            Integer min = tuple.get(3, Integer.class);
-            Integer max = tuple.get(4, Integer.class);
-            Long sample = tuple.get(5, Long.class);
-            results.add(new ModulePerformance(normalizedName, ScoreStatistics.fromAggregate(avg, stddev, min, max, sample)));
+            String name = tuple.get(0, String.class);
+            if (name == null) continue;
+            results.add(new ModulePerformance(name, ScoreStatistics.fromAggregate(
+                    tuple.get(1, Double.class),
+                    tuple.get(2, Double.class),
+                    tuple.get(3, Integer.class),
+                    tuple.get(4, Integer.class),
+                    tuple.get(5, Long.class)
+            )));
         }
         return results;
+    }
+
+    private List<ModulePerformance> buildExternalModulePerformances(InternResultFilter filter) {
+        List<ModulePerformance> baseline = new ArrayList<>();
+        Map<String, ScoreStatistics> stats = buildExternalModuleStatistics(filter);
+        stats.forEach((name, stat) -> baseline.add(new ModulePerformance(name, stat)));
+        return baseline;
     }
 
     private List<PeriodTrend> buildPeriodTrends(InternResultFilter filter) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> query = builder.createTupleQuery();
         Root<InternalResult> root = query.from(InternalResult.class);
-
         List<Predicate> predicates = buildPredicates(filter, builder, root, query);
 
         Expression<Integer> periodExpression = root.get("periodo");
@@ -215,7 +274,7 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
     }
 
     private double computeTrendVariation(List<PeriodTrend> trends) {
-        if (trends.size() < 2) {
+        if (trends == null || trends.size() < 2) {
             return 0.0;
         }
         PeriodTrend earliest = trends.get(0);
@@ -266,16 +325,53 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         if (filter.hasAreas()) {
             List<String> normalizedAreas = normalizeStrings(filter.getAreas());
             if (!normalizedAreas.isEmpty()) {
-                Join<InternalModuleResult, Modulo> moduloJoin;
                 if (existingModuleJoin != null) {
-                    moduloJoin = existingModuleJoin.join("modulo", JoinType.LEFT);
+                    Join<InternalModuleResult, Modulo> moduloJoin = existingModuleJoin.join("modulo", JoinType.LEFT);
+                    Expression<String> moduloName = builder.upper(builder.trim(moduloJoin.get("nombre")));
+                    predicates.add(moduloName.in(normalizedAreas));
                 } else {
-                    moduloJoin = root.join("internalModuleResults", JoinType.LEFT)
-                            .join("modulo", JoinType.LEFT);
+                    Subquery<Integer> moduleSubquery = query.subquery(Integer.class);
+                    Root<InternalModuleResult> moduleRoot = moduleSubquery.from(InternalModuleResult.class);
+                    Join<InternalModuleResult, Modulo> moduloJoin = moduleRoot.join("modulo", JoinType.LEFT);
+                    Expression<String> moduloName = builder.upper(builder.trim(moduloJoin.get("nombre")));
+                    moduleSubquery.select(builder.literal(1));
+                    moduleSubquery.where(
+                            builder.and(
+                                    builder.equal(moduleRoot.get("internoId"), root.get("documento")),
+                                    moduloName.in(normalizedAreas)
+                            )
+                    );
+                    predicates.add(builder.exists(moduleSubquery));
                 }
-                Expression<String> moduloName = builder.upper(builder.trim(moduloJoin.get("nombre")));
-                predicates.add(moduloName.in(normalizedAreas));
             }
+        }
+        return predicates;
+    }
+
+    private List<Predicate> buildExternalPredicates(InternResultFilter filter, CriteriaBuilder builder, Root<ExternalGeneralResult> root) {
+        List<Predicate> predicates = new ArrayList<>();
+        if (filter.hasPeriods()) {
+            predicates.add(root.get("periodo").in(filter.getPeriods()));
+        }
+        if (filter.hasNbc()) {
+            predicates.add(builder.upper(builder.trim(root.get("estuNucleoPregrado"))).in(normalizeStrings(filter.getNbc())));
+        }
+        if (filter.hasAreas()) {
+            predicates.add(builder.upper(builder.trim(root.get("estuPrgmAcademico"))).in(normalizeStrings(filter.getAreas())));
+        }
+        return predicates;
+    }
+
+    private List<Predicate> buildExternalPredicates(InternResultFilter filter, CriteriaBuilder builder, Join<ExternalModuleResult, ExternalGeneralResult> root) {
+        List<Predicate> predicates = new ArrayList<>();
+        if (filter.hasPeriods()) {
+            predicates.add(root.get("periodo").in(filter.getPeriods()));
+        }
+        if (filter.hasNbc()) {
+            predicates.add(builder.upper(builder.trim(root.get("estuNucleoPregrado"))).in(normalizeStrings(filter.getNbc())));
+        }
+        if (filter.hasAreas()) {
+            predicates.add(builder.upper(builder.trim(root.get("estuPrgmAcademico"))).in(normalizeStrings(filter.getAreas())));
         }
         return predicates;
     }
@@ -290,5 +386,45 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
             }
         }
         return normalized;
+    }
+
+    private Map<String, ScoreStatistics> buildExternalModuleStatistics(InternResultFilter filter) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> query = builder.createTupleQuery();
+        Root<ExternalModuleResult> moduleRoot = query.from(ExternalModuleResult.class);
+        Join<ExternalModuleResult, ExternalGeneralResult> externalJoin = moduleRoot.join("externalGeneralResult", JoinType.LEFT);
+        Join<ExternalModuleResult, Modulo> moduloJoin = moduleRoot.join("modulo", JoinType.LEFT);
+
+        List<Predicate> predicates = buildExternalPredicates(filter, builder, externalJoin);
+        Predicate scorePresent = builder.greaterThan(moduleRoot.get("resultPuntaje"), BigDecimal.ZERO);
+        predicates.add(scorePresent);
+
+        Expression<BigDecimal> sanitizedScore = builder.<BigDecimal>selectCase()
+                .when(scorePresent, moduleRoot.get("resultPuntaje"))
+                .otherwise((BigDecimal) null);
+        query.multiselect(
+                moduloJoin.get("nombre"),
+                builder.avg(sanitizedScore),
+                builder.function("stddev_pop", Double.class, sanitizedScore),
+                builder.min(sanitizedScore),
+                builder.max(sanitizedScore),
+                builder.countDistinct(externalJoin.get("estConsecutivo"))
+        );
+        if (!predicates.isEmpty()) {
+            query.where(predicates.toArray(new Predicate[0]));
+        }
+        query.groupBy(moduloJoin.get("nombre"));
+
+        List<Tuple> tuples = entityManager.createQuery(query).getResultList();
+        return tuples.stream().collect(Collectors.toMap(
+                tuple -> tuple.get(0, String.class),
+                tuple -> ScoreStatistics.fromAggregate(
+                        tuple.get(1, Double.class),
+                        tuple.get(2, Double.class),
+                        tuple.get(3, BigDecimal.class),
+                        tuple.get(4, BigDecimal.class),
+                        tuple.get(5, Long.class)
+                )
+        ));
     }
 }

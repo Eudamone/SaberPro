@@ -5,7 +5,7 @@ import dto.InternResultFilter;
 import dto.InternResultInfo;
 import dto.InternResultReport;
 import dto.ModulePerformance;
-import dto.ScoreStatistics;
+import dto.ReportContextStats;
 import javafx.animation.FadeTransition;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -96,25 +96,52 @@ public class consultResultsDeanController {
     private Label reportCriticalModuleLabel;
 
     @FXML
-    private TableView<ModulePerformance> moduleReportTable;
+    private Label reportExternalAverageLabel;
 
     @FXML
-    private TableColumn<ModulePerformance, String> moduleNameColumn;
+    private Label reportTestedLabel;
 
     @FXML
-    private TableColumn<ModulePerformance, String> moduleAverageColumn;
+    private TableView<ModulePerformance> internalModuleTable;
 
     @FXML
-    private TableColumn<ModulePerformance, String> moduleStdDevColumn;
+    private TableColumn<ModulePerformance, String> internalModuleNameColumn;
 
     @FXML
-    private TableColumn<ModulePerformance, String> moduleMinColumn;
+    private TableColumn<ModulePerformance, String> internalModuleAverageColumn;
 
     @FXML
-    private TableColumn<ModulePerformance, String> moduleMaxColumn;
+    private TableColumn<ModulePerformance, String> internalModuleStdDevColumn;
 
     @FXML
-    private TableColumn<ModulePerformance, String> moduleSampleColumn;
+    private TableColumn<ModulePerformance, String> internalModuleMinColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleMaxColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleSampleColumn;
+
+    @FXML
+    private TableView<ModulePerformance> externalModuleTable;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleNameColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleAverageColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleStdDevColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleMinColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleMaxColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleSampleColumn;
 
     private MultiSelectComboBox multiPeriodCombo;
     private MultiSelectComboBox multiAreaCombo;
@@ -153,7 +180,7 @@ public class consultResultsDeanController {
         setupSemesters();
         setupAreas();
         setupNBC();
-        setupReportTable();
+        setupReportTables();
     }
 
     private void setupColumns() {
@@ -165,14 +192,37 @@ public class consultResultsDeanController {
         puntajeColumn.setCellValueFactory(new PropertyValueFactory<>("ptjeGlobal"));
     }
 
-    private void setupReportTable() {
-        moduleNameColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getModuleName()));
-        moduleAverageColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getAverage())));
-        moduleStdDevColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getStandardDeviation())));
-        moduleMinColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMin())));
-        moduleMaxColumn.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMax())));
-        moduleSampleColumn.setCellValueFactory(cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getStatistics().getSampleSize())));
-        moduleReportTable.setItems(FXCollections.observableArrayList());
+    private void setupModuleTable(TableView<ModulePerformance> table,
+                                  TableColumn<ModulePerformance, String> name,
+                                  TableColumn<ModulePerformance, String> avg,
+                                  TableColumn<ModulePerformance, String> std,
+                                  TableColumn<ModulePerformance, String> min,
+                                  TableColumn<ModulePerformance, String> max,
+                                  TableColumn<ModulePerformance, String> sample) {
+        name.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getModuleName()));
+        avg.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getAverage())));
+        std.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getStandardDeviation())));
+        min.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMin())));
+        max.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMax())));
+        sample.setCellValueFactory(cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getStatistics().getSampleSize())));
+        table.setItems(FXCollections.observableArrayList());
+    }
+
+    private void setupReportTables() {
+        setupModuleTable(internalModuleTable,
+                internalModuleNameColumn,
+                internalModuleAverageColumn,
+                internalModuleStdDevColumn,
+                internalModuleMinColumn,
+                internalModuleMaxColumn,
+                internalModuleSampleColumn);
+        setupModuleTable(externalModuleTable,
+                externalModuleNameColumn,
+                externalModuleAverageColumn,
+                externalModuleStdDevColumn,
+                externalModuleMinColumn,
+                externalModuleMaxColumn,
+                externalModuleSampleColumn);
     }
 
     private String formatDecimal(Double value) {
@@ -182,8 +232,75 @@ public class consultResultsDeanController {
         return String.format("%.2f", value);
     }
 
+    private String formatDecimal(double value) {
+        return String.format("%.2f", value);
+    }
+
     private String formatInteger(Integer value) {
         return value == null ? "-" : String.valueOf(value);
+    }
+
+    private void populateReport(InternResultReport report) {
+        ReportContextStats context = report.getContext();
+        reportContextLabel.setText(buildContextText(context));
+        reportPopulationLabel.setText(String.valueOf(context.getEvaluatedCount()));
+        reportTestedLabel.setText(String.valueOf(context.getTestedCount()));
+        reportAverageLabel.setText(formatDecimal(report.getInternalGlobal().getAverage()));
+        reportExternalAverageLabel.setText(formatDecimal(report.getExternalGlobal().getAverage()));
+        reportTrendLabel.setText(String.format("%.2f%%", report.getTrendVariation()));
+        reportBestModuleLabel.setText(report.getBestModule().map(ModulePerformance::getModuleName).orElse("N/A"));
+        reportCriticalModuleLabel.setText(report.getCriticalModule().map(ModulePerformance::getModuleName).orElse("N/A"));
+
+        ObservableList<ModulePerformance> internalData = FXCollections.observableArrayList(report.getInternalModules());
+        ObservableList<ModulePerformance> externalData = FXCollections.observableArrayList(report.getExternalModules());
+        internalModuleTable.setItems(internalData);
+        externalModuleTable.setItems(externalData);
+        containerReport.setVisible(true);
+    }
+
+    private String buildContextText(ReportContextStats context) {
+        List<String> parts = new ArrayList<>();
+        if (!context.getPeriods().isEmpty()) {
+            parts.add("Periodos: " + joinList(context.getPeriods()));
+        }
+        if (!context.getSemesters().isEmpty()) {
+            parts.add("Semestres: " + joinList(context.getSemesters()));
+        }
+        if (!context.getAreas().isEmpty()) {
+            parts.add("Áreas: " + joinList(context.getAreas()));
+        }
+        if (!context.getNbc().isEmpty()) {
+            parts.add("NBC: " + joinList(context.getNbc()));
+        }
+        return parts.isEmpty() ? "Sin filtros" : String.join(" | ", parts);
+    }
+
+    private String joinList(List<?> values) {
+        return values.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+    }
+
+    private List<Integer> parsePeriods(List<String> selections) {
+        List<Integer> parsed = new ArrayList<>();
+        for (String selection : selections) {
+            try {
+                parsed.add(Integer.valueOf(selection));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return parsed;
+    }
+
+    private List<Integer> parseSemesters(List<String> selections) {
+        List<Integer> parsed = new ArrayList<>();
+        for (String selection : selections) {
+            try {
+                parsed.add(Integer.valueOf(selection));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return parsed;
     }
 
     private void setupPagination() {
@@ -314,62 +431,6 @@ public class consultResultsDeanController {
         );
     }
 
-    private void populateReport(InternResultReport report) {
-        reportContextLabel.setText(buildContextText(report.getContext()));
-        reportPopulationLabel.setText(String.valueOf(report.getContext().getEvaluatedCount()));
-        reportAverageLabel.setText(formatDecimal(report.getGlobalStatistics().getAverage()));
-        reportTrendLabel.setText(String.format("%.2f%%", report.getTrendVariation()));
-        reportBestModuleLabel.setText(report.getBestModule().map(ModulePerformance::getModuleName).orElse("N/A"));
-        reportCriticalModuleLabel.setText(report.getCriticalModule().map(ModulePerformance::getModuleName).orElse("N/A"));
-        ObservableList<ModulePerformance> moduleData = FXCollections.observableArrayList(report.getModulePerformances());
-        moduleReportTable.setItems(moduleData);
-        containerReport.setVisible(true);
-    }
-
-    private String buildContextText(dto.ReportContext context) {
-        List<String> parts = new ArrayList<>();
-        if (!context.getPeriods().isEmpty()) {
-            parts.add("Periodos: " + joinList(context.getPeriods()));
-        }
-        if (!context.getSemesters().isEmpty()) {
-            parts.add("Semestres: " + joinList(context.getSemesters()));
-        }
-        if (!context.getAreas().isEmpty()) {
-            parts.add("Áreas: " + joinList(context.getAreas()));
-        }
-        if (!context.getNbc().isEmpty()) {
-            parts.add("NBC: " + joinList(context.getNbc()));
-        }
-        return parts.isEmpty() ? "Sin filtros" : String.join(" | ", parts);
-    }
-
-    private String joinList(List<?> values) {
-        return values.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-    }
-
-    private List<Integer> parsePeriods(List<String> selections) {
-        List<Integer> parsed = new ArrayList<>();
-        for (String selection : selections) {
-            try {
-                parsed.add(Integer.valueOf(selection));
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return parsed;
-    }
-
-    private List<Integer> parseSemesters(List<String> selections) {
-        List<Integer> parsed = new ArrayList<>();
-        for (String selection : selections) {
-            try {
-                parsed.add(Integer.valueOf(selection));
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return parsed;
-    }
 
     private List<String> collectSelections(MultiSelectComboBox combo) {
         return combo == null ? new ArrayList<>() : new ArrayList<>(combo.getSelectedItems());

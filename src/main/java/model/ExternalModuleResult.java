@@ -27,6 +27,14 @@ public class ExternalModuleResult {
     @Column(name = "percentil_nbc", nullable = true)
     private Integer percentilNbc;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "externa_id", referencedColumnName = "id", insertable = false, updatable = false)
+    private ExternalGeneralResult externalGeneralResult;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "modulo_id", referencedColumnName = "id_modulo", insertable = false, updatable = false)
+    private Modulo modulo;
+
 
 
     public ExternalModuleResult() {}
@@ -48,6 +56,12 @@ public class ExternalModuleResult {
     public void setPercentilNacional(Integer percentilNacional) { this.percentilNacional = percentilNacional; }
     public Integer getPercentilNbc() { return percentilNbc; }
     public void setPercentilNbc(Integer percentilNbc) { this.percentilNbc = percentilNbc; }
+
+    public ExternalGeneralResult getExternalGeneralResult() { return externalGeneralResult; }
+    public void setExternalGeneralResult(ExternalGeneralResult externalGeneralResult) { this.externalGeneralResult = externalGeneralResult; }
+
+    public Modulo getModulo() { return modulo; }
+    public void setModulo(Modulo modulo) { this.modulo = modulo; }
 
 
 }

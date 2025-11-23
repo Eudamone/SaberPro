@@ -45,13 +45,15 @@ public class ScoreStatistics {
         return new ScoreStatistics(average, standardDeviation, min, max, count);
     }
 
-    public static ScoreStatistics fromAggregate(Double average, Double stddev, Integer min, Integer max, Long sampleSize) {
+    public static ScoreStatistics fromAggregate(Double average, Double stddev, Number min, Number max, Long sampleSize) {
         if (sampleSize == null || sampleSize == 0) {
             return empty();
         }
         double avg = average == null ? 0.0 : average;
         double sd = stddev == null ? 0.0 : stddev;
-        return new ScoreStatistics(avg, sd, min, max, sampleSize);
+        Integer minValue = min == null ? null : min.intValue();
+        Integer maxValue = max == null ? null : max.intValue();
+        return new ScoreStatistics(avg, sd, minValue, maxValue, sampleSize);
     }
 
     public double getAverage() {

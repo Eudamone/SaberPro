@@ -54,3 +54,23 @@
     -fx-pref-width: 400px;
     -fx-max-width: 400px;
 }
+
+.lbReportTitle {
+    -fx-font-family: "Montserrat ExtraBold";
+    -fx-font-size: 34px;
+    -fx-text-fill: #b30000;
+    -fx-alignment: center;
+}
+
+.table-red {
+    -fx-table-header-border-color: transparent;
+}
+
+.table-red .column-header-background {
+    -fx-background-color: linear-gradient(#de0009, #b30000);
+}
+
+.table-red .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Montserrat SemiBold";
+}
