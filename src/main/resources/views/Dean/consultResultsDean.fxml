@@ -292,6 +292,7 @@
                                     <HBox alignment="CENTER" spacing="12.0" prefWidth="1060.0">
                                        <children>
                                           <Label text="Reporte estadístico" styleClass="lbReportTitle" />
+
                                           <Region HBox.hgrow="ALWAYS" />
                                           <Button fx:id="reportCloseButton" styleClass="bttFiltrar" text="Cerrar" onAction="#hideReport" />
                                        </children>
@@ -300,16 +301,12 @@
                                     <HBox spacing="20.0" prefWidth="1060.0" alignment="CENTER_LEFT">
                                        <children>
                                           <VBox>
-                                             <Label text="Filtros aplicados" styleClass="lbSubtitle" textFill="#de0009" />
+                                             <Label text="Filtros aplicados" styleClass="lbReportSubtitle" />
                                              <Label fx:id="reportContextLabel" text="" wrapText="true" prefWidth="450.0" />
                                           </VBox>
                                           <VBox>
-                                             <Label text="Población evaluada" styleClass="lbSubtitle" />
+                                             <Label text="Población evaluada" styleClass="lbReportSubtitle" />
                                              <Label fx:id="reportPopulationLabel" text="" />
-                                          </VBox>
-                                          <VBox>
-                                             <Label text="Estudiantes con prueba" styleClass="lbSubtitle" />
-                                             <Label fx:id="reportTestedLabel" text="" />
                                           </VBox>
                                        </children>
                                     </HBox>
@@ -317,23 +314,23 @@
                                     <HBox spacing="20.0" prefWidth="1060.0" alignment="CENTER_LEFT">
                                        <children>
                                           <VBox>
-                                             <Label text="Promedio interno" styleClass="lbSubtitle" />
+                                             <Label text="Promedio interno" styleClass="lbReportSubtitle" />
                                              <Label fx:id="reportAverageLabel" text="" />
                                           </VBox>
                                           <VBox>
-                                             <Label text="Promedio externo" styleClass="lbSubtitle" />
+                                             <Label text="Promedio externo" styleClass="lbReportSubtitle" />
                                              <Label fx:id="reportExternalAverageLabel" text="" />
                                           </VBox>
                                           <VBox>
-                                             <Label text="Variación períodos" styleClass="lbSubtitle" />
+                                             <Label text="Variación períodos" styleClass="lbReportSubtitle" />
                                              <Label fx:id="reportTrendLabel" text="" />
                                           </VBox>
                                           <VBox>
-                                             <Label text="Mejor competencia" styleClass="lbSubtitle" />
+                                             <Label text="Mejor competencia" styleClass="lbReportSubtitle" />
                                              <Label fx:id="reportBestModuleLabel" text="" wrapText="true" prefWidth="200.0" />
                                           </VBox>
                                           <VBox>
-                                             <Label text="Competencia crítica" styleClass="lbSubtitle" />
+                                             <Label text="Competencia crítica" styleClass="lbReportSubtitle" />
                                              <Label fx:id="reportCriticalModuleLabel" text="" wrapText="true" prefWidth="200.0" />
                                           </VBox>
                                        </children>
@@ -341,7 +338,7 @@
                                     <!-- internal modules table -->
                                     <VBox spacing="10.0" prefWidth="1060.0">
                                        <children>
-                                          <Label text="Competencias internas" styleClass="lbSubtitle" textFill="#de0009" />
+                                          <Label text="Competencias internas" styleClass="lbReportSubtitle" />
                                           <TableView fx:id="internalModuleTable" styleClass="table-red" prefHeight="240.0" prefWidth="1060.0">
                                              <columns>
                                                 <TableColumn fx:id="internalModuleNameColumn" prefWidth="200.0" text="Competencia" />
@@ -350,7 +347,6 @@
                                                 <TableColumn fx:id="internalModuleMinColumn" prefWidth="100.0" text="Mínimo" />
                                                 <TableColumn fx:id="internalModuleMaxColumn" prefWidth="100.0" text="Máximo" />
                                                 <TableColumn fx:id="internalModuleSampleColumn" prefWidth="120.0" text="Estudiantes" />
-                                                <TableColumn fx:id="internalModuleVariationColumn" prefWidth="120.0" text="Variación" />
                                              </columns>
                                           </TableView>
                                        </children>
@@ -358,7 +354,7 @@
                                     <!-- external modules table -->
                                     <VBox spacing="10.0" prefWidth="1060.0">
                                        <children>
-                                          <Label text="Competencias de referencia externa" styleClass="lbSubtitle" textFill="#de0009" />
+                                          <Label text="Competencias de referencia externa" styleClass="lbReportSubtitle" />
                                           <TableView fx:id="externalModuleTable" styleClass="table-red" prefHeight="220.0" prefWidth="1060.0">
                                              <columns>
                                                 <TableColumn fx:id="externalModuleNameColumn" prefWidth="200.0" text="Competencia" />

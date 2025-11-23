@@ -1,79 +1,141 @@
-# Documentación de las consultas y reportes de resultados internos
+# Documentación de cargas, filtros y reporte estadístico
 
-Este documento resume los cambios recientes relacionados con la carga de resultados internos, los filtros disponibles y el flujo previsto para construir el reporte estadístico que alimentará el informe IA.
+Este documento consolida los cambios más recientes sobre:
+- la incorporación del campo **semestre** en la cadena de ingestión;
+- el comportamiento del buscador de resultados internos/externos; y
+- la generación del reporte estadístico que sirve como insumo para la IA.
 
-## 1. Estructura de filtros aceptados
+---
 
-- **`InternResultFilter`** ahora guarda cuatro listas: períodos (`List<Integer>`), semestres (`List<Integer>`), áreas (`List<String>`) y NBC (`List<String>`). La clase garantiza que cada colección tenga valores no nulos y proporciona métodos `hasX()` para saber si aplicar el filtro. El filtro asume que semestre solo puede ser 1 o 2 y mantiene el valor tal cual para que la consulta final los incluya.
-- La UI final recopila estas selecciones desde `MultiSelectComboBox` y las mapea con `parsePeriods`/`parseSemesters` antes de construir el filtro. Eso simplifica la validación porque la lógica de criterios (repositorio) no se preocupa por la entrada.
+## 1. Flujo general
 
-## 2. Entidad y DTO asociados
+1. **Carga de archivos:** el administrador sube los CSV/XLS. Durante la carga, el asistente solicita *periodo* y *semestre*. Ambos valores se almacenan en `resultado_interno` y en los DTO usados para renderizar la tabla.
+2. **Consulta interactiva:** el decano selecciona filtros (periodo, semestre, área, NBC) y presiona **Filtrar**. El backend arma un `InternResultFilter` y ejecuta la consulta paginada sobre `InternalResult` y sus módulos (`InternalModuleResult`).
+3. **Reporte estadístico:** con los mismos filtros se puede presionar **Generar reporte**. Se calcula `InternResultReport`, que agrega estadísticas internas y externas para mostrarlas en la UI y posteriormente entregarlas a la IA para el informe interpretativo.
 
-- En `InternalResult`, la columna `semestre` ahora forma parte del modelo junto con `periodo`, `programa`, `puntajeGlobal`, etc. El enlace con los módulos internos usa `documento` (que representa la cédula) para respetar la llave foránea desde `resultado_modulo_interno`.
-- `InternResultInfo` declara un constructor original de siete campos para que Hibernate pueda mapear directamente el resultado de `builder.construct(...)`. Esa clase es la que alimenta la tabla de resultados y mantiene en memoria el programa, el puntaje y el grupo de referencia.
+---
 
-## 3. Repositorio personalizado (`InternalResultRepositoryImpl`)
+## 2. Detalle de filtros aceptados
 
-- Las consultas usan `CriteriaBuilder` para evitar construir sentencias HQL manuales y permiten aplicar ordenamiento por `periodo`, `semestre` y `numeroRegistro`. El método `countResults` reutiliza la misma lista de predicados para paginación y conteo.
-- `buildPredicates` crea predicados dinámicos:
-  - `periodo` y `semestre` se hacen con `IN`.
-  - NBC usa una subconsulta correlacionada a `ExternalGeneralResult`; se comparan programas (trim/upper) y se filtra por `estuNucleoPregrado`. El resultado es una cláusula `EXISTS` que evita repetir la información en la tabla principal. Esta subconsulta respeta el join que mencionaste: un mismo NBC puede agrupar varios programas.
-  - Áreas se resuelven con un `JOIN` hacia `InternalModuleResult` y el `modulo`. Las cadenas se normalizan a mayúsculas para evitar diferencias de formato.
-- La lista `normalizeStrings` asegura que solo se comparen valores no vacíos.
+`dto.InternResultFilter` mantiene cuatro listas:
+- `periods (List<Integer>)`
+- `semesters (List<Integer>)`
+- `areas (List<String>)`
+- `nbc (List<String>)`
 
-## 4. Servicio (`CatalogService`)
+El controlador `consultResultsDeanController` alimenta las listas usando `MultiSelectComboBox`. Los métodos `parsePeriods` y `parseSemesters` validan que sólo lleguen valores numéricos; cualquier entrada inválida se descarta silenciosamente.
 
-- `findInternResults` y `countInternResults` encapsulan la paginación y delegan al repositorio personalizado.
-- Se agregaron métodos auxiliares (`getPeriodsResult`, `getSemesters`, `getAreas`) para que el controlador configure los multiselects y provee el listado de NBC que a ese decano le corresponden usando `getNBCDean`.
+> **Nota:** si no se selecciona ningún valor en un filtro, la lista queda vacía y el repositorio ignora ese criterio.
 
-## 5. Controlador y vista (`consultResultsDeanController` / FXML)
+---
 
-- La vista define cajas para las selecciones de período, semestre, área y NBC seguido del botón `Filtrar`. El controlador inicializa cada combo usando los catálogos del servicio.
-- `filter(MouseEvent)` levanta las selecciones actuales, arma un nuevo `InternResultFilter` (incluyendo `semestres`) y fuerza la paginación a la primera página para que los resultados se vuelvan a consultar.
-- La tabla `internResultTable` se llena con `InternResultInfo` y muestra las columnas `Periodo`, `Semestre`, `Nombre`, `Número de registro`, `Programa` y `Puntaje global`.
-- El paginador usa `createPage` para pedir cada página al servicio y aplica una animación de fade para reforzar la recarga. La columna `Semestre` se mantiene visible para que el usuario confirme la selección.
+## 3. Esquema y carga del semestre
 
-## 6. Reporte estadístico (nueva funcionalidad)
+### 3.1 Migración
 
-- El backend ahora expone `InternResultReport`, `ReportContext`, `ScoreStatistics`, `ModulePerformance` y `PeriodTrend` para encapsular los bloques sugeridos en la transcripción de los sprints: contexto de los filtros, métricas globales, desglose por competencia y tendencia por periodo.
-- `CatalogService.generateInternReport` devuelve el informe calculado por `InternalResultRepositoryImpl`, que a su vez construye la consulta agregada basándose en `InternResultFilter`. Esta consulta calcula 1) la población evaluada usando `countResults`, 2) estadísticas globales con `stddev_pop`, 3) promedios/desviaciones/mínimos/máximos/conteos de cada módulo y 4) una serie de tendencias promedio por periodo.
-- El campo `trendVariation` expresa la variación porcentual entre el primer y último periodo incluido en el filtro (cuando hay al menos dos periodos).
-- `ReportContext` conserva el estado de los filtros aplicados y la población total entregada al reporte para que la UI muestre metadatos "Periodos: ... | Semestres: ...".
+```sql
+ALTER TABLE resultado_interno ADD COLUMN semestre INTEGER;
+```
 
-## 7. Frontend (JavaFX) para visualizar el reporte
+- El campo es opcional, pero la página de carga solicita 1 o 2. Debe añadirse a cualquier ETL o script de importación.  
+- `model.InternalResult` está anotado con `@Column(name = "semestre")` y utiliza `documento` como clave externa para enlazar con `InternalModuleResult`.
 
-- En `consultResultsDean.fxml` se añadió el botón "Generar reporte" al lado de "Filtrar" y se creó un bloque adicional que muestra:
-  - Un resumen de filtros, población, promedio global y variación.
-  - La mejor y la peor competencia disponibles en el reporte.
-  - Una tabla agregada con columnas de competencia, promedio, desviación estándar, mínimo, máximo y cantidad de estudiantes.
-- El controlador `consultResultsDeanController` ahora inyecta nuevos `Label` y `TableView` para esos datos, y expone el handler `generateReport(MouseEvent)` que:
-  1. Usa `CatalogService.generateInternReport` con el filtro vigente.
-  2. Llena las etiquetas y la `TableView<ModulePerformance>` con la información devuelta.
-  3. Hace visible el contenedor `containerReport`.
-- La tabla de módulos usa helper `formatDecimal` y `formatInteger` para presentar valores formateados y mantiene el promedio/desviación/mínimos representados con dos decimales.
-- La UI sigue reutilizando los combos múltiples (periodos, semestres, áreas, NBC) definidos anteriormente; sólo se añadió el reporte generado dinámicamente sin alterar los filtros ni la paginación principal.
+### 3.2 Limpieza de datos históricos
 
-## 8. Siguientes pasos sugeridos
+- Antes de activar la nueva versión se eliminaron los registros 2023 duplicados para volver a cargarlos con el semestre correcto.  
+- Si se detectan archivos viejos sin semestre, deben subirse de nuevo; de lo contrario los filtros por semestre excluirán esos estudiantes.
 
-1. Validar que `containerReport` se oculte nuevamente si cambian los filtros, para evitar mostrar información obsoleta.
-2. Implementar la visualización de los niveles de desempeño y semáforo (verde/rojo) si se desea enriquecer la tabla de módulos.
-3. Integrar este reporte como insumo para el informe IA (serializar `InternResultReport` y enviarlo al servicio de generación automatizada).
+---
 
-Con estas notas cualquier desarrollador puede entender qué cambios se hicieron, cómo se configuran los filtros y cuál es la base para extender el reporte final.
+## 4. Repositorio personalizado (`InternalResultRepositoryImpl`)
 
+### 4.1 Búsqueda y paginación
 
-## Columna `semestre` en `resultado_interno`
+- `findResults` y `countResults` construyen `CriteriaQuery`.  
+- Se ordena por `periodo`, `semestre` y `numeroRegistro` para que la tabla quede estable entre páginas.  
+- `buildPredicates` agrega dinámicamente:
+  - `periodo IN (?)`
+  - `semestre IN (?)`
+  - `grupoReferencia`/`modulo` según el filtro de áreas
+  - Una subconsulta `EXISTS` sobre `ExternalGeneralResult` para los filtros NBC (comparando programa interno vs. `estu_prgm_academico`).
 
-La entidad `model.InternalResult` expone el atributo `semestre`, mapeado con `@Column(name = "semestre")`. Para evitar desajustes entre el modelo y la base de datos:
+### 4.2 Agregaciones para el reporte
 
-1. **Migración**  
-   Ejecuta `ALTER TABLE resultado_interno ADD COLUMN semestre INTEGER;` (o el script equivalente en tu herramienta de migraciones) y registra el cambio en el control de versiones de la BD.
+- `generateReport(InternResultFilter)` arma cuatro bloques:
+  1. **Contexto:** periodos, semestres, áreas y NBC efectivos; total de estudiantes evaluados (`count(distinct documento)`).
+  2. **Estadísticas globales internas:** promedio, desviación y rango del puntaje global + población que presentó la prueba.
+  3. **Estadísticas por módulo interno:** `avg`, `stddev_pop`, `min`, `max`, `count(distinct interno_id)` ignorando puntajes nulos/0.
+  4. **Referencia externa:** mismas métricas sobre `resultado_modulo_externo` para comparar.
+- La misma instancia de `InternResultFilter` se reutiliza para las consultas externas (periodos, NBC y programas). Si se desea excluir el semestre en externos (porque la fuente ICFES no lo maneja) se puede ajustar `buildExternalPredicates`.
 
-2. **Fuentes de datos**  
-   Actualiza cualquier proceso ETL/CSV para poblar el campo `semestre` cuando se disponga del dato. Si no existe en la fuente, documenta el valor por defecto (por ejemplo `NULL`) dentro del flujo de carga.
+### 4.3 Tendencia
 
-3. **Auditoría**  
-   Incluye en los reportes internos una nota aclarando desde qué versión se consolidó el campo y cómo impacta los cálculos de poblaciones evaluadas.
+- `buildPeriodTrends` calcula el promedio por periodo (ordenado ascendente).  
+- `computeTrendVariation` compara el primer vs. último promedio y retorna el porcentaje de variación, mostrado en el reporte como `Variación períodos`.
 
-4. **Verificación**  
-   Añade una verificación automatizada (prueba o checklist) que confirme la existencia de la columna antes de desplegar nuevas versiones.v
+---
+
+## 5. DTOs clave
+
+| DTO | Descripción |
+| --- | --- |
+| `InternResultInfo` | Fila paginada para la tabla principal (periodo, semestre, nombre, registro, programa, puntaje, grupo). |
+| `InternResultReport` | Contenedor del reporte estadístico. Incluye contexto (`ReportContextStats`), métricas globales internas/externas (`ScoreStatistics`), lista de módulos (`ModulePerformance`) y tendencia (`PeriodTrend`). |
+| `ModulePerformance` | Nombre del módulo + estadísticas. Se usa tanto para competencias internas como externas. |
+
+---
+
+## 6. UI y experiencia de usuario
+
+### 6.1 Tabla de resultados
+
+- Componentes clave: `tableView#internResultTable`, `Pagination#pagination`, combos de filtro (`boxPrueba`, `boxSemestre`, `boxArea`, `boxNBC`).
+- Acciones:
+  1. Seleccionar filtros.
+  2. Pulsar **Filtrar** → se refresca la tabla y la paginación vuelve a la página 0.
+  3. Navegar por páginas si hay más resultados (se muestran 15 filas por página).
+
+### 6.2 Reporte estadístico
+
+- Botón **Generar reporte** (abajo a la derecha).  
+- Muestra un overlay (`VBox#containerReport`) con:
+  1. Encabezado “Reporte estadístico” y botón **Cerrar**.
+  2. Bloque de contexto (filtros activos y población evaluada).  
+  3. KPIs: promedios internos/externos, variación, mejor y peor competencia.  
+  4. Tabla “Competencias internas” con columnas: Competencia, Promedio, Desv. estándar, Mínimo, Máximo, Estudiantes.  
+  5. Tabla “Competencias de referencia externa” con las mismas columnas (sin columna de variación para evitar saturar la vista).  
+- Estilos añadidos en `styles/dean.css`: `lbReportTitle`, `lbReportSubtitle`, `table-red` para los encabezados en degradado rojo y `report-chip` para etiquetas destacadas.
+
+### 6.3 Buenas prácticas de uso
+
+- Tras cambiar filtros es recomendable cerrar el reporte (o volver a generarlo) para evitar ver datos desactualizados.  
+- En filtros con grandes combinaciones (muchos NBC y áreas) es preferible seleccionar periodos concretos para reducir el tiempo de consulta.
+
+---
+
+## 7. Comparación con resultados externos
+
+- El filtro NBC se sincroniza con los programas internos gracias a la subconsulta `EXISTS`. Esta valida que el programa interno pertenezca a cualquiera de los `estu_nucleo_pregrado` seleccionados.  
+- Los módulos externos están normalizados en la tabla `modulo`, de modo que la comparación se hace módulo a módulo (mismas etiquetas que en el interno).  
+- La tabla externa respeta los mismos filtros de periodos, áreas/NBC y sólo ignora semestres (ICFES no provee ese dato). Si en el futuro se necesita mapear semestres contra periodos ICFES se puede agregar una regla adicional antes de ejecutar la consulta externa.
+
+---
+
+## 8. Pasos para desarrolladores
+
+1. **Verificar estructura:** antes de desplegar, asegúrate de que la columna `semestre` exista.  
+2. **Levantar backend:**
+   ```powershell
+   .\mvnw spring-boot:run
+   ```
+3. **Probar filtros básicos:** ingresar como decano, cargar periodos y semestres, aplicar filtros combinados y revisar la paginación.
+4. **Probar reporte:** aplicar filtros con más de un periodo para verificar la variación porcentual; revisar que las tablas internas/externas contengan datos coherentes (rangos, promedios, tamaño de muestra).
+5. **Entrega a IA:** serializar `InternResultReport` (JSON) y adjuntarlo a la solicitud de análisis automático.
+
+---
+
+## 9. Futuras mejoras sugeridas
+
+- Persistir el resultado del reporte para reutilizarlo sin recalcular cuando el usuario exporte o solicite el informe IA.
+- Añadir indicadores de niveles de desempeño (semáforo) y ausentismo si la fuente provee inscritos vs. evaluados.
+- Implementar tests automáticos para validar `buildPredicates` y `buildExternalPredicates`, asegurando que cada filtro se respeta en internos y externos.

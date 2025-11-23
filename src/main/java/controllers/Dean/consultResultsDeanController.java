@@ -99,9 +99,6 @@ public class consultResultsDeanController {
     private Label reportExternalAverageLabel;
 
     @FXML
-    private Label reportTestedLabel;
-
-    @FXML
     private TableView<ModulePerformance> internalModuleTable;
 
     @FXML
@@ -244,7 +241,6 @@ public class consultResultsDeanController {
         ReportContextStats context = report.getContext();
         reportContextLabel.setText(buildContextText(context));
         reportPopulationLabel.setText(String.valueOf(context.getEvaluatedCount()));
-        reportTestedLabel.setText(String.valueOf(context.getTestedCount()));
         reportAverageLabel.setText(formatDecimal(report.getInternalGlobal().getAverage()));
         reportExternalAverageLabel.setText(formatDecimal(report.getExternalGlobal().getAverage()));
         reportTrendLabel.setText(String.format("%.2f%%", report.getTrendVariation()));
