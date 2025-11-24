@@ -61,4 +61,28 @@ public class N8NClientService {
             e.printStackTrace();
         }
     }
+
+    public void sendReport(JSONObject payload, String prompt) {
+        try {
+            JSONObject body = new JSONObject();
+            body.put("report", payload);
+            body.put("prompt", prompt);
+
+            URL url = new URL(N8N_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+            }
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("[n8n] POST enviado, código " + responseCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

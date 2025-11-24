@@ -11,6 +11,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -365,6 +366,19 @@
                                                 <TableColumn fx:id="externalModuleSampleColumn" prefWidth="120.0" text="Estudiantes" />
                                              </columns>
                                           </TableView>
+                                       </children>
+                                    </VBox>
+                                    <!-- prompt and json preview -->
+                                    <VBox spacing="10.0" prefWidth="1060.0">
+                                       <children>
+                                          <Label text="Prompt para la IA" styleClass="lbReportSubtitle" />
+                                          <TextArea fx:id="reportPromptArea" editable="false" wrapText="true" prefHeight="120.0" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="10.0" prefWidth="1060.0">
+                                       <children>
+                                          <Label text="Payload JSON" styleClass="lbReportSubtitle" />
+                                          <TextArea fx:id="reportJsonArea" editable="false" wrapText="true" prefHeight="200.0" />
                                        </children>
                                     </VBox>
                                  </children>

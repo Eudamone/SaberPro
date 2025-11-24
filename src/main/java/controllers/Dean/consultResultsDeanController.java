@@ -21,6 +21,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import services.CatalogService;
@@ -34,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javafx.scene.Node;
+import javafx.scene.control.TextArea;
 
 @Component
 public class consultResultsDeanController {
@@ -147,6 +149,12 @@ public class consultResultsDeanController {
 
     private InternResultFilter currentFilter = new InternResultFilter();
 
+    @FXML
+    private TextArea reportPromptArea;
+
+    @FXML
+    private TextArea reportJsonArea;
+
     consultResultsDeanController(
             N8NClientService n8NClientService,
             EmailService emailService,
@@ -237,7 +245,7 @@ public class consultResultsDeanController {
         return value == null ? "-" : String.valueOf(value);
     }
 
-    private void populateReport(InternResultReport report) {
+    private void populateReport(InternResultReport report, JSONObject payload, String prompt) {
         ReportContextStats context = report.getContext();
         reportContextLabel.setText(buildContextText(context));
         reportPopulationLabel.setText(String.valueOf(context.getEvaluatedCount()));
@@ -251,6 +259,13 @@ public class consultResultsDeanController {
         ObservableList<ModulePerformance> externalData = FXCollections.observableArrayList(report.getExternalModules());
         internalModuleTable.setItems(internalData);
         externalModuleTable.setItems(externalData);
+
+        if (reportPromptArea != null) {
+            reportPromptArea.setText(prompt == null ? "" : prompt);
+        }
+        if (reportJsonArea != null) {
+            reportJsonArea.setText(payload == null ? "" : payload.toString(2));
+        }
         containerReport.setVisible(true);
     }
 
@@ -404,7 +419,9 @@ public class consultResultsDeanController {
         if (report == null) {
             return;
         }
-        populateReport(report);
+        JSONObject payload = catalogService.buildReportPayload(currentFilter);
+        String prompt = catalogService.buildReportPrompt(currentFilter);
+        populateReport(report, payload, prompt);
         containerReport.setVisible(true);
     }
 

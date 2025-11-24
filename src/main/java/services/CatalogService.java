@@ -6,6 +6,7 @@ import dto.InternResultReport;
 import dto.UsuarioInfoDTO;
 import model.Facultad;
 import model.Programa;
+import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,6 +28,7 @@ public class CatalogService {
     private final InternalResultRepository internalResultRepository;
     private final ExternalGeneralResultRepository  externalGeneralResultRepository;
     private final InternaModuleResultRepository internalModuleResultRepository;
+    private final ReportExportService reportExportService;
 
 
     CatalogService(
@@ -35,13 +37,15 @@ public class CatalogService {
             UsuarioRepository usuarioRepository,
             InternalResultRepository internalResultRepository,
             ExternalGeneralResultRepository externalGeneralResultRepository,
-            InternaModuleResultRepository internalModuleResultRepository) {
+            InternaModuleResultRepository internalModuleResultRepository,
+            ReportExportService reportExportService) {
         this.programaRepository = programaRepository;
         this.facultadRepository = facultadRepository;
         this.usuarioRepository = usuarioRepository;
         this.internalResultRepository = internalResultRepository;
         this.externalGeneralResultRepository = externalGeneralResultRepository;
         this.internalModuleResultRepository = internalModuleResultRepository;
+        this.reportExportService = reportExportService;
     }
 
     public List<Facultad>  findAllFacultades(){
@@ -112,5 +116,15 @@ public class CatalogService {
 
     public InternResultReport generateInternReport(InternResultFilter filter) {
         return internalResultRepository.generateReport(filter == null ? new InternResultFilter() : filter);
+    }
+
+    public JSONObject buildReportPayload(InternResultFilter filter) {
+        InternResultReport report = generateInternReport(filter);
+        return report == null ? new JSONObject() : reportExportService.buildPayload(report);
+    }
+
+    public String buildReportPrompt(InternResultFilter filter) {
+        InternResultReport report = generateInternReport(filter);
+        return report == null ? "" : reportExportService.buildPrompt(report);
     }
 }
