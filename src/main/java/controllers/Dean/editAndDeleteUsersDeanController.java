@@ -1,6 +1,7 @@
 package controllers.Dean;
 
 import application.SceneManager;
+import application.SessionContext;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import dto.UsuarioInfoDTO;
@@ -29,8 +30,10 @@ import services.UsuarioService;
 import utils.Alerts;
 import utils.NavigationHelper;
 import utils.UtilsComboBox;
+import views.FxmlView;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -46,20 +49,28 @@ public class editAndDeleteUsersDeanController {
 
     // --- Servicios y Estado ---
     private final UsuarioService usuarioService;
+    private final SessionContext sessionContext;
     private UsuarioInfoDTO selectedUser = null; // Usuario actualmente en edición
     private final CatalogService catalogService;
 
 
     @Lazy
-    public editAndDeleteUsersDeanController(SceneManager sceneManager, UsuarioService usuarioService, CatalogService catalogService) {
+    public editAndDeleteUsersDeanController(SceneManager sceneManager, UsuarioService usuarioService, CatalogService catalogService, SessionContext sessionContext) {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
         this.catalogService = catalogService;
+        this.sessionContext = sessionContext;
     }
 
     @FXML
     void handleViewChange(ActionEvent event) throws Exception {
         NavigationHelper.handleViewChange(event, sceneManager,rootPane);
+    }
+
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+        sessionContext.logout();
+        sceneManager.switchToNextScene(FxmlView.LOGIN);
     }
 
     @FXML

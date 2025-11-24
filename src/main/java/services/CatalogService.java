@@ -4,6 +4,7 @@ import dto.*;
 import model.Facultad;
 import model.Modulo;
 import model.Programa;
+import org.json.JSONObject;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ public class CatalogService {
     private final ExternalGeneralResultRepository  externalGeneralResultRepository;
     private final InternaModuleResultRepository internalModuleResultRepository;
     private final ModuloRepository moduloRepository;
+    private final ReportExportService reportExportService;
 
 
     CatalogService(
@@ -36,7 +38,8 @@ public class CatalogService {
             InternalResultRepository internalResultRepository,
             ExternalGeneralResultRepository externalGeneralResultRepository,
             InternaModuleResultRepository internalModuleResultRepository,
-            ModuloRepository moduloRepository) {
+            ModuloRepository moduloRepository,
+            ReportExportService reportExportService) {
         this.programaRepository = programaRepository;
         this.facultadRepository = facultadRepository;
         this.usuarioRepository = usuarioRepository;
@@ -44,6 +47,7 @@ public class CatalogService {
         this.externalGeneralResultRepository = externalGeneralResultRepository;
         this.internalModuleResultRepository = internalModuleResultRepository;
         this.moduloRepository = moduloRepository;
+        this.reportExportService = reportExportService;
     }
 
     @Cacheable("facultades")
@@ -231,4 +235,13 @@ public class CatalogService {
     }
 
 
+    public JSONObject buildReportPayload(InternResultFilter filter) {
+        InternResultReport report = generateInternReport(filter);
+        return report == null ? new JSONObject() : reportExportService.buildPayload(report);
+    }
+
+    public String buildReportPrompt(InternResultFilter filter) {
+        InternResultReport report = generateInternReport(filter);
+        return report == null ? "" : reportExportService.buildPrompt(report);
+    }
 }

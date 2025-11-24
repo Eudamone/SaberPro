@@ -69,9 +69,6 @@ public class ChartCreator {
         barChart.setCategoryGap(10);
         barChart.setBarGap(3);
 
-        barChart.setMinHeight(Region.USE_PREF_SIZE);
-        barChart.setPrefHeight(programs.size() * 45);
-
         barChart.setVerticalGridLinesVisible(false);
         barChart.setHorizontalGridLinesVisible(false);
 

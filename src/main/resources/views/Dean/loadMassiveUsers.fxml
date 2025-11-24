@@ -119,7 +119,7 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados" onAction="#handleViewChange" userData="CONSULT_RESULTS_DEAN">
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados" userData="CONSULT_RESULTS_DEAN">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon" />
                                        </graphic>
@@ -218,7 +218,7 @@
                            <children>
                               <MenuButton mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
                                 <items>
-                                  <MenuItem mnemonicParsing="false" text="Cerrar Sesión" />
+                                  <MenuItem mnemonicParsing="false" onAction="#logout" text="Cerrar Sesión" />
                                 </items>
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32" styleClass="iconUser" />

@@ -11,16 +11,16 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.Pagination;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
@@ -30,6 +30,8 @@ import services.EmailService;
 import services.N8NClientService;
 import utils.MultiSelectComboBox;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -148,6 +150,8 @@ public class consultResultsDeanController {
 
     @FXML
     private VBox overlayCarga;
+
+    private JSONObject payload;
 
     @FXML
     private StackPane rootPane;
@@ -423,6 +427,9 @@ public class consultResultsDeanController {
             @Override
             protected InternResultReport call() throws Exception {
                 // Trabajo pesado
+                payload = catalogService.buildReportPayload(currentFilter);
+                String prompt = catalogService.buildReportPrompt(currentFilter);
+                payload.put("prompt",prompt);
                 return catalogService.generateInternReport(currentFilter);
             }
         };
@@ -449,6 +456,62 @@ public class consultResultsDeanController {
     @FXML
     void hideReport(ActionEvent event) {
         containerReport.setVisible(false);
+    }
+
+    @FXML
+    void generarInforme(MouseEvent event) {
+        Node nodo = (Node) event.getSource();
+        Stage stage = (Stage) nodo.getScene().getWindow();
+
+        overlayCarga.setVisible(true); // Mostrar overlay
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                byte[] pdfBytes;
+                try {
+                    pdfBytes = n8NClientService.descargarPDF(payload);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Error descargando PDF: " + e.getMessage());
+                        alert.showAndWait();
+                        overlayCarga.setVisible(false);
+                    });
+                    return null;
+                }
+
+                Platform.runLater(() -> {
+                    if (pdfBytes == null || pdfBytes.length == 0) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "No se pudo descargar el PDF.");
+                        alert.showAndWait();
+                        overlayCarga.setVisible(false);
+                        return;
+                    }
+
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle("Guardar Informe PDF");
+                    fileChooser.getExtensionFilters().add(
+                            new FileChooser.ExtensionFilter("PDF", "*.pdf")
+                    );
+                    File file = fileChooser.showSaveDialog(stage);
+                    if (file != null) {
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            fos.write(pdfBytes);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                            Alert alert = new Alert(Alert.AlertType.ERROR, "Error guardando el PDF: " + ex.getMessage());
+                            alert.showAndWait();
+                        }
+                    }
+                    overlayCarga.setVisible(false);
+                });
+
+                return null;
+            }
+        };
+
+        new Thread(task).start();
     }
 
     private InternResultFilter buildFilterFromSelections() {

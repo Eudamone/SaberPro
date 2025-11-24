@@ -1,6 +1,7 @@
 package controllers.Dean;
 
 import application.SceneManager;
+import application.SessionContext;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -22,7 +23,9 @@ import services.UsuarioService;
 import utils.FormValidator;
 import utils.NavigationHelper;
 import utils.UtilsComboBox;
+import views.FxmlView;
 
+import java.io.IOException;
 import java.util.*;
 
 import static utils.Alerts.*;
@@ -32,6 +35,7 @@ import static utils.generateNameUser.generateUsername;
 @Component
 public class createUserDeanController {
 
+    private final SessionContext sessionContext;
     @FXML
     private Button bttCreateUser;
 
@@ -44,16 +48,23 @@ public class createUserDeanController {
     private final ProgramaService programaService;
 
     @Lazy
-    public createUserDeanController(SceneManager sceneManager, UsuarioService usuarioService,FacultadRepository facultadRepository, ProgramaService programaService) {
+    public createUserDeanController(SceneManager sceneManager, UsuarioService usuarioService, FacultadRepository facultadRepository, ProgramaService programaService, SessionContext sessionContext) {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
         this.facultadRepository = facultadRepository;
         this.programaService = programaService;
+        this.sessionContext = sessionContext;
     };
 
     @FXML
     void handleViewChange(ActionEvent event) throws Exception {
         NavigationHelper.handleViewChange(event, sceneManager,rootPane);
+    }
+
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+        sessionContext.logout();
+        sceneManager.switchToNextScene(FxmlView.LOGIN);
     }
 
     @FXML

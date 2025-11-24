@@ -1,6 +1,7 @@
 package controllers.Dean;
 
 import application.SceneManager;
+import application.SessionContext;
 import dto.EstudianteLoad;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -19,8 +20,10 @@ import org.springframework.stereotype.Component;
 import services.ExcelReaderService;
 import services.UsuarioService;
 import utils.NavigationHelper;
+import views.FxmlView;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import static utils.Alerts.showError;
@@ -30,6 +33,7 @@ import static utils.Alerts.showInformation;
 public class loadMassiveUsersDeanController {
 
     private final SceneManager sceneManager;
+    private final SessionContext sessionContext;
 
     @FXML
     private Button bttUploadFile;
@@ -54,15 +58,22 @@ public class loadMassiveUsersDeanController {
     private File selectedFile;
 
     @Lazy
-    loadMassiveUsersDeanController(SceneManager sceneManager,UsuarioService usuarioService,ExcelReaderService excelReaderService) {
+    loadMassiveUsersDeanController(SceneManager sceneManager, UsuarioService usuarioService, ExcelReaderService excelReaderService, SessionContext sessionContext) {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
         this.excelReaderService = excelReaderService;
+        this.sessionContext = sessionContext;
     }
 
     @FXML
     void handleViewChange(ActionEvent actionEvent)throws Exception {
         NavigationHelper.handleViewChange(actionEvent, sceneManager,rootPane);
+    }
+
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+        sessionContext.logout();
+        sceneManager.switchToNextScene(FxmlView.LOGIN);
     }
 
     @FXML
