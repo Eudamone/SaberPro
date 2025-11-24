@@ -89,11 +89,11 @@ public interface InternalResultRepository extends JpaRepository<InternalResult, 
     """,nativeQuery = true)
     String getProgramaStudent(@Param("numIdentification") String numIdentification);
 
-    @Query("SELECT COUNT(*) FROM InternalResult ir WHERE ir.periodo = :periodo")
+    @Query("SELECT COUNT(DISTINCT ir.nombre) FROM InternalResult ir WHERE ir.periodo = :periodo")
     Integer sizeInternResultsByAnio(@Param("periodo") Integer periodo);
 
     @Query(value = """
-        select count(*) from resultado_interno ri
+        select count(distinct ri.nombre) from resultado_interno ri
         where lower(public.unaccent(ri.programa)) = lower(public.unaccent(:programa))
         and ri.periodo = :periodo;
     """,nativeQuery = true)
