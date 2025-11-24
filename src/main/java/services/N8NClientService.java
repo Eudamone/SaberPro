@@ -140,7 +140,7 @@ public class N8NClientService {
      * Descarga el PDF desde n8n y devuelve los bytes crudos.
      */
     public byte[] descargarPDF(JSONObject payload) throws IOException {
-        String N8N_URL = "http://100.103.51.4:5678/webhook-test/analisis-resultados";
+        String N8N_URL = "http://100.103.51.4:5678/webhook/analisis-resultados";
         URL url = new URL(N8N_URL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
