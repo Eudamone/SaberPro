@@ -1,23 +1,3 @@
-@font-face {
-    font-family: "Montserrat";
-    src: url("fonts/Montserrat-Regular.ttf");
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: "Montserrat";
-    src: url("fonts/Montserrat-Bold.ttf");
-    font-weight: bold;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: "Montserrat";
-    src: url("fonts/Montserrat-SemiBold.ttf");
-    font-weight: 600;
-    font-style: normal;
-}
 
 .container{
     -fx-background-color: #FFFFFF;
@@ -50,4 +30,94 @@
     -fx-graphic-text-gap: 10;
     -fx-cursor: hand;
     -fx-font-size: 18;
+}
+
+.boxGeneral{
+    -fx-background-color: #FFFFFF;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-border-color: #FFFFFF;
+    -fx-effect: dropshadow(gaussian,rgba(145,158,171,0.25),30,0.3,0,0.4);
+    -fx-padding: 10;
+}
+
+.labelBoldGeneral{
+    -fx-font-family: "Montserrat";
+    -fx-font-weight: bold;
+    -fx-font-size: 18;
+    -fx-text-fill: #2A3547;
+}
+
+.labelPuntajeGlobal{
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 18;
+    -fx-text-fill: #5A6A85;
+}
+
+.barraPuntajeGeneral{
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-padding: 2;
+    -fx-pref-height: 35;
+    -fx-pref-width: 310;
+}
+
+.barraPuntajeGeneral .track{
+    -fx-background-color: #e0e0e0; /* gris claro con degradado */
+    -fx-background-radius: 10;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-clip : true;
+}
+
+.barraPuntajeGeneral .bar{
+    -fx-background-color: #ff3b3b; /* rojo brillante con degradado */
+    -fx-background-radius: 8;
+    -fx-background-insets: 0;
+}
+
+.bttDescargarPDF{
+    -fx-background-color: #FC0610;
+    -fx-background-radius: 25px;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Montserrat";
+    -fx-font-size: 13px;
+    -fx-pref-width: 150;
+    -fx-pref-height: 40px;
+    -fx-cursor: hand;
+}
+
+.labelPosicionUniversidad{
+    -fx-font-family: "Montserrat";
+    -fx-font-weight: bold;
+    -fx-text-fill: #FC0610;
+}
+
+.labelSubGeneral{
+    -fx-font-family: "Montserrat";
+    -fx-text-fill: #5A6A85;
+}
+
+.barraPercentilGlobal{
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-padding: 2;
+    -fx-pref-height: 35;
+    -fx-pref-width: 150;
+}
+
+.barraPercentilGlobal .track{
+    -fx-background-color: #e0e0e0;
+    -fx-background-radius: 10;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-clip : true;
+}
+
+.barraPercentilGlobal .bar{
+    -fx-background-color: #ff3b3b; /* rojo brillante con degradado */
+    -fx-background-radius: 8;
+    -fx-background-insets: 0;
 }

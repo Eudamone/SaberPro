@@ -9,4 +9,15 @@
 
 .chart-plot-background {
     -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.chart-plot-content {
+    -fx-padding: 0;
+}
+
+.axis .tick-label {
+    -fx-font-size: 11px;
+    -fx-max-width: 180px;
+    -fx-text-overrun: word-ellipsis;
 }

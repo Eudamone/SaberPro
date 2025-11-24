@@ -147,7 +147,7 @@ public class recoverPasswordController {
     @FXML
     void cancelRecoverPassword(ActionEvent event) throws Exception {
         // Esto regresa a la vista del login
-        NavigationHelper.handleViewChange(event,sceneManager);
+        NavigationHelper.handleViewChange(event,sceneManager,rootPane);
     }
 
     @FXML
@@ -168,7 +168,7 @@ public class recoverPasswordController {
         // isTokenValid comprueba si el token existe y no está caducado
         if(usuarioService.isTokenValid(token)){
             // Esto cambia a la vista de cambio de contraseña
-            NavigationHelper.handleViewChange(event,sceneManager);
+            NavigationHelper.handleViewChange(event,sceneManager,rootPane);
         }else{
             Alerts.showError("El token ingresado no es correcto, ya venció o no existe","Error");
         }

@@ -10,6 +10,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -45,6 +46,9 @@ public class loadMassiveUsersDeanController {
     @FXML
     private Label lbFile;
 
+    @FXML
+    private StackPane rootPane;
+
     private final UsuarioService usuarioService;
     private final ExcelReaderService excelReaderService;
     private File selectedFile;
@@ -58,7 +62,7 @@ public class loadMassiveUsersDeanController {
 
     @FXML
     void handleViewChange(ActionEvent actionEvent)throws Exception {
-        NavigationHelper.handleViewChange(actionEvent, sceneManager);
+        NavigationHelper.handleViewChange(actionEvent, sceneManager,rootPane);
     }
 
     @FXML

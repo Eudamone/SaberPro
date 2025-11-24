@@ -78,13 +78,13 @@ public class loginController {
         try {
             switch (session.getRol()){
                 case Decano -> {
-                    sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
+                    sceneManager.switchSceneAsync(FxmlView.DASHBOARD_DEAN,rootPane);
                 }
                 case Estudiante -> {
-                    sceneManager.switchToNextScene(FxmlView.RESULTS_STUDENT);
+                    sceneManager.switchSceneAsync(FxmlView.RESULTS_STUDENT,rootPane);
                 }
                 case Administrador -> {
-                    sceneManager.switchToNextScene(FxmlView.LOAD_RESULTS_ADMIN);
+                    sceneManager.switchSceneAsync(FxmlView.LOAD_RESULTS_ADMIN,rootPane);
                 }
                 default -> {
                     showError("No existe una vista para el usuario ingresado");

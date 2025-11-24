@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import model.Facultad;
@@ -52,7 +53,7 @@ public class createUserDeanController {
 
     @FXML
     void handleViewChange(ActionEvent event) throws Exception {
-        NavigationHelper.handleViewChange(event, sceneManager);
+        NavigationHelper.handleViewChange(event, sceneManager,rootPane);
     }
 
     @FXML
@@ -96,6 +97,9 @@ public class createUserDeanController {
 
     @FXML
     private ComboBox<String> cBoxStateAcademy;
+
+    @FXML
+    private StackPane rootPane;
 
     @FXML
     public void createUser(ActionEvent actionEvent) {

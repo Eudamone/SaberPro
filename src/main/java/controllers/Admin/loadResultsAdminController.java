@@ -158,24 +158,17 @@ public class loadResultsAdminController {
                     return;
                 }
 
-                // Pedir periodo para el archivo interno
-                TextInputDialog td = new TextInputDialog();
-                td.setTitle("Periodo");
-                td.setHeaderText("Ingrese el periodo (ej: 2021)");
-                Optional<String> p = td.showAndWait();
-                if (p.isEmpty()) return;
-                final int periodoFinal;
-                try {
-                    periodoFinal = Integer.parseInt(p.get().trim());
-                } catch (Exception ex) {
-                    Alerts.showError("Periodo inválido","Error");
-                    return;
-                }
+                Optional<Integer> periodoOpt = askPeriodo();
+                if (periodoOpt.isEmpty()) return;
+                final int periodoFinal = periodoOpt.get();
+                Optional<Integer> semestreOpt = askSemester();
+                if (semestreOpt.isEmpty()) return;
+                final int semestreFinal = semestreOpt.get();
 
                 Task<Void> task = new Task<>() {
                     @Override
                     protected Void call() throws Exception {
-                        fileService.parseAndSaveInternal(new LocalMultipartFile(archivo, "text/plain"), periodoFinal);
+                        fileService.parseAndSaveInternal(new LocalMultipartFile(archivo, "text/plain"), periodoFinal,semestreFinal);
                         return null;
                     }
                 };
@@ -238,5 +231,38 @@ public class loadResultsAdminController {
         ft.play();
 
         contentBox.setEffect(null);
+    }
+
+    private Optional<Integer> askPeriodo() {
+        TextInputDialog td = new TextInputDialog();
+        td.setTitle("Periodo");
+        td.setHeaderText("Ingrese el periodo (ej: 2021)");
+        Optional<String> input = td.showAndWait();
+        if (input.isEmpty()) return Optional.empty();
+        try {
+            return Optional.of(Integer.parseInt(input.get().trim()));
+        } catch (NumberFormatException ex) {
+            Alerts.showError("Periodo inválido","Error");
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Integer> askSemester() {
+        TextInputDialog td = new TextInputDialog();
+        td.setTitle("Semestre");
+        td.setHeaderText("Ingrese el semestre (1 o 2)");
+        Optional<String> input = td.showAndWait();
+        if (input.isEmpty()) return Optional.empty();
+        try {
+            int semestre = Integer.parseInt(input.get().trim());
+            if (semestre < 1 || semestre > 2) {
+                Alerts.showError("Semestre inválido","Error");
+                return Optional.empty();
+            }
+            return Optional.of(semestre);
+        } catch (NumberFormatException ex) {
+            Alerts.showError("Semestre inválido","Error");
+            return Optional.empty();
+        }
     }
 }

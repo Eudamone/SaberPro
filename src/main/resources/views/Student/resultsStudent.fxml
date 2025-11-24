@@ -6,11 +6,15 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
@@ -111,41 +115,243 @@
          </children>
       </VBox>
       <Line endY="-620.0" startY="100.0" stroke="#eaeff4" />
-      <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="1065.0" style="-fx-background-color: #FFFFFF;" HBox.hgrow="ALWAYS">
+      <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
          <children>
-            <HBox alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="1058.0">
+            <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="1065.0" style="-fx-background-color: #FFFFFF;">
                <children>
-                  <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
-                     <HBox.margin>
-                        <Insets left="10.0" />
-                     </HBox.margin>
+                  <HBox alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="1058.0">
                      <children>
-                        <Button mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
+                        <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                           <children>
+                              <Button mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
+                                 <graphic>
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="BELL" size="24" styleClass="iconUser" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </VBox>
+                        <Region prefHeight="42.0" prefWidth="946.0" />
+                        <VBox alignment="CENTER">
+                           <HBox.margin>
+                              <Insets right="25.0" />
+                           </HBox.margin>
+                           <children>
+                              <MenuButton mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
+                                <items>
+                                  <MenuItem mnemonicParsing="false" onAction="#logout" text="Cerrar Sesión" />
+                                </items>
+                                 <graphic>
+                                    <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32" styleClass="iconUser" />
+                                 </graphic>
+                              </MenuButton>
+                           </children>
+                        </VBox>
+                     </children>
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </HBox>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="10.0" />
+               </VBox.margin>
+            </HBox>
+            <GridPane VBox.vgrow="ALWAYS">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="520.0" minWidth="10.0" prefWidth="316.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="675.0" minWidth="10.0" prefWidth="359.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="675.0" minWidth="10.0" prefWidth="195.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="675.0" minWidth="10.0" prefWidth="195.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints maxHeight="238.0" minHeight="10.0" prefHeight="170.0" />
+                <RowConstraints maxHeight="297.0" minHeight="10.0" prefHeight="181.0" />
+                <RowConstraints maxHeight="412.0" minHeight="10.0" prefHeight="182.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="336.0" minHeight="10.0" prefHeight="138.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <VBox alignment="CENTER" prefHeight="205.0" prefWidth="364.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <HBox prefHeight="42.0" prefWidth="362.0">
+                           <children>
+                              <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Puntaje Global: " />
+                              <Label fx:id="lbPuntajeGlobal" styleClass="labelPuntajeGlobal" stylesheets="@../../styles/estudentStyle.css" text="[NUM]/300" />
+                           </children>
+                           <VBox.margin>
+                              <Insets left="15.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <ProgressBar fx:id="pgBarPuntajeGlobal" prefWidth="200.0" progress="0.5" styleClass="barraPuntajeGeneral" stylesheets="@../../styles/estudentStyle.css" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER" prefHeight="135.0" prefWidth="364.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="332.0">
+                           <children>
+                              <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Generar informe">
+                                 <HBox.margin>
+                                    <Insets left="15.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <Button mnemonicParsing="false" onMouseClicked="#downloadInformPDF" styleClass="bttDescargarPDF" stylesheets="@../../styles/estudentStyle.css" text="Descargar PDF">
                            <graphic>
-                              <FontAwesomeIconView fill="#5a6a85" glyphName="BELL" size="24" styleClass="iconUser" />
+                              <FontAwesomeIconView fill="WHITE" glyphName="DOWNLOAD" size="18.0" />
                            </graphic>
                         </Button>
                      </children>
                   </VBox>
-                  <Region prefHeight="42.0" prefWidth="946.0" />
-                  <VBox alignment="CENTER">
-                     <HBox.margin>
-                        <Insets right="25.0" />
-                     </HBox.margin>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnIndex="1" GridPane.rowSpan="2">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
                      <children>
-                        <MenuButton mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
-                          <items>
-                            <MenuItem mnemonicParsing="false" onAction="#logout" text="Cerrar Sesión" />
-                          </items>
-                           <graphic>
-                              <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32" styleClass="iconUser" />
-                           </graphic>
-                        </MenuButton>
+                        <HBox prefHeight="33.0" prefWidth="323.0">
+                           <children>
+                              <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Competencias genéricas" />
+                           </children>
+                        </HBox>
+                        <VBox fx:id="radarChartCompetencies" prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS" />
+                        <HBox fx:id="boxLegends" prefHeight="61.0" prefWidth="323.0" />
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnIndex="2">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Posición universidad" wrapText="true" />
+                        <Label fx:id="lbPuestoUniversidad" styleClass="labelPosicionUniversidad" stylesheets="@../../styles/estudentStyle.css" text="#23">
+                           <VBox.margin>
+                              <Insets left="40.0" top="15.0" />
+                           </VBox.margin>
+                           <font>
+                              <Font size="35.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lbCantidadEstUniversidad" styleClass="labelSubGeneral" stylesheets="@../../styles/estudentStyle.css" text="De [NUM] estudiantes" wrapText="true">
+                           <VBox.margin>
+                              <Insets left="10.0" top="15.0" />
+                           </VBox.margin>
+                        </Label>
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnIndex="3">
+                     <GridPane.margin>
+                        <Insets left="10.0" right="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Mejor competencia" wrapText="true" />
+                        <Label fx:id="lbMejorModulo" styleClass="labelPosicionUniversidad" stylesheets="@../../styles/estudentStyle.css" text="Razonamiento cuantitativo" wrapText="true">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets top="20.0" />
+                           </VBox.margin>
+                        </Label>
+                        <Label fx:id="lbPuntajeModulo" styleClass="labelSubGeneral" stylesheets="@../../styles/estudentStyle.css" text="[NUM] puntos">
+                           <VBox.margin>
+                              <Insets top="18.0" />
+                           </VBox.margin>
+                        </Label>
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Percentil nacional global" wrapText="true" />
+                        <ProgressBar fx:id="pgBarPercentilGlobal" prefWidth="200.0" progress="0.5" styleClass="barraPercentilGlobal" stylesheets="@../../styles/estudentStyle.css">
+                           <VBox.margin>
+                              <Insets top="30.0" />
+                           </VBox.margin>
+                        </ProgressBar>
+                        <Label fx:id="lbPorcentajePercentilGlobal" styleClass="labelSubGeneral" stylesheets="@../../styles/estudentStyle.css" text="[NUM]%">
+                           <VBox.margin>
+                              <Insets left="5.0" />
+                           </VBox.margin>
+                        </Label>
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Posición programa" wrapText="true" />
+                        <Label fx:id="lbPuestoPrograma" styleClass="labelPosicionUniversidad" stylesheets="@../../styles/estudentStyle.css" text="#3">
+                           <font>
+                              <Font size="35.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets left="40.0" top="25.0" />
+                           </VBox.margin>
+                        </Label>
+                        <Label fx:id="lbCantidadPrograma" styleClass="labelSubGeneral" stylesheets="@../../styles/estudentStyle.css" text="De [NUM] estudiantes" wrapText="true" />
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="2">
+                     <GridPane.margin>
+                        <Insets bottom="10.0" left="10.0" top="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <HBox prefHeight="33.0" prefWidth="635.0">
+                           <children>
+                              <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Comparación con otras IES" />
+                           </children>
+                        </HBox>
+                        <VBox fx:id="barChartComparationIES" prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                     <children>
+                        <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Posición departamental" wrapText="true" />
+                        <Label fx:id="lbPuestoDepartamento" styleClass="labelPosicionUniversidad" stylesheets="@../../styles/estudentStyle.css" text="#4">
+                           <VBox.margin>
+                              <Insets left="40.0" top="25.0" />
+                           </VBox.margin>
+                           <font>
+                              <Font size="35.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lbCantidadDepartamento" styleClass="labelSubGeneral" stylesheets="@../../styles/estudentStyle.css" text="De [NUM] estudiantes" wrapText="true" />
+                     </children>
+                     <GridPane.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </GridPane.margin>
+                  </VBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="boxGeneral" stylesheets="@../../styles/estudentStyle.css" GridPane.columnIndex="3" GridPane.rowIndex="2">
+                     <GridPane.margin>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                     </GridPane.margin>
+                     <children>
+                        <Label styleClass="labelBoldGeneral" stylesheets="@../../styles/estudentStyle.css" text="Posición nacional" wrapText="true" />
+                        <Label fx:id="lbPuestoNacional" styleClass="labelPosicionUniversidad" stylesheets="@../../styles/estudentStyle.css" text="#23">
+                           <font>
+                              <Font size="35.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets left="20.0" top="25.0" />
+                           </VBox.margin>
+                        </Label>
+                        <Label fx:id="lbCantidadNacional" styleClass="labelSubGeneral" stylesheets="@../../styles/estudentStyle.css" text="De [NUM] estudiantes" />
                      </children>
                   </VBox>
                </children>
-            </HBox>
+            </GridPane>
          </children>
-      </HBox>
+      </VBox>
    </children>
 </HBox>

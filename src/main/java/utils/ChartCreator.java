@@ -1,16 +1,28 @@
 package utils;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.*;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+
+import java.util.List;
 
 public class ChartCreator {
-    public static LineChart<String, Number> createLineChart() {
+
+
+    public static LineChart<String, Number> createLineChart(List<String> periodos) {
         // Se definen ejes
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis  yAxis = new NumberAxis();
 
         //xAxis.setAutoRanging(false);
-        xAxis.setCategories(FXCollections.observableArrayList("2019","2020","2021","2022","2023","2024","2025"));
+        xAxis.setCategories(FXCollections.observableArrayList(periodos));
         //xAxis.setTickMarkVisible(false);
         xAxis.setAnimated(false);
 
@@ -24,19 +36,8 @@ public class ChartCreator {
         final LineChart<String,Number> lineChart = new LineChart(xAxis, yAxis);
         lineChart.setTitle(null);
         lineChart.setLegendVisible(false);
-        lineChart.setCreateSymbols(false);
+        lineChart.setCreateSymbols(true);
 
-
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("Promedio Institucional");
-        series.getData().add(new XYChart.Data<>("2019", 175.0));
-        series.getData().add(new XYChart.Data<>("2020", 140.0));
-        series.getData().add(new XYChart.Data<>("2021", 165.0));
-        series.getData().add(new XYChart.Data<>("2022", 150.0));
-        series.getData().add(new XYChart.Data<>("2023", 225.0));
-        series.getData().add(new XYChart.Data<>("2024", 180.0));
-        series.getData().add(new XYChart.Data<>("2025", 200.0));
-        lineChart.getData().add(series);
         lineChart.setVerticalGridLinesVisible(false);
 
         String css = ChartCreator.class.getResource("/styles/lineChartPromedy.css").toExternalForm();
@@ -45,7 +46,7 @@ public class ChartCreator {
         return lineChart;
     }
 
-    public static BarChart<Number,String> boxChartPromedyProgram(){
+    public static BarChart<Number,String> boxChartPromedyProgram(List<String> programs){
         // Se definen ejes
         final NumberAxis xAxis = new NumberAxis();
         final CategoryAxis yAxis = new CategoryAxis();
@@ -58,24 +59,19 @@ public class ChartCreator {
         xAxis.setMinorTickVisible(false);
         xAxis.setTickMarkVisible(false);
 
-        yAxis.setCategories(FXCollections.observableArrayList("Programa 1", "Programa 2", "Programa 3", "Programa 4", "Programa 5"));
+        yAxis.setCategories(FXCollections.observableArrayList(programs));
         yAxis.setAnimated(false);
+        yAxis.setTickLabelGap(10);
 
         final BarChart<Number,String> barChart = new BarChart(xAxis, yAxis);
         barChart.setTitle(null);
         barChart.setLegendVisible(false);
+        barChart.setCategoryGap(10);
+        barChart.setBarGap(3);
 
+        barChart.setMinHeight(Region.USE_PREF_SIZE);
+        barChart.setPrefHeight(programs.size() * 45);
 
-        // Datos de prueba temporales
-        XYChart.Series<Number,String> series = new XYChart.Series<>();
-        series.setName("Promedio Programa");
-        series.getData().add(new XYChart.Data<>(158.0,"Programa 1"));
-        series.getData().add(new XYChart.Data<>(190.0,"Programa 2"));
-        series.getData().add(new XYChart.Data<>(250.0,"Programa 3"));
-        series.getData().add(new XYChart.Data<>(210.0,"Programa 4"));
-        series.getData().add(new XYChart.Data<>(120.0,"Programa 5"));
-
-        barChart.getData().add(series);
         barChart.setVerticalGridLinesVisible(false);
         barChart.setHorizontalGridLinesVisible(false);
 
@@ -84,4 +80,5 @@ public class ChartCreator {
 
         return barChart;
     }
+
 }

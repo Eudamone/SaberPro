@@ -1,43 +1,60 @@
 package controllers.Dean;
 
+import application.SceneManager;
 import application.SessionContext;
-import dto.InternResultInfo;
+import dto.*;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.stereotype.Component;
 import services.CatalogService;
 import services.EmailService;
 import services.N8NClientService;
 import utils.MultiSelectComboBox;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javafx.scene.Node;
+import utils.NavigationHelper;
+import views.FxmlView;
 
 @Component
 public class consultResultsDeanController {
+    private static final int PAGE_SIZE = 15;
 
-    private N8NClientService  n8NClientService;
+    private final N8NClientService n8NClientService;
     private final EmailService emailService;
     private final CatalogService catalogService;
     private final SessionContext sessionContext;
+    private final SceneManager sceneManager;
+    private final DefaultAuthenticationEventPublisher defaultAuthenticationEventPublisher;
 
     @FXML
-    private HBox boxPrueba,boxArea,boxNBC;
+    private HBox boxPrueba, boxArea, boxNBC;
+    @FXML
+    private HBox boxSemestre;
 
     @FXML
     private VBox containerReport;
@@ -55,6 +72,9 @@ public class consultResultsDeanController {
     private TableColumn<InternResultInfo, Integer> periodColumn;
 
     @FXML
+    private TableColumn<InternResultInfo, Integer> semesterColumn;
+
+    @FXML
     private TableColumn<InternResultInfo, String> programColumn;
 
     @FXML
@@ -63,103 +83,390 @@ public class consultResultsDeanController {
     @FXML
     private Pagination pagination;
 
+    @FXML
+    private Label reportContextLabel;
 
+    @FXML
+    private Label reportPopulationLabel;
+
+    @FXML
+    private Label reportAverageLabel;
+
+    @FXML
+    private Label reportTrendLabel;
+
+    @FXML
+    private Label reportBestModuleLabel;
+
+    @FXML
+    private Label reportCriticalModuleLabel;
+
+    @FXML
+    private Label reportExternalAverageLabel;
+
+    @FXML
+    private TableView<ModulePerformance> internalModuleTable;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleNameColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleAverageColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleStdDevColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleMinColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleMaxColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> internalModuleSampleColumn;
+
+    @FXML
+    private TableView<ModulePerformance> externalModuleTable;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleNameColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleAverageColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleStdDevColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleMinColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleMaxColumn;
+
+    @FXML
+    private TableColumn<ModulePerformance, String> externalModuleSampleColumn;
+
+    @FXML
+    private VBox overlayCarga;
+
+    @FXML
+    private StackPane rootPane;
+
+    private MultiSelectComboBox multiPeriodCombo;
+    private MultiSelectComboBox multiAreaCombo;
+    private MultiSelectComboBox multiNBCCombo;
+    private MultiSelectComboBox multiSemesterCombo;
+
+    private InternResultFilter currentFilter = new InternResultFilter();
+
+    @Lazy
     consultResultsDeanController(
             N8NClientService n8NClientService,
             EmailService emailService,
             CatalogService catalogService,
-            SessionContext sessionContext
-    ) {
+            SessionContext sessionContext,
+            SceneManager sceneManager, DefaultAuthenticationEventPublisher defaultAuthenticationEventPublisher) {
         this.n8NClientService = n8NClientService;
         this.emailService = emailService;
         this.catalogService = catalogService;
         this.sessionContext = sessionContext;
+        this.sceneManager = sceneManager;
+        this.defaultAuthenticationEventPublisher = defaultAuthenticationEventPublisher;
     }
 
     @FXML
-    void closeSession(ActionEvent event) {
-
+    void closeSession(ActionEvent event) throws IOException {
+        sessionContext.logout();
+        sceneManager.switchToNextScene(FxmlView.LOGIN);
     }
 
     @FXML
-    void handleViewChange(ActionEvent event) {
-
+    void handleViewChange(ActionEvent event) throws Exception {
+        NavigationHelper.handleViewChange(event,sceneManager,rootPane);
     }
 
     @FXML
-    public void initialize(){
-        setupColumns(); // Se inician columnas
-        setupPagination(); // Configura la paginación de consultas
-        setupPeriods(); //
+    public void initialize() {
+        setupColumns();
+        setupPagination();
+        setupPeriods();
+        setupSemesters();
         setupAreas();
         setupNBC();
+        setupReportTables();
     }
 
-    private void setupColumns(){
-        // Configurar columnas
+    private void setupColumns() {
         periodColumn.setCellValueFactory(new PropertyValueFactory<>("periodo"));
+        semesterColumn.setCellValueFactory(new PropertyValueFactory<>("semestre"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         numberRegisterColumn.setCellValueFactory(new PropertyValueFactory<>("numeroRegistro"));
         programColumn.setCellValueFactory(new PropertyValueFactory<>("programa"));
         puntajeColumn.setCellValueFactory(new PropertyValueFactory<>("ptjeGlobal"));
     }
 
-    private void setupPagination(){
-        pagination.setCurrentPageIndex(0);
-        pagination.setMaxPageIndicatorCount(10);
-        Integer total = catalogService.sizeInternResults();
-        System.out.println("Total resultados internos: " + total);
-        // calcular número de páginas
-        int pageCount = (int) Math.ceil((double) total / 15);
-        pagination.setPageCount(pageCount);
-
-        // Callback que se usa al cambiar de pagina
-        pagination.setPageFactory(this::createPage);
+    private void setupModuleTable(TableView<ModulePerformance> table,
+                                  TableColumn<ModulePerformance, String> name,
+                                  TableColumn<ModulePerformance, String> avg,
+                                  TableColumn<ModulePerformance, String> std,
+                                  TableColumn<ModulePerformance, String> min,
+                                  TableColumn<ModulePerformance, String> max,
+                                  TableColumn<ModulePerformance, String> sample) {
+        name.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getModuleName()));
+        avg.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getAverage())));
+        std.setCellValueFactory(cell -> new SimpleStringProperty(formatDecimal(cell.getValue().getStatistics().getStandardDeviation())));
+        min.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMin())));
+        max.setCellValueFactory(cell -> new SimpleStringProperty(formatInteger(cell.getValue().getStatistics().getMax())));
+        sample.setCellValueFactory(cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getStatistics().getSampleSize())));
+        table.setItems(FXCollections.observableArrayList());
     }
 
-    private Node createPage(int pageIndex){
-        Page<InternResultInfo> resultPage = catalogService.findInternResults(pageIndex,15);
+    private void setupReportTables() {
+        setupModuleTable(internalModuleTable,
+                internalModuleNameColumn,
+                internalModuleAverageColumn,
+                internalModuleStdDevColumn,
+                internalModuleMinColumn,
+                internalModuleMaxColumn,
+                internalModuleSampleColumn);
+        setupModuleTable(externalModuleTable,
+                externalModuleNameColumn,
+                externalModuleAverageColumn,
+                externalModuleStdDevColumn,
+                externalModuleMinColumn,
+                externalModuleMaxColumn,
+                externalModuleSampleColumn);
+    }
+
+    private String formatDecimal(Double value) {
+        if (value == null) {
+            return "-";
+        }
+        return String.format("%.2f", value);
+    }
+
+    private String formatDecimal(double value) {
+        return String.format("%.2f", value);
+    }
+
+    private String formatInteger(Integer value) {
+        return value == null ? "-" : String.valueOf(value);
+    }
+
+    private void populateReport(InternResultReport report) {
+        ReportContextStats context = report.getContext();
+        reportContextLabel.setText(buildContextText(context));
+        reportPopulationLabel.setText(String.valueOf(context.getEvaluatedCount()));
+        reportAverageLabel.setText(formatDecimal(report.getInternalGlobal().getAverage()));
+        reportExternalAverageLabel.setText(formatDecimal(report.getExternalGlobal().getAverage()));
+        reportTrendLabel.setText(String.format("%.2f%%", report.getTrendVariation()));
+        reportBestModuleLabel.setText(report.getBestModule().map(ModulePerformance::getModuleName).orElse("N/A"));
+        reportCriticalModuleLabel.setText(report.getCriticalModule().map(ModulePerformance::getModuleName).orElse("N/A"));
+
+        ObservableList<ModulePerformance> internalData = FXCollections.observableArrayList(report.getInternalModules());
+        ObservableList<ModulePerformance> externalData = FXCollections.observableArrayList(report.getExternalModules());
+        internalModuleTable.setItems(internalData);
+        externalModuleTable.setItems(externalData);
+        containerReport.setVisible(true);
+    }
+
+    private String buildContextText(ReportContextStats context) {
+        List<String> parts = new ArrayList<>();
+        if (!context.getPeriods().isEmpty()) {
+            parts.add("Periodos: " + joinList(context.getPeriods()));
+        }
+        if (!context.getSemesters().isEmpty()) {
+            parts.add("Semestres: " + joinList(context.getSemesters()));
+        }
+        if (!context.getAreas().isEmpty()) {
+            parts.add("Áreas: " + joinList(context.getAreas()));
+        }
+        if (!context.getNbc().isEmpty()) {
+            parts.add("NBC: " + joinList(context.getNbc()));
+        }
+        return parts.isEmpty() ? "Sin filtros" : String.join(" | ", parts);
+    }
+
+    private String joinList(List<?> values) {
+        return values.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+    }
+
+    private List<Integer> parsePeriods(List<String> selections) {
+        List<Integer> parsed = new ArrayList<>();
+        for (String selection : selections) {
+            try {
+                parsed.add(Integer.valueOf(selection));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return parsed;
+    }
+
+    private List<Integer> parseSemesters(List<String> selections) {
+        List<Integer> parsed = new ArrayList<>();
+        for (String selection : selections) {
+            try {
+                parsed.add(Integer.valueOf(selection));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return parsed;
+    }
+
+    private void setupPagination() {
+        pagination.setMaxPageIndicatorCount(10);
+        pagination.setPageFactory(this::createPage);
+        updatePagination();
+        pagination.setCurrentPageIndex(0);
+    }
+
+    private void updatePagination() {
+        long total = catalogService.countInternResults(currentFilter);
+        int pageCount = total == 0 ? 1 : (int) Math.ceil((double) total / PAGE_SIZE);
+        pagination.setPageCount(pageCount);
+    }
+
+    private Node createPage(int pageIndex) {
+        Page<InternResultInfo> resultPage = fetchValidPage(pageIndex);
+        adjustPageCount(resultPage);
         ObservableList<InternResultInfo> data = FXCollections.observableArrayList(resultPage.getContent());
 
         internResultTable.setItems(data);
 
-        // transición de desplazamiento
         FadeTransition fade = new FadeTransition(Duration.millis(250), internResultTable);
-        fade.setFromValue(0.7); // empieza casi visible
-        fade.setToValue(1.0);   // termina totalmente visible
+        fade.setFromValue(0.7);
+        fade.setToValue(1.0);
         fade.play();
 
         return internResultTable;
     }
 
-    private void setupPeriods(){
+    private Page<InternResultInfo> fetchPage(int pageIndex) {
+        return catalogService.findInternResults(pageIndex, PAGE_SIZE, currentFilter);
+    }
+
+    private Page<InternResultInfo> fetchValidPage(int pageIndex) {
+        Page<InternResultInfo> page = fetchPage(pageIndex);
+        if (needsPageClamp(page, pageIndex)) {
+            int lastIndex = Math.max(0, page.getTotalPages() - 1);
+            if (lastIndex != pageIndex) {
+                pagination.setCurrentPageIndex(lastIndex);
+                page = fetchPage(lastIndex);
+            }
+        }
+        return page;
+    }
+
+    private boolean needsPageClamp(Page<InternResultInfo> page, int requestedIndex) {
+        return page.getContent().isEmpty()
+                && page.getTotalElements() > 0
+                && page.getTotalPages() > 0
+                && (requestedIndex >= page.getTotalPages());
+    }
+
+    private void adjustPageCount(Page<InternResultInfo> page) {
+        int totalPages = page.getTotalPages() == 0 ? 1 : page.getTotalPages();
+        if (pagination.getPageCount() != totalPages) {
+            pagination.setPageCount(totalPages);
+        }
+    }
+
+    private void setupPeriods() {
         List<Integer> periods = catalogService.getPeriodsResult();
         List<String> periodString = new ArrayList<>();
-        for(Integer i : periods){
-            periodString.add(String.valueOf(i));
+        for (Integer period : periods) {
+            periodString.add(String.valueOf(period));
         }
-        MultiSelectComboBox multi = new MultiSelectComboBox("Seleccione periodos",periodString);
-        boxPrueba.getChildren().addAll(multi);
+        multiPeriodCombo = new MultiSelectComboBox("Seleccione periodos", periodString);
+        boxPrueba.getChildren().addAll(multiPeriodCombo);
     }
 
-    private void setupAreas(){
+    private void setupSemesters() {
+        List<Integer> semesters = catalogService.getSemesters();
+        List<String> semesterString = new ArrayList<>();
+        for (Integer semester : semesters) {
+            semesterString.add(String.valueOf(semester));
+        }
+        multiSemesterCombo = new MultiSelectComboBox("Seleccione semestres", semesterString);
+        boxSemestre.getChildren().addAll(multiSemesterCombo);
+    }
+
+    private void setupAreas() {
         List<String> areas = catalogService.getAreas();
-        MultiSelectComboBox multiProgram =  new MultiSelectComboBox("Seleccione areás",areas);
-        boxArea.getChildren().addAll(multiProgram);
+        multiAreaCombo = new MultiSelectComboBox("Seleccione areás", areas);
+        boxArea.getChildren().addAll(multiAreaCombo);
     }
 
-    private void setupNBC(){
+    private void setupNBC() {
         Set<String> nbc = catalogService.getNBCDean(sessionContext.getCurrentUser().getId());
         List<String> data = new ArrayList<>(nbc);
-        MultiSelectComboBox multiNBC = new MultiSelectComboBox("Seleccione NBC",data);
-        boxNBC.getChildren().addAll(multiNBC);
+        multiNBCCombo = new MultiSelectComboBox("Seleccione NBC", data);
+        boxNBC.getChildren().addAll(multiNBCCombo);
     }
 
     @FXML
     void filter(MouseEvent event) {
-        Node node = boxPrueba.getChildren().get(0);
-        MultiSelectComboBox multiPeriod = (MultiSelectComboBox) node;
-        System.out.println("Elecciones periodo: " + multiPeriod.getSelectedItems());
+        currentFilter = buildFilterFromSelections();
+        updatePagination();
+        pagination.setCurrentPageIndex(0);
+        createPage(0);
+    }
 
+    @FXML
+    void generateReport(ActionEvent event) {
+        // Muestra el overlay de carga
+        overlayCarga.setVisible(true);
+
+        Task<InternResultReport> task = new Task<>() {
+            @Override
+            protected InternResultReport call() throws Exception {
+                // Trabajo pesado
+                return catalogService.generateInternReport(currentFilter);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            InternResultReport report = task.getValue();
+            if (report != null) {
+                populateReport(report);
+                containerReport.setVisible(true);
+            }
+            overlayCarga.setVisible(false); // Oculta carga
+        });
+
+        task.setOnFailed(e -> {
+            overlayCarga.setVisible(false); // Por si falla
+            // Opcional: log o alerta
+            task.getException().printStackTrace();
+        });
+
+        // Se ejecuta en background
+        new Thread(task).start();
+    }
+
+    @FXML
+    void hideReport(ActionEvent event) {
+        containerReport.setVisible(false);
+    }
+
+    private InternResultFilter buildFilterFromSelections() {
+        List<String> periods = collectSelections(multiPeriodCombo);
+        List<String> areas = collectSelections(multiAreaCombo);
+        List<String> nbc = collectSelections(multiNBCCombo);
+        List<String> semesters = collectSelections(multiSemesterCombo);
+
+        return new InternResultFilter(
+                parsePeriods(periods),
+                areas,
+                nbc,
+                parseSemesters(semesters)
+        );
+    }
+
+
+    private List<String> collectSelections(MultiSelectComboBox combo) {
+        return combo == null ? new ArrayList<>() : new ArrayList<>(combo.getSelectedItems());
     }
 }

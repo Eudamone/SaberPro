@@ -69,7 +69,7 @@ public class changePasswordController {
             usuarioService.updatePassword(sessionContext.getCurrentUser().getId(),password);
             usuarioService.deleteNewUser(sessionContext.getCurrentUser().getId()); // Eliminar el registro en la tabla nuevousuario
             System.out.println("Rol usuario: "+sessionContext.getCurrentUser().getRol());
-            NavigationHelper.changeSceneByRol(sessionContext.getCurrentUser().getRol(),sceneManager);
+            NavigationHelper.changeSceneByRol(sessionContext.getCurrentUser().getRol(),sceneManager,rootPane);
         } else{
             // Error al tratar de cambiar la contraseña
             System.err.println("Error de cambio de password : userTemp ni userCurrent con valor");

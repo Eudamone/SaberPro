@@ -1,15 +1,13 @@
 package services;
 
-import dto.InternResultInfo;
-import dto.UsuarioInfoDTO;
+import dto.*;
 import model.Facultad;
+import model.Modulo;
 import model.Programa;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import repository.*;
 
@@ -28,6 +26,7 @@ public class CatalogService {
     private final InternalResultRepository internalResultRepository;
     private final ExternalGeneralResultRepository  externalGeneralResultRepository;
     private final InternaModuleResultRepository internalModuleResultRepository;
+    private final ModuloRepository moduloRepository;
 
 
     CatalogService(
@@ -36,13 +35,15 @@ public class CatalogService {
             UsuarioRepository usuarioRepository,
             InternalResultRepository internalResultRepository,
             ExternalGeneralResultRepository externalGeneralResultRepository,
-            InternaModuleResultRepository internalModuleResultRepository) {
+            InternaModuleResultRepository internalModuleResultRepository,
+            ModuloRepository moduloRepository) {
         this.programaRepository = programaRepository;
         this.facultadRepository = facultadRepository;
         this.usuarioRepository = usuarioRepository;
         this.internalResultRepository = internalResultRepository;
         this.externalGeneralResultRepository = externalGeneralResultRepository;
         this.internalModuleResultRepository = internalModuleResultRepository;
+        this.moduloRepository = moduloRepository;
     }
 
     @Cacheable("facultades")
@@ -80,9 +81,9 @@ public class CatalogService {
         System.out.println("Limpiando cache");
     }
 
-    public Page<InternResultInfo> findInternResults(int page,int size){
-        Pageable pageable = PageRequest.of(page,size, Sort.by("id").ascending());
-        return internalResultRepository.findAllResults(pageable);
+    public Page<InternResultInfo> findInternResults(int page,int size, InternResultFilter filter){
+        PageRequest pageable = PageRequest.of(page, size);
+        return internalResultRepository.findResults(pageable, filter);
     }
 
     public Integer sizeInternResults(){
@@ -111,4 +112,123 @@ public class CatalogService {
     public List<String> getAreas(){
         return internalModuleResultRepository.getAreas();
     }
+
+    public List<PromedioAnioDTO> getPromediosAnio(){
+        return internalResultRepository.getPromedyForAnio();
+    }
+
+    public List<PromedioProgram> getPromedioProgramasFacultad(String codeFaculty){
+        return internalResultRepository.getPromedyProgramsFaculty(codeFaculty);
+    }
+
+    public String getCodeFaculty(Long idDean){
+        return facultadRepository.getCodeByDean(idDean);
+    }
+
+    // Por programa general todos los periodos
+    public List<ModuloPromedio> getModuloPromedio(String programa){
+        return moduloRepository.getPromedyModuleByProgram(programa);
+    }
+
+    // Por programa en un periodo específico
+    public List<ModuloPromedio> getModuloPromedioByAnio(String programa,Integer periodo){
+        return moduloRepository.getPromedyModuleByProgramForAnio(programa,periodo);
+    }
+
+    // General (toda la universidad) por un periodo específico
+    public List<ModuloPromedio> getModuloPromedioGeneralByAnio(Integer periodo){
+        return moduloRepository.getPromedyModuloGeneralForAnio(periodo);
+    }
+
+    public Integer getPromedyGeneralFacultadDean(Long idDean){
+        String codeFaculty = getCodeFaculty(idDean);
+        Double promedio = internalResultRepository.getPromedyGeneralByFacultad(codeFaculty);
+        return (Integer) (int) Math.round(promedio);
+    }
+
+    public Integer getPromedyExtern(){
+        Double promedio = externalGeneralResultRepository.getPromedyGeneral();
+        return (Integer) (int)  Math.round(promedio);
+    }
+
+    public Integer getPercentilGeneralFacultadDean(Long idDean){
+        String codeFaculty = getCodeFaculty(idDean);
+        Double promedio = internalResultRepository.getPercentilGeneralFacultadDean(codeFaculty);
+        return (Integer) (int)  Math.round(promedio);
+    }
+
+    public Integer getPercentilGeneral(){
+        Double promedio = externalGeneralResultRepository.getPercentilGeneral();
+        return (Integer) (int)  Math.round(promedio);
+    }
+
+    public long countInternResults(InternResultFilter filter){
+        return internalResultRepository.countResults(filter);
+    }
+
+    public List<Integer> getSemesters(){
+        return internalResultRepository.getSemesters();
+    }
+
+    public InternResultReport generateInternReport(InternResultFilter filter) {
+        return internalResultRepository.generateReport(filter == null ? new InternResultFilter() : filter);
+    }
+
+    //--------------------- Métodos para resultados estudiantes ------------------------
+
+    public Integer getPeriodoResult(String numIdentification){
+        return internalResultRepository.getPeriodoByStudent(numIdentification);
+    }
+
+    public String getProgramStudent(String numIdentification){
+        return internalResultRepository.getProgramaStudent(numIdentification);
+    }
+
+    // Resultados a nivel de universidad
+    public Integer getSizeInternalResultAnio(String numIdentification){
+        Integer periodo =  getPeriodoResult(numIdentification);
+        return internalResultRepository.sizeInternResultsByAnio(periodo);
+    }
+
+    // Resultados a nivel de programa
+    public Integer getSizeInternalResultAnioProgram(String numIdentification){
+        String programa =  getProgramStudent(numIdentification);
+        Integer periodo =  getPeriodoResult(numIdentification);
+        return internalResultRepository.sizeInternalResultsByPrograma(periodo,programa);
+    }
+
+    public Integer getPuestoUniversidad(String numIdentification){
+        Integer periodo = getPeriodoResult(numIdentification);
+        return internalResultRepository.getPuestoUniversidadByAnio(periodo, numIdentification);
+    }
+
+    public Integer getPuestoPrograma(String numIdentification){
+        Integer periodo = getPeriodoResult(numIdentification);
+        String programa =  getProgramStudent(numIdentification);
+        return internalResultRepository.getPuestoProgramaByAnio(periodo,numIdentification,programa);
+    }
+
+    public MejorModulo getMejorModulo(String numIdentification){
+        return internalResultRepository.getMejorModuloStudent(numIdentification);
+    }
+
+    public Integer getPercentilNacionalStudent(String numIdentification){
+        return internalResultRepository.getPercentilNacionalStudent(numIdentification);
+    }
+
+    public Integer getPuntajeGlobalStudent(String numIdentification){
+        return internalResultRepository.getPuntajeGlobalStudent(numIdentification);
+    }
+
+    public List<ModuloPromedio> getPromedioModulosStudent(String numIdentification){
+        return moduloRepository.getPromedyModuleByStudent(numIdentification);
+    }
+
+    // Se obtiene el listado de los mejores promedios de 4 universidades
+    public List<UniversidadPromedio> getMejoresUniversidadPorPeriodo(String numIdentification){
+        Integer periodo = getPeriodoResult(numIdentification);
+        return externalGeneralResultRepository.getMejoresPromedioUniversidades(periodo);
+    }
+
+
 }

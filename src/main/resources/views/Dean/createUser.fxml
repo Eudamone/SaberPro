@@ -22,7 +22,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<StackPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.createUserDeanController">
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.createUserDeanController">
    <children>
       <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;">
          <children>
@@ -120,7 +120,7 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados">
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados" onAction="#handleViewChange" userData="CONSULT_RESULTS_DEAN">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon" />
                                        </graphic>

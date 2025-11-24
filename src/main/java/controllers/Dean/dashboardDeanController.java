@@ -2,27 +2,41 @@ package controllers.Dean;
 
 import application.SceneManager;
 import application.SessionContext;
+import dto.DatosRadarChart;
+import dto.ModuloPromedio;
+import dto.PromedioAnioDTO;
+import dto.PromedioProgram;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import services.CatalogService;
 import utils.*;
 import views.FxmlView;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class dashboardDeanController {
 
     private final SceneManager sceneManager;
     private final SessionContext sessionContext;
+    private final CatalogService catalogService;
+
+    @FXML
+    private StackPane rootPane;
 
     @FXML
     private VBox boxLineChartPromedio;
@@ -36,36 +50,68 @@ public class dashboardDeanController {
     @FXML
     private HBox legendBox;
 
+    @FXML
+    private Label percentilExtern;
+
+    @FXML
+    private Label percentilIntern;
+
+    @FXML
+    private Label promedyExtern;
+
+    @FXML
+    private Label promedyIntern;
+
+
     private RadarChart radarChart;
     private RadarChartLegend legend;
 
     @Lazy
-    public dashboardDeanController(SceneManager sceneManager,SessionContext sessionContext) {
+    public dashboardDeanController(SceneManager sceneManager,SessionContext sessionContext,CatalogService catalogService) {
         this.sceneManager = sceneManager;
         this.sessionContext = sessionContext;
+        this.catalogService = catalogService;
     }
 
     @FXML
     void handleViewChange(ActionEvent event) throws Exception {
-        NavigationHelper.handleViewChange(event,sceneManager);
+        NavigationHelper.handleViewChange(event,sceneManager,rootPane);
     }
 
     @FXML
     public void initialize() {
-        LineChart<String,Number> chart = ChartCreator.createLineChart();
-        BarChart<Number,String> barChart = ChartCreator.boxChartPromedyProgram();
-        boxLineChartPromedio.getChildren().add(chart);
-        boxBarChartProgram.getChildren().add(barChart);
+        setupLineChartPromedio(); // Se configura la gráfica de promedio por periodo
+        setupBarChartProgram(); // Se configura la gráfica de promedio por programa
         setupRadarChart();
         setupLegend();
-        cargarDatosEjemplo();
+        cargarDatosRadarChart();
+        setupIndicatorsPromedy();
     }
 
+    private void setupLineChartPromedio() {
+        List<Integer> p = catalogService.getPeriodsResult();
+        List<String> periodos = p.stream()
+                .map(String::valueOf)
+                .toList();
+        LineChart<String,Number> chart = ChartCreator.createLineChart(periodos);
+        cargarDatosPromedio(chart);
+        boxLineChartPromedio.getChildren().add(chart);
+    }
+
+    private void setupBarChartProgram() {
+        List<PromedioProgram> programsDean = catalogService.getPromedioProgramasFacultad(
+                catalogService.getCodeFaculty(sessionContext.getCurrentUser().getId())
+        );
+        List<String> programs = programsDean.stream().map(PromedioProgram::getPrograma).toList();
+        BarChart<Number,String> barChart = ChartCreator.boxChartPromedyProgram(programs);
+        cargarDatosProgramaPromedio(barChart,programsDean);
+        boxBarChartProgram.getChildren().add(barChart);
+    }
 
     @FXML
     void logout(ActionEvent event) throws IOException {
         // Setear el usuario en null para hacer el cierre de sesión
-        sessionContext.setCurrentUser(null);
+        sessionContext.logout();
         sceneManager.switchToNextScene(FxmlView.LOGIN);
     }
 
@@ -77,11 +123,11 @@ public class dashboardDeanController {
 
         // Configurar etiquetas de los ejes
         List<String> labels = Arrays.asList(
-                "Lectura crítica",
-                "Comunicación\nescrita",
                 "Competencias\nciudadanas",
-                "Razonamiento\ncuantitativo",
-                "Inglés"
+                "Comunicación\nescrita",
+                "Inglés",
+                "Lectura crítica",
+                "Razonamiento\ncuantitativo"
         );
         radarChart.setLabels(labels);
 
@@ -98,48 +144,91 @@ public class dashboardDeanController {
         legendBox.getChildren().add(legend);
     }
 
-    private void cargarDatosEjemplo() {
+    private void cargarDatosPromedio(LineChart<String,Number> lineChart){
+        List<PromedioAnioDTO> promedios = catalogService.getPromediosAnio();
+        XYChart.Series<String,Number> series = new XYChart.Series<>();
+        series.setName("Promedio de año");
+        for (PromedioAnioDTO promedio : promedios) {
+            series.getData().add(new XYChart.Data<>(promedio.getAnioString(),promedio.getPromedio()));
+        }
+        lineChart.getData().add(series);
+        for(XYChart.Data<String,Number> data: series.getData()){
+            Tooltip tooltip = new Tooltip(
+                    "Promedio: " + data.getYValue().toString()
+            );
+            Tooltip.install(data.getNode(), tooltip);
+            data.getNode().setStyle("-fx-background-color: transparent;");
+        }
+    }
+
+    private void cargarDatosProgramaPromedio(BarChart<Number,String> barChart,List<PromedioProgram> programsPromedy){
+        XYChart.Series<Number,String> series = new XYChart.Series<>();
+        series.setName("Promedio Programa");
+        for(PromedioProgram promedioProgram : programsPromedy){
+            series.getData().add(new XYChart.Data<>(promedioProgram.getPromedio(),promedioProgram.getPrograma()));
+        }
+        barChart.getData().add(series);
+        for(XYChart.Data<Number,String> data: series.getData()){
+            Tooltip tooltip = new Tooltip(
+                "Promedio: " + data.getXValue().toString()
+            );
+            Tooltip.install(data.getNode(), tooltip);
+        }
+    }
+
+    private void cargarDatosRadarChart() {
         radarChart.clearSeries();
+        List<String> programsDean = catalogService.getProgramsDean(sessionContext.getCurrentUser().getId());
+        List<DatosRadarChart> datos = programsDean.stream()
+                .filter(p -> p != null && !p.trim().isEmpty())
+                .map(programa -> {
+                    List<ModuloPromedio> modulos = catalogService.getModuloPromedio(programa);
 
-        // Crear las series de datos usando la clase DataSeries
-        DataSeries sistemas = new DataSeries(
-                "Ing. de sistemas",
-                Arrays.asList(220.0, 280.0, 260.0, 300.0, 200.0),
-                Color.rgb(33, 150, 243) // Azul
-        );
+                    // Retornar un valor nulo si el programa no tiene datos de modulos
+                    if(modulos == null || modulos.isEmpty()){
+                        return null;
+                    }
 
-        DataSeries electronica = new DataSeries(
-                "Ing. Electrónica",
-                Arrays.asList(210.0, 290.0, 270.0, 220.0, 180.0),
-                Color.rgb(156, 39, 176) // Púrpura
-        );
+                    DatosRadarChart datosRadarChart = new DatosRadarChart();
+                    datosRadarChart.setPrograma(Abbreviate.abbreviateProgram(programa));
+                    datosRadarChart.setModulos(modulos);
+                    return datosRadarChart;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+        // Lectura Crítica - Comunicación escrita - Competencias Ciudadanas - Razonamiento cuantitativo - Inglés
+        int colorIndex = 0;
+        for(DatosRadarChart datosRadarChart: datos){
+            // Se toman los valores de los promedios de cada modulo
+            List<Double> valoresPromedio = datosRadarChart.getModulos().stream()
+                    .map(ModuloPromedio::getPromedio)
+                    .toList();
 
-        DataSeries ambiental = new DataSeries(
-                "Ing. Ambiental",
-                Arrays.asList(100.0, 270.0, 180.0, 190.0, 190.0),
-                Color.rgb(76, 175, 80) // Verde
-        );
+            // Se le asigna un color a la serie
+            Color colorSerie = RadarChart.COLORS_SERIES.get(colorIndex % RadarChart.COLORS_SERIES.size());
 
-        DataSeries procesos = new DataSeries(
-                "Ing. de Procesos",
-                Arrays.asList(290.0, 185.0, 275.0, 110.0, 170.0),
-                Color.rgb(255, 235, 59) // Amarillo
-        );
+            DataSeries serie = new DataSeries(
+                    datosRadarChart.getPrograma(),
+                    valoresPromedio,
+                    colorSerie
+            );
 
-        DataSeries biologia = new DataSeries(
-                "Biología",
-                Arrays.asList(130.0, 195.0, 290.0, 270.0, 185.0),
-                Color.rgb(244, 67, 54) // Rojo
-        );
+            radarChart.addSeries(serie);
 
-        // Añadir las series al chart
-        radarChart.addSeries(sistemas);
-        radarChart.addSeries(electronica);
-        radarChart.addSeries(ambiental);
-        radarChart.addSeries(procesos);
-        radarChart.addSeries(biologia);
-
+            colorIndex++;
+        }
         // Actualizar la legenda
         legend.updateLegend(radarChart.getSeries());
+    }
+
+    private void setupIndicatorsPromedy(){
+        promedyIntern.setText(catalogService.getPromedyGeneralFacultadDean(
+                sessionContext.getCurrentUser().getId()
+        ).toString());
+        promedyExtern.setText(catalogService.getPromedyExtern().toString());
+        percentilIntern.setText(catalogService.getPercentilGeneralFacultadDean(
+                sessionContext.getCurrentUser().getId()
+        ).toString());
+        percentilExtern.setText(catalogService.getPercentilGeneral().toString());
     }
 }

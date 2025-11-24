@@ -16,6 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import model.Facultad;
@@ -23,9 +24,7 @@ import model.Programa;
 import model.Usuario;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import repository.FacultadRepository;
 import services.CatalogService;
-import services.ProgramaService;
 import services.UsuarioService;
 import utils.Alerts;
 import utils.NavigationHelper;
@@ -48,7 +47,7 @@ public class editAndDeleteUsersDeanController {
     // --- Servicios y Estado ---
     private final UsuarioService usuarioService;
     private UsuarioInfoDTO selectedUser = null; // Usuario actualmente en edición
-    private CatalogService catalogService;
+    private final CatalogService catalogService;
 
 
     @Lazy
@@ -60,7 +59,7 @@ public class editAndDeleteUsersDeanController {
 
     @FXML
     void handleViewChange(ActionEvent event) throws Exception {
-        NavigationHelper.handleViewChange(event, sceneManager);
+        NavigationHelper.handleViewChange(event, sceneManager,rootPane);
     }
 
     @FXML
@@ -131,6 +130,9 @@ public class editAndDeleteUsersDeanController {
 
     @FXML
     private TableView<UsuarioInfoDTO> usersTable;
+
+    @FXML
+    private StackPane rootPane;
 
     @FXML
     void cancelEdit(ActionEvent event) {

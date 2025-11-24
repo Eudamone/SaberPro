@@ -3,12 +3,13 @@ package utils;
 import application.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
 import model.Usuario;
 import views.FxmlView;
 
 public class NavigationHelper {
 
-    public static void handleViewChange(ActionEvent event, SceneManager sceneManager) throws Exception{
+    public static void handleViewChange(ActionEvent event, SceneManager sceneManager, StackPane rootPane) throws Exception{
         try{
             //Se obtiene el botón que desencadena el evento
             Button button = (Button) event.getSource();
@@ -18,7 +19,7 @@ public class NavigationHelper {
                 // Se convierte a la constante FxmlView
                 FxmlView targetView = FxmlView.valueOf(viewName);
                 // Se cambia de escena
-                sceneManager.switchToNextScene(targetView);
+                sceneManager.switchSceneAsync(targetView,rootPane);
             }else{
                 System.err.println("Error: El botón no tiene la propiedad 'userData' definida.");
             }
@@ -29,14 +30,14 @@ public class NavigationHelper {
         }
     }
 
-    public static void changeSceneByRol(Usuario.rolType rol, SceneManager sceneManager) throws Exception{
+    public static void changeSceneByRol(Usuario.rolType rol, SceneManager sceneManager,StackPane rootPane) throws Exception{
         try{
             switch(rol){
                 case Decano -> {
-                    sceneManager.switchToNextScene(FxmlView.DASHBOARD_DEAN);
+                    sceneManager.switchSceneAsync(FxmlView.DASHBOARD_DEAN,rootPane);
                 }
                 case Estudiante -> {
-                    sceneManager.switchToNextScene(FxmlView.RESULTS_STUDENT);
+                    sceneManager.switchSceneAsync(FxmlView.RESULTS_STUDENT,rootPane);
                 }
                 default -> {
                     System.out.println("No existe escena principal para ese usuario");

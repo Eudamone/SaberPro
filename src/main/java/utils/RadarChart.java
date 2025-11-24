@@ -10,6 +10,7 @@ import javafx.scene.text.TextAlignment;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,6 +35,18 @@ public class RadarChart extends Canvas {
     private double centerY;
     private double radius;
     private boolean showScaleValues = true; // Se muestren valores de escala
+
+    public static final List<Color> COLORS_SERIES = Arrays.asList(
+            Color.rgb(156, 39, 176),    // Púrpura
+            Color.rgb(76, 175, 80),     // Verde
+            Color.rgb(244, 67, 54),     // Rojo
+            Color.rgb(33, 150, 243),    // Azul
+            Color.rgb(255, 152, 0),     // Naranja
+            Color.rgb(0, 188, 212),     // Cian
+            Color.rgb(121, 85, 72),     // Café
+            Color.rgb(233, 30, 99),      // Rosa
+            Color.rgb(100,80,220)       // Morado
+    );
 
     public RadarChart(double width, double height) {
         super(width, height);

@@ -2,19 +2,23 @@ package dto;
 
 public class InternResultInfo {
     private Integer periodo;
+    private Integer semestre;
     private String nombre;
     private String numeroRegistro;
     private String programa;
     private Integer ptjeGlobal;
+    private String grupoReferencia;
 
     public InternResultInfo() {}
 
-    public InternResultInfo(Integer periodo, String nombre, String numeroRegistro, String programa, Integer ptjeGlobal) {
+    public InternResultInfo(Integer periodo,Integer semestre, String nombre, String numeroRegistro, String programa, Integer ptjeGlobal,String grupoReferencia) {
         this.periodo = periodo;
+        this.semestre = semestre;
         this.nombre = nombre;
         this.numeroRegistro = numeroRegistro;
         this.programa = programa;
         this.ptjeGlobal = ptjeGlobal;
+        this.grupoReferencia = grupoReferencia;
     }
 
     public Integer getPeriodo() {
@@ -55,5 +59,21 @@ public class InternResultInfo {
 
     public void setPtjeGlobal(Integer ptjeGlobal) {
         this.ptjeGlobal = ptjeGlobal;
+    }
+
+    public Integer getSemestre() {
+        return semestre;
+    }
+
+    public void setSemestre(Integer semestre) {
+        this.semestre = semestre;
+    }
+
+    public String getGrupoReferencia() {
+        return grupoReferencia;
+    }
+
+    public void setGrupoReferencia(String grupoReferencia) {
+        this.grupoReferencia = grupoReferencia;
     }
 }

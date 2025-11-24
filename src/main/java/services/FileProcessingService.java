@@ -1,5 +1,10 @@
 package services;
 
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.transaction.annotation.Transactional;
 import model.*;
@@ -10,7 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 import repository.*;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
@@ -36,7 +43,7 @@ public class FileProcessingService {
     private final Map<String, Integer> ciudadCache = new ConcurrentHashMap<>();
 
     //Static: solo existe una copia compartida por todas las instancias de la clase
-    private static final int BATCH_SIZE_GENERAL = 2000; //
+    private static final int BATCH_SIZE_GENERAL = 3000; //
     private static final int BATCH_SIZE_SPEC = 500;
     private static final int BATCH_SIZE_INTERNAL = 1000;
 
@@ -96,8 +103,18 @@ public class FileProcessingService {
     // Split usando el delimitador detectado (por ejemplo ';' o ',')
     private String[] splitLine(String line, String delimiter) {
         if (line == null) return new String[0];
-        // usar Pattern.quote para evitar que el delimiter sea tratado como regex
-        return line.split(java.util.regex.Pattern.quote(delimiter), -1);
+        char del = delimiter.charAt(0);
+        try (CSVReader reader = new CSVReaderBuilder(new StringReader(line))
+                .withCSVParser(new CSVParserBuilder()
+                        .withSeparator(del)
+                        .build()
+                ).build()) {
+            return reader.readNext();
+        } catch (IOException | CsvValidationException e) {
+            // Manejo de error: puedes loguear, devolver vacío, etc.
+            e.printStackTrace();
+            return new String[0];
+        }
     }
 
     private Integer parseInteger(String s) {
@@ -281,7 +298,6 @@ public class FileProcessingService {
 
             // empezar a leer desde la siguiente línea (los datos)
             String line = br.readLine();
-            int rowNum = 0;
             while (line != null) {
                 // ignorar líneas completamente vacías (saltos de línea) sin hacer warnings
                 if (line.trim().isEmpty()) {
@@ -506,7 +522,7 @@ public class FileProcessingService {
     }
 
     @Transactional
-    public List<InternalResult> parseAndSaveInternal(MultipartFile file, int periodo) throws Exception {
+    public List<InternalResult> parseAndSaveInternal(MultipartFile file, int periodo,int semestre) throws Exception {
         List<InternalResult> savedAll = new ArrayList<>();
         List<InternalResult> buffer = new ArrayList<>(BATCH_SIZE_INTERNAL);
         List<TempModuleResult> moduleTempBuffer = new ArrayList<>();
@@ -558,6 +574,9 @@ public class FileProcessingService {
 
                         InternalResult r = new InternalResult();
                         r.setPeriodo(periodo);
+                        if(semestre >=1 && semestre <= 2){
+                            r.setSemestre(semestre);
+                        }
                         r.setTipoDocumento(getCellValueByHeader(row, headerMap, "tipodedocumento"));
                         String documentoRaw = getCellValueByHeader(row, headerMap, "documento");
                         r.setDocumento(parseLongOrNull(documentoRaw));
@@ -931,7 +950,7 @@ public class FileProcessingService {
         prefixToName.put("mod_comuni_escrita", "COMUNICACION ESCRITA");
         prefixToName.put("mod_ingles", "INGLES");
         prefixToName.put("mod_lectura_critica", "LECTURA CRITICA");
-        prefixToName.put("mod_razona_cuantitat", "RAZONA CANTITATIVO");
+        prefixToName.put("mod_razona_cuantitat", "RAZONAMIENTO CUANTITATIVO");
 
         for (Map.Entry<String, String> e : prefixToName.entrySet()) {
             String pref = e.getKey();
