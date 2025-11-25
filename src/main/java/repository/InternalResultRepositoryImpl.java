@@ -31,10 +31,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,14 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    private final ExternalModuleResultRepository externalModuleResultRepository;
+
+    public InternalResultRepositoryImpl(EntityManager entityManager,
+                                        ExternalModuleResultRepository externalModuleResultRepository) {
+        this.entityManager = entityManager;
+        this.externalModuleResultRepository = externalModuleResultRepository;
+    }
 
     @Override
     public Page<InternResultInfo> findResults(Pageable pageable, InternResultFilter filter) {
@@ -221,19 +231,22 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         query.orderBy(builder.asc(moduleName));
 
         List<Tuple> tuples = entityManager.createQuery(query).getResultList();
-        List<ModulePerformance> results = new ArrayList<>();
-        for (Tuple tuple : tuples) {
-            String name = tuple.get(0, String.class);
-            if (name == null) continue;
-            results.add(new ModulePerformance(name, ScoreStatistics.fromAggregate(
-                    tuple.get(1, Double.class),
-                    tuple.get(2, Double.class),
-                    tuple.get(3, Integer.class),
-                    tuple.get(4, Integer.class),
-                    tuple.get(5, Long.class)
-            )));
-        }
-        return results;
+        return tuples.stream()
+                .map(tuple -> {
+                    String name = tuple.get(0, String.class);
+                    if (name == null) return null;
+                    ScoreStatistics stats = ScoreStatistics.fromAggregate(
+                            tuple.get(1, Double.class),
+                            tuple.get(2, Double.class),
+                            tuple.get(3, Integer.class),
+                            tuple.get(4, Integer.class),
+                            tuple.get(5, Long.class)
+                    );
+                    return new ModulePerformance(name, stats);
+                })
+                .filter(java.util.Objects::nonNull)
+                .sorted(java.util.Comparator.comparing(ModulePerformance::getModuleName))
+                .collect(Collectors.toList());
     }
 
     private List<ModulePerformance> buildExternalModulePerformances(InternResultFilter filter) {
@@ -327,13 +340,13 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
             if (!normalizedAreas.isEmpty()) {
                 if (existingModuleJoin != null) {
                     Join<InternalModuleResult, Modulo> moduloJoin = existingModuleJoin.join("modulo", JoinType.LEFT);
-                    Expression<String> moduloName = builder.upper(builder.trim(moduloJoin.get("nombre")));
+                    Expression<String> moduloName = normalizedModuleName(builder, moduloJoin.get("nombre"));
                     predicates.add(moduloName.in(normalizedAreas));
                 } else {
                     Subquery<Integer> moduleSubquery = query.subquery(Integer.class);
                     Root<InternalModuleResult> moduleRoot = moduleSubquery.from(InternalModuleResult.class);
                     Join<InternalModuleResult, Modulo> moduloJoin = moduleRoot.join("modulo", JoinType.LEFT);
-                    Expression<String> moduloName = builder.upper(builder.trim(moduloJoin.get("nombre")));
+                    Expression<String> moduloName = normalizedModuleName(builder, moduloJoin.get("nombre"));
                     moduleSubquery.select(builder.literal(1));
                     moduleSubquery.where(
                             builder.and(
@@ -362,69 +375,102 @@ public class InternalResultRepositoryImpl implements InternalResultRepositoryCus
         return predicates;
     }
 
-    private List<Predicate> buildExternalPredicates(InternResultFilter filter, CriteriaBuilder builder, Join<ExternalModuleResult, ExternalGeneralResult> root) {
+    private List<Predicate> buildExternalModulePredicates(InternResultFilter filter,
+                                                          CriteriaBuilder builder,
+                                                          Join<ExternalModuleResult, ExternalGeneralResult> externalJoin,
+                                                          Join<ExternalModuleResult, Modulo> moduloJoin) {
         List<Predicate> predicates = new ArrayList<>();
         if (filter.hasPeriods()) {
-            predicates.add(root.get("periodo").in(filter.getPeriods()));
+            predicates.add(externalJoin.get("periodo").in(filter.getPeriods()));
         }
         if (filter.hasNbc()) {
-            predicates.add(builder.upper(builder.trim(root.get("estuNucleoPregrado"))).in(normalizeStrings(filter.getNbc())));
+            predicates.add(builder.upper(builder.trim(externalJoin.get("estuNucleoPregrado"))).in(normalizeStrings(filter.getNbc())));
         }
         if (filter.hasAreas()) {
-            predicates.add(builder.upper(builder.trim(root.get("estuPrgmAcademico"))).in(normalizeStrings(filter.getAreas())));
+            Expression<String> normalizedModule = normalizedModuleName(builder, moduloJoin.get("nombre"));
+            predicates.add(normalizedModule.in(normalizeStrings(filter.getAreas())));
         }
         return predicates;
     }
 
+    private Expression<String> normalizedModuleName(CriteriaBuilder builder, Expression<String> rawName) {
+        Expression<String> upperTrim = builder.upper(builder.trim(rawName));
+        return builder.function(
+                "translate",
+                String.class,
+                upperTrim,
+                builder.literal("ÁÀÂÄÃÉÈÊËÍÌÎÏÓÒÔÖÕÚÙÛÜÑ"),
+                builder.literal("AAAAAEEEEIIIIOOOOOUUUUN")
+        );
+    }
+
     private List<String> normalizeStrings(List<String> values) {
         List<String> normalized = new ArrayList<>();
+        if (values == null) return normalized;
         for (String value : values) {
             if (value == null) continue;
             String trimmed = value.trim();
-            if (!trimmed.isEmpty()) {
-                normalized.add(trimmed.toUpperCase());
-            }
+            if (trimmed.isEmpty()) continue;
+            String withoutDiacritics = Normalizer.normalize(trimmed, Normalizer.Form.NFD)
+                    .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+            normalized.add(withoutDiacritics.toUpperCase());
         }
         return normalized;
     }
 
     private Map<String, ScoreStatistics> buildExternalModuleStatistics(InternResultFilter filter) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Tuple> query = builder.createTupleQuery();
-        Root<ExternalModuleResult> moduleRoot = query.from(ExternalModuleResult.class);
-        Join<ExternalModuleResult, ExternalGeneralResult> externalJoin = moduleRoot.join("externalGeneralResult", JoinType.LEFT);
-        Join<ExternalModuleResult, Modulo> moduloJoin = moduleRoot.join("modulo", JoinType.LEFT);
+         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+         CriteriaQuery<Tuple> query = builder.createTupleQuery();
+         Root<ExternalModuleResult> moduleRoot = query.from(ExternalModuleResult.class);
+         Join<ExternalModuleResult, ExternalGeneralResult> externalJoin = moduleRoot.join("externalGeneralResult", JoinType.LEFT);
+         Join<ExternalModuleResult, Modulo> moduloJoin = moduleRoot.join("modulo", JoinType.LEFT);
 
-        List<Predicate> predicates = buildExternalPredicates(filter, builder, externalJoin);
-        Predicate scorePresent = builder.greaterThan(moduleRoot.get("resultPuntaje"), BigDecimal.ZERO);
-        predicates.add(scorePresent);
+         List<Predicate> predicates = buildExternalModulePredicates(filter, builder, externalJoin, moduloJoin);
+         Predicate scorePresent = builder.greaterThan(moduleRoot.get("resultPuntaje"), BigDecimal.ZERO);
+         predicates.add(scorePresent);
 
-        Expression<BigDecimal> sanitizedScore = builder.<BigDecimal>selectCase()
-                .when(scorePresent, moduleRoot.get("resultPuntaje"))
-                .otherwise((BigDecimal) null);
-        query.multiselect(
-                moduloJoin.get("nombre"),
-                builder.avg(sanitizedScore),
-                builder.function("stddev_pop", Double.class, sanitizedScore),
-                builder.min(sanitizedScore),
-                builder.max(sanitizedScore),
-                builder.countDistinct(externalJoin.get("estConsecutivo"))
-        );
-        if (!predicates.isEmpty()) {
-            query.where(predicates.toArray(new Predicate[0]));
-        }
-        query.groupBy(moduloJoin.get("nombre"));
+         Expression<BigDecimal> sanitizedScore = builder.<BigDecimal>selectCase()
+                 .when(scorePresent, moduleRoot.get("resultPuntaje"))
+                 .otherwise((BigDecimal) null);
+         query.multiselect(
+                 moduloJoin.get("nombre"),
+                 builder.avg(sanitizedScore),
+                 builder.function("stddev_pop", Double.class, sanitizedScore),
+                 builder.min(sanitizedScore),
+                 builder.max(sanitizedScore),
+                 builder.countDistinct(externalJoin.get("estConsecutivo"))
+         );
+         if (!predicates.isEmpty()) {
+             query.where(predicates.toArray(new Predicate[0]));
+         }
+         query.groupBy(moduloJoin.get("nombre"));
 
-        List<Tuple> tuples = entityManager.createQuery(query).getResultList();
-        return tuples.stream().collect(Collectors.toMap(
-                tuple -> tuple.get(0, String.class),
-                tuple -> ScoreStatistics.fromAggregate(
-                        tuple.get(1, Double.class),
-                        tuple.get(2, Double.class),
-                        tuple.get(3, BigDecimal.class),
-                        tuple.get(4, BigDecimal.class),
-                        tuple.get(5, Long.class)
-                )
-        ));
-    }
+         List<Tuple> tuples = entityManager.createQuery(query).getResultList();
+         return tuples.stream()
+                 .map(tuple -> {
+                     String name = tuple.get(0, String.class);
+                     if (name == null) return null;
+                     Number avgRaw = tuple.get(1, Number.class);
+                     Number stdRaw = tuple.get(2, Number.class);
+                     Number minRaw = tuple.get(3, Number.class);
+                     Number maxRaw = tuple.get(4, Number.class);
+                     Double avg = avgRaw == null ? null : avgRaw.doubleValue();
+                     Double std = stdRaw == null ? null : stdRaw.doubleValue();
+                     ScoreStatistics stats = ScoreStatistics.fromAggregate(
+                             avg,
+                             std,
+                             minRaw,
+                             maxRaw,
+                             tuple.get(5, Long.class)
+                     );
+                     return Map.entry(name, stats);
+                 })
+                 .filter(Objects::nonNull)
+                 .collect(Collectors.toMap(
+                         Map.Entry::getKey,
+                         Map.Entry::getValue,
+                         (existing, replacement) -> existing,
+                         java.util.LinkedHashMap::new
+                 ));
+     }
 }

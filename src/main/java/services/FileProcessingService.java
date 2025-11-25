@@ -24,6 +24,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class FileProcessingService {
@@ -41,6 +42,7 @@ public class FileProcessingService {
 
     // Cache para ciudades (nombre en mayúsculas -> id)
     private final Map<String, Integer> ciudadCache = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> generalExistenceCache = new ConcurrentHashMap<>();
 
     //Static: solo existe una copia compartida por todas las instancias de la clase
     private static final int BATCH_SIZE_GENERAL = 3000; //
@@ -451,6 +453,13 @@ public class FileProcessingService {
     public List<ExternalSpecificResult> parseAndSaveSpecificsResults(MultipartFile file, int periodo) throws Exception {
         List<ExternalSpecificResult> savedAll = new ArrayList<>();
         List<ExternalSpecificResult> buffer = new ArrayList<>(BATCH_SIZE_SPEC);
+        final Integer periodoNormalizado = normalizePeriodo(periodo);
+        Set<String> missingStudents = Collections.synchronizedSet(new HashSet<>());
+        Set<String> valids = Collections.synchronizedSet(new HashSet<>());
+        preLoadGeneralExistence(periodoNormalizado, valids);
+
+        // Contador atómico para llevar la cuenta de los registros importados
+        AtomicInteger totalImported = new AtomicInteger(0);
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String firstLine = br.readLine();
@@ -481,6 +490,10 @@ public class FileProcessingService {
                 }
 
                 String estConsec = get(cols, idx, "estu_consecutivo");
+                if (estConsec != null) {
+                    estConsec = estConsec.trim();
+                    if (estConsec.isEmpty()) estConsec = null;
+                }
                 String prueba = get(cols, idx, "result_nombreprueba");
                 String puntStr = get(cols, idx, "result_puntaje");
 
@@ -494,6 +507,10 @@ public class FileProcessingService {
 
                 if (estConsec == null || moduloId == null || puntInt == null) {
                     System.err.println("Warning: fila especifica ignorada por datos incompletos: estuConsec=" + estConsec + " moduloId=" + moduloId + " punt=" + puntStr);
+                } else if (!generalResultExists(periodoNormalizado, estConsec, valids)) {
+                    if (missingStudents.add(estConsec)) {
+                        System.err.println("Warning: se omite estu_consecutivo sin resultado general para periodo " + periodoNormalizado + ": " + estConsec);
+                    }
                 } else {
                     ExternalSpecificResult rs = new ExternalSpecificResult();
                     rs.setEstuConsecutivo(estConsec);
@@ -505,6 +522,7 @@ public class FileProcessingService {
                 if (buffer.size() >= BATCH_SIZE_SPEC) {
                     List<ExternalSpecificResult> saved = externalSpecificRepo.saveAll(new ArrayList<>(buffer));
                     savedAll.addAll(saved);
+                    totalImported.addAndGet(saved.size());
                     buffer.clear();
                 }
 
@@ -512,11 +530,18 @@ public class FileProcessingService {
             }
 
             if (!buffer.isEmpty()) {
-                List<ExternalSpecificResult> saved = externalSpecificRepo.saveAll(buffer);
+                List<ExternalSpecificResult> saved = externalSpecificRepo.saveAll(new ArrayList<>(buffer));
                 savedAll.addAll(saved);
+                totalImported.addAndGet(saved.size());
                 buffer.clear();
             }
         }
+
+        if (!missingStudents.isEmpty()) {
+            System.err.println("Carga específica finalizada con " + missingStudents.size() + " estudiantes omitidos por falta de resultado general.");
+        }
+
+        System.out.println("Carga específica completada. Registros insertados: " + totalImported.get() + ", omitidos por falta de general: " + missingStudents.size());
 
         return savedAll;
     }
@@ -684,7 +709,7 @@ public class FileProcessingService {
                     return s == null ? null : s.trim();
                 case NUMERIC:
                     if (DateUtil.isCellDateFormatted(cell)) {
-                        // devolver la representación por defecto de la fecha (se puede adaptar si se requiere formato específico)
+                        // devolver la representaci��n por defecto de la fecha (se puede adaptar si se requiere formato específico)
                         return cell.getDateCellValue().toString();
                     }
                     return df.formatCellValue(cell).trim();
@@ -836,36 +861,67 @@ public class FileProcessingService {
     private Integer resolveOrCreateModuloId(String nombrePrueba) {
         if (nombrePrueba == null) return null;
         String normalized = nombrePrueba.trim();
+        if (normalized.isEmpty()) return null;
         String key = normalized.toUpperCase();
-
         Integer cached = moduloCache.get(key);
         if (cached != null) return cached;
-
         Optional<Modulo> om = moduloRepo.findFirstByNombreIgnoreCase(normalized);
         if (om.isPresent()) {
             Integer id = om.get().getIdModulo();
             moduloCache.put(key, id);
             return id;
         }
-
+        String normalizedNoAccents = normalizeModuleName(normalized);
+        if (normalizedNoAccents != null) {
+            Optional<Modulo> normalizedModulo = moduloRepo.findFirstByNombreNormalized(normalizedNoAccents);
+            if (normalizedModulo.isPresent()) {
+                Integer id = normalizedModulo.get().getIdModulo();
+                moduloCache.put(key, id);
+                return id;
+            }
+        }
         synchronized (moduloCache) {
             Integer recheck = moduloCache.get(key);
             if (recheck != null) return recheck;
-
             om = moduloRepo.findFirstByNombreIgnoreCase(normalized);
             if (om.isPresent()) {
                 Integer id = om.get().getIdModulo();
                 moduloCache.put(key, id);
                 return id;
             }
-
+            if (normalizedNoAccents != null) {
+                Optional<Modulo> normalizedModulo = moduloRepo.findFirstByNombreNormalized(normalizedNoAccents);
+                if (normalizedModulo.isPresent()) {
+                    Integer id = normalizedModulo.get().getIdModulo();
+                    moduloCache.put(key, id);
+                    return id;
+                }
+            }
             Modulo nuevoModulo = new Modulo();
-            nuevoModulo.setNombre(normalized);
+            nuevoModulo.setNombre(normalizedNoAccents != null ? normalizedNoAccents : normalized);
             Modulo savedModulo = moduloRepo.save(nuevoModulo);
             Integer newId = savedModulo.getIdModulo();
             moduloCache.put(key, newId);
             return newId;
         }
+    }
+
+    private String normalizeModuleName(String nombre) {
+        if (nombre == null) return null;
+        return java.text.Normalizer.normalize(nombre, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replace("á", "a")
+                .replace("é", "e")
+                .replace("í", "i")
+                .replace("ó", "o")
+                .replace("ú", "u")
+                .replace("Á", "A")
+                .replace("É", "E")
+                .replace("Í", "I")
+                .replace("Ó", "O")
+                .replace("Ú", "U")
+                .trim()
+                .toUpperCase();
     }
 
     // Normaliza el periodo para almacenar solo el año.
@@ -877,6 +933,36 @@ public class FileProcessingService {
             return periodo / 10;
         }
         return periodo;
+    }
+
+    private boolean generalResultExists(Integer periodo, String estConsecutivo, Set<String> valids) {
+        if (periodo == null || estConsecutivo == null) return false;
+        String normalizedConsec = estConsecutivo.trim().toUpperCase();
+        if (normalizedConsec.isEmpty()) return false;
+        if (valids.contains(normalizedConsec)) return true;
+        String cacheKey = periodo + "|" + normalizedConsec;
+        Boolean cached = generalExistenceCache.get(cacheKey);
+        if (cached != null) return cached;
+        boolean exists = generalRepo.findFirstByPeriodoAndEstConsecutivo(periodo, normalizedConsec).isPresent();
+        generalExistenceCache.put(cacheKey, exists);
+        if (exists) valids.add(normalizedConsec);
+        return exists;
+    }
+
+    private void preLoadGeneralExistence(Integer periodo, Set<String> valids) {
+        if (periodo == null) return;
+        try {
+            List<String> students = generalRepo.findEstConsecutivosByPeriodo(periodo);
+            for (String est : students) {
+                if (est == null) continue;
+                String normalized = est.trim().toUpperCase();
+                if (normalized.isEmpty()) continue;
+                valids.add(normalized);
+                generalExistenceCache.put(periodo + "|" + normalized, true);
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: no se pudo precargar consecutivos generales para periodo " + periodo + ": " + e.getMessage());
+        }
     }
 
     private Integer parsePeriodoAsYear(String raw) {

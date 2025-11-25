@@ -44,5 +44,6 @@ public interface ExternalGeneralResultRepository extends JpaRepository<model.Ext
     """,nativeQuery = true)
     List<UniversidadPromedio> getMejoresPromedioUniversidades(@Param("periodo") Integer periodo);
 
-
+    @Query("select eg.estConsecutivo from ExternalGeneralResult eg where eg.periodo = :periodo and eg.estConsecutivo is not null")
+    List<String> findEstConsecutivosByPeriodo(@Param("periodo") Integer periodo);
 }
