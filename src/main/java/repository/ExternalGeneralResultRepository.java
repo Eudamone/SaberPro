@@ -1,5 +1,6 @@
 package repository;
 
+import dto.Ranking;
 import dto.UniversidadPromedio;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,6 +29,9 @@ public interface ExternalGeneralResultRepository extends JpaRepository<model.Ext
     """)
     List<String> getNBCs(String nombrePrograma);
 
+    @Query("SELECT count(er) FROM ExternalGeneralResult er")
+    Integer getSizeExternalResults();
+
     @Query("SELECT COALESCE(AVG(er.puntGlobal),0) FROM ExternalGeneralResult er")
     Double getPromedyGeneral();
 
@@ -44,5 +48,46 @@ public interface ExternalGeneralResultRepository extends JpaRepository<model.Ext
     """,nativeQuery = true)
     List<UniversidadPromedio> getMejoresPromedioUniversidades(@Param("periodo") Integer periodo);
 
+    @Query(value = """
+        WITH input AS (
+            SELECT CAST(:puntajeGlobal AS numeric) AS puntaje_estudiante,
+                   CAST(:periodo AS int)     AS periodo_estudiante
+        )
+        SELECT
+            COUNT(*) FILTER (
+                WHERE re.punt_global IS NOT NULL
+                  AND re.punt_global > input.puntaje_estudiante
+            ) + 1 AS posicion,
+            COUNT(*) FILTER (
+                WHERE re.punt_global IS NOT NULL
+            ) AS totalEstudiantes
+        FROM saber_pro.resultado_externo re
+        CROSS JOIN input
+        WHERE re.periodo = input.periodo_estudiante;
+    """,nativeQuery = true)
+    Ranking getPuestoNacionalStudentByAnio(@Param("puntajeGlobal") Integer puntajeGlobal, @Param("periodo") Integer periodo);
 
+    @Query(value = """
+        WITH input AS (
+            SELECT CAST(:puntajeGlobal AS numeric) AS puntaje_estudiante,
+                   CAST(:periodo AS int)           AS periodo_estudiante,
+                   'META'                   AS departamento_estudiante
+        )
+        SELECT
+            COUNT(*) FILTER (
+                WHERE re.punt_global IS NOT NULL
+                  AND re.punt_global > input.puntaje_estudiante
+            ) + 1 AS posicion,
+            COUNT(*) FILTER (
+                WHERE re.punt_global IS NOT NULL
+            ) AS totalEstudiantes
+        FROM saber_pro.resultado_externo re
+        CROSS JOIN input
+        WHERE re.periodo = input.periodo_estudiante
+          AND re.estu_inst_departamento = input.departamento_estudiante;
+    """,nativeQuery = true)
+    Ranking getPuestoDepartamentalStudentByAnio(@Param("puntajeGlobal") Integer puntajeGlobal, @Param("periodo") Integer periodo);
+
+    @Query("select eg.estConsecutivo from ExternalGeneralResult eg where eg.periodo = :periodo and eg.estConsecutivo is not null")
+    List<String> findEstConsecutivosByPeriodo(@Param("periodo") Integer periodo);
 }

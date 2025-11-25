@@ -69,6 +69,17 @@ public class changePasswordController {
             usuarioService.updatePassword(sessionContext.getCurrentUser().getId(),password);
             usuarioService.deleteNewUser(sessionContext.getCurrentUser().getId()); // Eliminar el registro en la tabla nuevousuario
             System.out.println("Rol usuario: "+sessionContext.getCurrentUser().getRol());
+            if(sessionContext.getCurrentUser().getRol().getTipo().equals("Estudiante")){
+                boolean con = usuarioService.isStudentWithResult(sessionContext.getCurrentUser().getNumIdentification());
+                if(con){
+                    NavigationHelper.changeSceneByRol(sessionContext.getCurrentUser().getRol(),sceneManager,rootPane);
+                    return;
+                }else{
+                    Alerts.showInformation("El usuario no tiene cargados resultados","Error");
+                    sceneManager.switchToNextScene(FxmlView.LOGIN);
+                    return;
+                }
+            }
             NavigationHelper.changeSceneByRol(sessionContext.getCurrentUser().getRol(),sceneManager,rootPane);
         } else{
             // Error al tratar de cambiar la contraseña

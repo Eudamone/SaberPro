@@ -96,4 +96,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
     @Modifying
     @Query("DELETE FROM NewUsuario nu WHERE nu.usuario.id = :id")
     void deleteNewUsuarioById(Long id);
+
+    @Query("SELECT COUNT(u) FROM Usuario u")
+    Integer sizeUsuarios();
+
+    @Query(value = """
+        select count(*) > 1 from saber_pro.usuario u
+        join saber_pro.resultado_interno ri
+        on u.numero_identificacion = cast(ri.documento as varchar)
+        where u.numero_identificacion = :numIdentification;
+    """,nativeQuery = true)
+    boolean isStudentInResults(@Param("numIdentification") String numIdentification);
 }

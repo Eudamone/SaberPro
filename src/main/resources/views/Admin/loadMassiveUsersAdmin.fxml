@@ -9,7 +9,6 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -22,9 +21,9 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Admin.loadResultsAdminController">
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Admin.LoadMassiveUsersAdminController">
    <children>
-      <HBox fx:id="contentBox" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;">
+      <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;">
          <children>
             <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" prefHeight="746.0" prefWidth="250.0" spacing="10.0" style="-fx-background-color: #FFFFFF; -fx-pref-height: 100%;" HBox.hgrow="NEVER">
                <children>
@@ -83,7 +82,7 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button fx:id="bttCreateUser" alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleViewChange" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear usuario" userData="CREATE_USER_ADMIN">
+                                    <Button alignment="TOP_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleViewChange" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear usuario" userData="CREATE_USER_ADMIN">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="USER_PLUS" size="18" styleClass="icon" text="" />
                                        </graphic>
@@ -99,12 +98,12 @@
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Button graphicTextGap="14.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_ADMIN">
+                                    <Button graphicTextGap="14.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Carga masiva" userData="LOAD_MASSIVE_USERS_ADMIN">
                                        <VBox.margin>
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                        <graphic>
-                                          <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon" text="" />
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon-bttMenuSelected" text="" />
                                        </graphic>
                                     </Button>
                                     <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
@@ -112,7 +111,7 @@
                                           <Insets left="10.0" />
                                        </VBox.margin>
                                     </Line>
-                                    <Label layoutX="20.0" layoutY="235.0" text="GESTION DE RESULTADOS" textFill="#5a6a85">
+                                    <Label layoutX="20.0" layoutY="231.0" text="GESTION DE RESULTADOS" textFill="#5a6a85">
                                        <font>
                                           <Font name="Montserrat-Regular" size="14.0" />
                                        </font>
@@ -120,15 +119,15 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button graphicTextGap="14.0" layoutX="15.0" layoutY="280.0" mnemonicParsing="false" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Carga de resultados" userData="LOAD_RESULTS_ADMIN">
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="326.0" mnemonicParsing="false" onAction="#handleViewChange" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Carga de resultados" userData="LOAD_RESULTS_ADMIN">
                                        <graphic>
-                                          <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon-bttMenuSelected" />
+                                          <FontAwesomeIconView fill="#5a6a85" glyphName="FILE" size="18" styleClass="icon" />
                                        </graphic>
                                        <VBox.margin>
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Button graphicTextGap="14.0" layoutX="10.0" layoutY="241.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Visualizar resultados">
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="256.0" mnemonicParsing="false"  styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Visualizar resultados" >
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="EYE" size="18" styleClass="icon" />
                                        </graphic>
@@ -136,11 +135,12 @@
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="218.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="382.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
                                        <VBox.margin>
                                           <Insets left="10.0" />
-                                       </VBox.margin></Line>
-                                    <Label layoutX="20.0" layoutY="375.0" text="INCIDENCIAS" textFill="#5a6a85">
+                                       </VBox.margin>
+                                    </Line>
+                                    <Label layoutX="20.0" layoutY="231.0" text="INCIDENCIAS" textFill="#5a6a85">
                                        <font>
                                           <Font name="Montserrat-Regular" size="14.0" />
                                        </font>
@@ -148,7 +148,7 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="470.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Gestionar incidencias">
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="256.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Gestionar incidencias">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="EDIT" size="18" styleClass="icon" />
                                        </graphic>
@@ -156,12 +156,12 @@
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Line endX="125.0" focusTraversable="true" layoutX="111.0" layoutY="327.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="362.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
                                        <VBox.margin>
                                           <Insets left="10.0" />
                                        </VBox.margin>
                                     </Line>
-                                    <Label layoutX="20.0" layoutY="340.0" text="BACKUP" textFill="#5a6a85">
+                                    <Label layoutX="20.0" layoutY="375.0" text="BACKUP" textFill="#5a6a85">
                                        <font>
                                           <Font name="Montserrat-Regular" size="14.0" />
                                        </font>
@@ -169,7 +169,7 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button graphicTextGap="12.0" layoutX="10.0" layoutY="385.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear backup">
+                                    <Button graphicTextGap="12.0" layoutX="15.0" layoutY="470.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Crear backup">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="DATABASE" size="18" styleClass="icon" />
                                        </graphic>
@@ -177,12 +177,12 @@
                                           <Insets bottom="5.0" left="5.0" />
                                        </VBox.margin>
                                     </Button>
-                                    <Line endX="125.0" focusTraversable="true" layoutX="111.0" layoutY="401.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                    <Line endX="125.0" focusTraversable="true" layoutX="121.0" layoutY="403.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
                                        <VBox.margin>
                                           <Insets left="10.0" />
                                        </VBox.margin>
                                     </Line>
-                                    <Label layoutX="10.0" layoutY="404.0" text="ACTIVIDAD" textFill="#5a6a85">
+                                    <Label layoutX="20.0" layoutY="416.0" text="BACKUP" textFill="#5a6a85">
                                        <font>
                                           <Font name="Montserrat-Regular" size="14.0" />
                                        </font>
@@ -190,7 +190,7 @@
                                           <Insets bottom="5.0" left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button graphicTextGap="12.0" layoutX="10.0" layoutY="415.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Logs">
+                                    <Button graphicTextGap="12.0" layoutX="10.0" layoutY="385.0" mnemonicParsing="false" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Logs">
                                        <graphic>
                                           <FontAwesomeIconView fill="#5a6a85" glyphName="COGS" size="18" styleClass="icon" />
                                        </graphic>
@@ -211,9 +211,9 @@
                <children>
                   <HBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="58.0" prefWidth="1050.0">
                      <children>
-                        <VBox HBox.hgrow="NEVER">
+                        <VBox alignment="CENTER" prefWidth="100.0" HBox.hgrow="NEVER">
                            <HBox.margin>
-                              <Insets top="10.0" />
+                              <Insets />
                            </HBox.margin>
                            <children>
                               <Button mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
@@ -224,14 +224,14 @@
                            </children>
                         </VBox>
                         <Region prefHeight="58.0" prefWidth="950.0" HBox.hgrow="NEVER" />
-                        <VBox>
+                        <VBox alignment="CENTER">
                            <HBox.margin>
-                              <Insets top="10.0" />
+                              <Insets right="25.0" />
                            </HBox.margin>
                            <children>
                               <MenuButton mnemonicParsing="false" styleClass="bttUser" stylesheets="@../../styles/dashboardDean.css">
                                 <items>
-                                  <MenuItem mnemonicParsing="false" onAction="#logout" text="Cerrar sesión" />
+                                  <MenuItem mnemonicParsing="false" onAction="#logout" text="Cerrar Sesión" />
                                 </items>
                                  <graphic>
                                     <FontAwesomeIconView fill="#5a6a85" glyphName="USER_CIRCLE" size="32" styleClass="iconUser" />
@@ -260,33 +260,28 @@
                            <children>
                               <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnSpan="2">
                                  <children>
-                                    <Label text="CARGA DE RESULTADOS" textFill="#de0009">
+                                    <Label text="CARGA MASIVA DE USUARIOS" textFill="#de0009">
                                        <font>
                                           <Font name="Montserrat ExtraBold" size="28.0" />
                                        </font>
                                     </Label>
-                                    <Label text="Seleccione el tipo de resultados a cargar, posteriormente seleccione el archivo .xlsx o .csv " textFill="#5a6a85">
+                                    <Label text="Seleccione el tipo de usuario a cargar, posteriormente seleccione el archivo .xlsx " textFill="#5a6a85">
                                        <font>
                                           <Font name="Montserrat-Regular" size="13.0" />
                                        </font>
                                     </Label>
                                  </children>
                               </VBox>
-                              <HBox prefHeight="100.0" prefWidth="200.0" spacing="15.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                              <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
                                  <children>
-                                    <ComboBox fx:id="comboChoice" maxWidth="200.0" prefWidth="200.0" promptText="Tipo de resultados" styleClass="comboBox" stylesheets="@../../styles/loadMassiveUsers.css">
-                                       <HBox.margin>
-                                          <Insets left="10.0" />
-                                       </HBox.margin>
-                                    </ComboBox>
-                                    <TextField fx:id="tfPeriodo" styleClass="fieldText" stylesheets="@../../styles/createUser.css" visible="false" />
+                                    <ComboBox fx:id="cBoxUserType" prefWidth="150.0" promptText="Tipo de usuario" styleClass="comboBox" stylesheets="@../../styles/loadMassiveUsers.css" />
                                  </children>
                               </HBox>
                               <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2">
                                  <children>
-                                    <HBox alignment="CENTER" onMouseClicked="#cargarDocumento" prefHeight="100.0" prefWidth="200.0" styleClass="containerUpload" stylesheets="@../../styles/loadMassiveUsers.css" HBox.hgrow="ALWAYS">
+                                    <HBox fx:id="dropZone" alignment="CENTER" onMouseClicked="#openFileSelector" prefHeight="100.0" prefWidth="200.0" styleClass="containerUpload" stylesheets="@../../styles/loadMassiveUsers.css" HBox.hgrow="ALWAYS">
                                        <children>
-                                          <Label fx:id="lbNameFile" text="Seleccione el archivo" textFill="#5a6a85">
+                                          <Label fx:id="lbFile" text="Seleccione el archivo" textFill="#5a6a85">
                                              <font>
                                                 <Font name="Montserrat SemiBold" size="12.0" />
                                              </font>
@@ -303,8 +298,8 @@
                               </HBox>
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0" GridPane.columnSpan="2" GridPane.rowIndex="3">
                                  <children>
-                                    <Button mnemonicParsing="false" onMouseClicked="#cancelLoad" styleClass="bttCancel" stylesheets="@../../styles/createUser.css" text="Cancelar" />
-                                    <Button mnemonicParsing="false" onMouseClicked="#onCargaResultados" styleClass="bttCreate" stylesheets="@../../styles/createUser.css" text="Guardar" />
+                                    <Button mnemonicParsing="false" styleClass="bttCancel" stylesheets="@../../styles/createUser.css" text="Cancelar" />
+                                    <Button fx:id="bttUploadFile" mnemonicParsing="false" onMouseClicked="#uploadMassiveFile" styleClass="bttCreate" stylesheets="@../../styles/createUser.css" text="Guardar" />
                                  </children>
                                  <GridPane.margin>
                                     <Insets top="10.0" />
@@ -323,13 +318,16 @@
             </VBox>
          </children>
       </HBox>
-      <VBox fx:id="overlayBox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #00000099;" visible="false">
+      <VBox fx:id="overlayCharge" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #00000099;" visible="false">
          <children>
-            <ProgressIndicator style="-fx-background-color: transparent;" />
-            <Label styleClass="lbProgressIndicator" stylesheets="@../../styles/admin.css" text="Cargando resultados">
+            <ProgressIndicator maxHeight="100.0" maxWidth="120.0" prefHeight="65.0" prefWidth="60.0" style="-fx-background-color: transparent;" />
+            <Label style="-fx-font-weight: bold;" text="Creando usuarios y enviando correos...">
                <VBox.margin>
                   <Insets top="10.0" />
                </VBox.margin>
+               <font>
+                  <Font name="Montserrat-Regular" size="12.0" />
+               </font>
             </Label>
          </children>
       </VBox>

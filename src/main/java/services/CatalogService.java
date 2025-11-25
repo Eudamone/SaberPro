@@ -2,7 +2,6 @@ package services;
 
 import dto.*;
 import model.Facultad;
-import model.Modulo;
 import model.Programa;
 import org.json.JSONObject;
 import org.springframework.cache.annotation.CacheEvict;
@@ -90,9 +89,13 @@ public class CatalogService {
         return internalResultRepository.findResults(pageable, filter);
     }
 
+    public Integer sizeUsers(){return usuarioRepository.sizeUsuarios();}
+
     public Integer sizeInternResults(){
         return internalResultRepository.sizeInternResultsAll();
     }
+
+    public Integer sizeExternalResults(){return externalGeneralResultRepository.getSizeExternalResults();}
 
     public List<String> getProgramsDean(Long id){
         return programaRepository.findByCodeDean(id);
@@ -234,6 +237,22 @@ public class CatalogService {
         return externalGeneralResultRepository.getMejoresPromedioUniversidades(periodo);
     }
 
+    public Ranking getPuestoNacionalByAnio(String numIdentification){
+        Integer periodo = getPeriodoResult(numIdentification);
+        return externalGeneralResultRepository.getPuestoNacionalStudentByAnio(
+                getPuntajeGlobalStudent(numIdentification),periodo
+        );
+    }
+
+    // Consulta de momento solo por el Meta de manera fija
+    public Ranking getPuestoDepartamentalByAnio(String numIdentification){
+        Integer periodo = getPeriodoResult(numIdentification);
+        return externalGeneralResultRepository.getPuestoDepartamentalStudentByAnio(
+                getPuntajeGlobalStudent(numIdentification),periodo
+        );
+    }
+
+    // --------------------- MÉTODOS PARA CONSTRUIR PROMPT INFORME DECANO ------------------------
 
     public JSONObject buildReportPayload(InternResultFilter filter) {
         InternResultReport report = generateInternReport(filter);

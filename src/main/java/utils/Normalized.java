@@ -1,5 +1,7 @@
 package utils;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -75,4 +77,24 @@ public class Normalized {
         return abreviatura.toString();
     }
 
+
+    public static String formatWithThousands(String input) {
+        try {
+            // Convertimos el String a número
+            long number = Long.parseLong(input);
+
+            // Configuramos el formato con punto como separador de miles
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+            symbols.setGroupingSeparator('.');
+
+            DecimalFormat formatter = new DecimalFormat("#,###", symbols);
+
+            // Retornamos el número formateado
+            return formatter.format(number);
+
+        } catch (NumberFormatException e) {
+            // Si el input no es un número válido, devolvemos el mismo string
+            return input;
+        }
+    }
 }

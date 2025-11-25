@@ -20,7 +20,6 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-
 <StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Dean.dashboardDeanController">
    <children>
       <HBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;">
@@ -249,7 +248,7 @@
                                                 <Label prefHeight="17.0" prefWidth="211.0" styleClass="lbSubTitleChartPromedy" stylesheets="@../../styles/dashboardDean.css" text="Universidad de los Llanos" />
                                              </children>
                                           </VBox>
-                                          <ComboBox prefWidth="150.0" promptText="Ultimos 7 años" styleClass="comboBoxLineChartPromedy" stylesheets="@../../styles/dashboardDean.css" />
+                                          <ComboBox prefWidth="150.0" promptText="Ultimos 7 años" styleClass="comboBoxLineChartPromedy" stylesheets="@../../styles/dashboardDean.css" visible="false" />
                                        </children>
                                     </HBox>
                                     <VBox fx:id="boxLineChartPromedio" alignment="CENTER_LEFT" prefHeight="251.0" prefWidth="678.0" />
@@ -328,7 +327,7 @@
                                     <HBox prefHeight="44.0" prefWidth="335.0">
                                        <children>
                                           <Label prefHeight="82.0" prefWidth="187.0" styleClass="lbTitleChartPromedy" stylesheets="@../../styles/dashboardDean.css" text="Competencias Genericas" wrapText="true" />
-                                          <ComboBox prefWidth="150.0" promptText="FCBI" styleClass="comboBoxRadarChart" stylesheets="@../../styles/dashboardDean.css">
+                                          <ComboBox prefWidth="150.0" promptText="FCBI" styleClass="comboBoxRadarChart" stylesheets="@../../styles/dashboardDean.css" visible="false">
                                              <HBox.margin>
                                                 <Insets top="12.0" />
                                              </HBox.margin>

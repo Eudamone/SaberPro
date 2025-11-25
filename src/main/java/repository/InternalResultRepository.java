@@ -19,7 +19,7 @@ public interface InternalResultRepository extends JpaRepository<InternalResult, 
     Optional<InternalResult> findFirstByPeriodoAndNumeroRegistro(Integer periodo, String numeroRegistro);
 
 
-    @Query("SELECT COUNT(*) FROM InternalResult")
+    @Query("SELECT COUNT(DISTINCT ir.nombre) FROM InternalResult ir")
     Integer sizeInternResultsAll();
 
     @Query("SELECT DISTINCT ir.periodo FROM InternalResult ir order by ir.periodo asc ")

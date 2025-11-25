@@ -1,13 +1,15 @@
-package controllers.Dean;
+package controllers.Admin;
 
 import application.SceneManager;
 import application.SessionContext;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -26,15 +28,19 @@ import utils.UtilsComboBox;
 import views.FxmlView;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static utils.Alerts.*;
-import static utils.UtilsComboBox.*;
+import static utils.Alerts.showError;
+import static utils.Alerts.showInformation;
+import static utils.UtilsComboBox.cleanComboBox;
+import static utils.UtilsComboBox.comboBoxInitializer;
 import static utils.generateNameUser.generateUsername;
 
 @Component
-public class createUserDeanController {
-
+public class CreateUserAdminController {
     private final SessionContext sessionContext;
     @FXML
     private Button bttCreateUser;
@@ -46,26 +52,6 @@ public class createUserDeanController {
     private final UsuarioService usuarioService;
     private final FacultadRepository facultadRepository;
     private final ProgramaService programaService;
-
-    @Lazy
-    public createUserDeanController(SceneManager sceneManager, UsuarioService usuarioService, FacultadRepository facultadRepository, ProgramaService programaService, SessionContext sessionContext) {
-        this.sceneManager = sceneManager;
-        this.usuarioService = usuarioService;
-        this.facultadRepository = facultadRepository;
-        this.programaService = programaService;
-        this.sessionContext = sessionContext;
-    }
-
-    @FXML
-    void handleViewChange(ActionEvent event) throws Exception {
-        NavigationHelper.handleViewChange(event, sceneManager,rootPane);
-    }
-
-    @FXML
-    void logout(ActionEvent event) throws IOException {
-        sessionContext.logout();
-        sceneManager.switchToNextScene(FxmlView.LOGIN);
-    }
 
     @FXML
     private ComboBox<Facultad> cBoxFaculty;
@@ -111,6 +97,26 @@ public class createUserDeanController {
 
     @FXML
     private StackPane rootPane;
+
+    @Lazy
+    public CreateUserAdminController(SceneManager sceneManager, UsuarioService usuarioService, FacultadRepository facultadRepository, ProgramaService programaService, SessionContext sessionContext){
+        this.sceneManager = sceneManager;
+        this.usuarioService = usuarioService;
+        this.facultadRepository = facultadRepository;
+        this.programaService = programaService;
+        this.sessionContext = sessionContext;
+    }
+
+    @FXML
+    void handleViewChange(ActionEvent event) throws Exception {
+        NavigationHelper.handleViewChange(event, sceneManager,rootPane);
+    }
+
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+        sessionContext.logout();
+        sceneManager.switchToNextScene(FxmlView.LOGIN);
+    }
 
     @FXML
     public void createUser(ActionEvent actionEvent) {
@@ -277,7 +283,7 @@ public class createUserDeanController {
 
     @FXML
     public void initialize(){
-        comboBoxInitializer(cBoxRol,UtilsComboBox.comboRol);
+        comboBoxInitializer(cBoxRol, UtilsComboBox.comboRol);
         comboBoxInitializer(cBoxTypeDocument,UtilsComboBox.comboTypeDocument);
         comboBoxInitializer(cBoxTeaching,UtilsComboBox.comboTeacher);
         comboBoxInitializer(cBoxStateAcademy,UtilsComboBox.comboStateAcademic);

@@ -1,14 +1,17 @@
 package controllers.Admin;
 
 import application.SceneManager;
+import application.SessionContext;
 import javafx.animation.FadeTransition;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -18,16 +21,20 @@ import org.springframework.stereotype.Component;
 import services.FileProcessingService;
 import utils.Alerts;
 import utils.LocalMultipartFile;
+import utils.NavigationHelper;
 import utils.UtilsComboBox;
+import views.FxmlView;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Component
 public class loadResultsAdminController {
 
+    private final SessionContext sessionContext;
     @FXML
     private ComboBox<String> comboChoice;
     @FXML
@@ -39,23 +46,37 @@ public class loadResultsAdminController {
     @FXML
     private HBox contentBox;
 
+    @FXML
+    private StackPane rootPane;
 
     // Para el manejo de resultados
     private List<File> archivos;
     private File archivo;
 
-    private SceneManager sceneManager;
+    private final SceneManager sceneManager;
     private FileProcessingService fileService;
 
     @Lazy
-    public loadResultsAdminController(SceneManager sceneManager,FileProcessingService fileService) {
+    public loadResultsAdminController(SceneManager sceneManager, FileProcessingService fileService, SessionContext sessionContext) {
         this.sceneManager = sceneManager;
         this.fileService = fileService;
+        this.sessionContext = sessionContext;
     }
 
     @FXML
     public  void initialize(){
         UtilsComboBox.comboBoxInitializer(comboChoice,UtilsComboBox.typesDocumentsResult);
+    }
+
+    @FXML
+    void handleViewChange(ActionEvent event) throws Exception {
+        NavigationHelper.handleViewChange(event,sceneManager,rootPane);
+    }
+
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+        sessionContext.logout();
+        sceneManager.switchToNextScene(FxmlView.LOGIN);
     }
 
     @FXML

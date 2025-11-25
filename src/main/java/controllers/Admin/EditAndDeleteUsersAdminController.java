@@ -1,4 +1,4 @@
-package controllers.Dean;
+package controllers.Admin;
 
 import application.SceneManager;
 import application.SessionContext;
@@ -13,9 +13,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -34,19 +31,20 @@ import utils.NavigationHelper;
 import utils.UtilsComboBox;
 import views.FxmlView;
 
-import java.awt.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import static utils.Alerts.*;
+import static utils.Alerts.showConfirmationAndGetResult;
+import static utils.Alerts.showError;
 import static utils.UtilsComboBox.comboBoxInitializer;
 import static utils.UtilsComboBox.limpiarComboBox;
 import static utils.generateNameUser.generateUsername;
 
 @Component
-public class editAndDeleteUsersDeanController {
-
+public class EditAndDeleteUsersAdminController {
     private final SceneManager sceneManager;
 
     // --- Servicios y Estado ---
@@ -55,9 +53,10 @@ public class editAndDeleteUsersDeanController {
     private UsuarioInfoDTO selectedUser = null; // Usuario actualmente en edición
     private final CatalogService catalogService;
 
+    private ObservableList<UsuarioInfoDTO> masterUsersData;
 
     @Lazy
-    public editAndDeleteUsersDeanController(SceneManager sceneManager, UsuarioService usuarioService, CatalogService catalogService, SessionContext sessionContext) {
+    public EditAndDeleteUsersAdminController(SceneManager sceneManager, UsuarioService usuarioService, CatalogService catalogService, SessionContext sessionContext) {
         this.sceneManager = sceneManager;
         this.usuarioService = usuarioService;
         this.catalogService = catalogService;
@@ -149,8 +148,6 @@ public class editAndDeleteUsersDeanController {
 
     @FXML
     private TextField tfFilter;
-
-    private ObservableList<UsuarioInfoDTO> masterUsersData;
 
     @FXML
     void cancelEdit(ActionEvent event) {

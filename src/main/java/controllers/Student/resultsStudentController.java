@@ -4,6 +4,7 @@ import application.SceneManager;
 import application.SessionContext;
 import dto.MejorModulo;
 import dto.ModuloPromedio;
+import dto.Ranking;
 import dto.UniversidadPromedio;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -164,10 +165,26 @@ public class resultsStudentController {
                         "[NUM]",puntajeGlobal.toString()
                 )
         );
-
+        // Posición nacional
+        Ranking puestoNac = catalogService.getPuestoNacionalByAnio(sessionContext.getCurrentUser().getNumIdentification());
+        lbPuestoNacional.setText(
+                "#" + puestoNac.getPosicion().toString()
+        );
+        lbCantidadNacional.setText(
+                lbCantidadNacional.getText().replace(
+                        "[NUM]",puestoNac.getTotalEstudiantes().toString()
+                )
+        );
         // Puntaje departamental
-
-
+        Ranking puestoDep = catalogService.getPuestoDepartamentalByAnio(sessionContext.getCurrentUser().getNumIdentification());
+        lbPuestoDepartamento.setText(
+                "#" + puestoDep.getPosicion().toString()
+        );
+        lbCantidadDepartamento.setText(
+                lbCantidadDepartamento.getText().replace(
+                        "[NUM]",puestoDep.getTotalEstudiantes().toString()
+                )
+        );
     }
 
     private void setupChartCompetencies(){

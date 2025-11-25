@@ -66,7 +66,7 @@ public class UsuarioService {
         return encoder;
     }
 
-    private static final String RUTA_INSTRUCTIVO_PDF = "src/main/resources/docs/FO-DOC-112 GUIA 6. LAB MEDIOS NO GUIADOS.pdf"; // ¡Ajusta esta ruta real!
+    private static final String RUTA_INSTRUCTIVO_PDF = "src/main/resources/docs/Instructivo.pdf"; // Ruta instructivo
     private static final String NOMBRE_ADJUNTO = "Instructivo_Acceso_SaberPro.pdf";
 
     @Transactional
@@ -427,6 +427,10 @@ public class UsuarioService {
     @Transactional
     public void deleteNewUser(Long id){
         usuarioRepository.deleteNewUsuarioById(id);
+    }
+
+    public boolean isStudentWithResult(String numIdentification){
+        return usuarioRepository.isStudentInResults(numIdentification);
     }
 }
 

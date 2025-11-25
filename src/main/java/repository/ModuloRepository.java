@@ -84,4 +84,12 @@ public interface ModuloRepository extends JpaRepository<Modulo, Integer> {
                 order by m.nombre;
     """,nativeQuery = true)
     List<ModuloPromedio> getPromedyModuleByStudent(@Param("numIdentification") String numIdentification);
+
+    @Query(value = """
+        select *
+        from modulo m
+        where LOWER(public.unaccent(m.nombre)) = LOWER(public.unaccent(:nombre))
+        limit 1
+    """, nativeQuery = true)
+    Optional<Modulo> findFirstByNombreNormalized(@Param("nombre") String nombre);
 }

@@ -84,7 +84,7 @@ public class loginController {
                     sceneManager.switchSceneAsync(FxmlView.RESULTS_STUDENT,rootPane);
                 }
                 case Administrador -> {
-                    sceneManager.switchSceneAsync(FxmlView.LOAD_RESULTS_ADMIN,rootPane);
+                    sceneManager.switchSceneAsync(FxmlView.DASHBOARD_ADMIN,rootPane);
                 }
                 default -> {
                     showError("No existe una vista para el usuario ingresado");

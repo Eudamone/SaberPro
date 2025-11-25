@@ -17,9 +17,9 @@
 
 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" prefWidth="1300.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Student.resultsStudentController">
    <children>
-      <VBox prefHeight="200.0" prefWidth="250.0">
+      <VBox prefHeight="721.0" prefWidth="265.0">
          <children>
-            <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" prefHeight="800.0" prefWidth="210.0" spacing="10.0" style="-fx-background-color: #FFFFFF;">
+            <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" prefHeight="721.0" prefWidth="257.0" spacing="10.0" style="-fx-background-color: #FFFFFF;">
                <children>
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="210.0">
                      <children>
@@ -54,17 +54,65 @@
                                           <Insets bottom="2.0" left="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <Button alignment="TOP_LEFT" graphicTextGap="12.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados">
+                                    <Button alignment="TOP_LEFT" graphicTextGap="12.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenuSelected" stylesheets="@../../styles/dashboardDean.css" text="Dashboard">
                                        <VBox.margin>
                                           <Insets bottom="10.0" left="5.0" />
                                        </VBox.margin>
                                        <graphic>
-                                          <FontAwesomeIconView glyphName="EYE" size="18" styleClass="icon-bttMenuSelected" />
+                                          <FontAwesomeIconView glyphName="HOME" size="18" styleClass="icon-bttMenuSelected" />
                                        </graphic>
                                     </Button>
-                                    <Line endX="80.0" focusTraversable="true" layoutX="121.0" layoutY="191.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                    <Line endX="120.0" focusTraversable="true" layoutX="116.0" layoutY="75.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
                                        <VBox.margin>
+                                          <Insets left="10.0" />
+                                       </VBox.margin>
+                                    </Line>
+                                    <Label layoutX="20.0" layoutY="10.0" text="RESULTADOS" textFill="#5a6a85">
+                                       <font>
+                                          <Font name="Montserrat-Regular" size="14.0" />
+                                       </font>
+                                       <padding>
                                           <Insets left="5.0" />
+                                       </padding>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="10.0" top="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button alignment="TOP_LEFT" graphicTextGap="12.0" layoutX="15.0" layoutY="32.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Consultar resultados">
+                                       <graphic>
+                                          <FontAwesomeIconView glyphName="EYE" size="18" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Line endX="120.0" focusTraversable="true" layoutX="121.0" layoutY="191.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                       <VBox.margin>
+                                          <Insets left="10.0" />
+                                       </VBox.margin>
+                                    </Line>
+                                    <Label layoutX="10.0" layoutY="76.0" text="ACCIONES DE MEJORAMIENTO" textFill="#5a6a85">
+                                       <font>
+                                          <Font name="Montserrat-Regular" size="14.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets left="5.0" />
+                                       </padding>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="10.0" top="10.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <Button alignment="TOP_LEFT" graphicTextGap="12.0" layoutX="10.0" layoutY="96.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="180.0" styleClass="bttMenu" stylesheets="@../../styles/dashboardDean.css" text="Visualizar acciones">
+                                       <graphic>
+                                          <FontAwesomeIconView glyphName="EYE" size="18" styleClass="icon" />
+                                       </graphic>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                    <Line endX="120.0" focusTraversable="true" layoutX="116.0" layoutY="127.0" startX="-100.0" stroke="#eaeff4" strokeWidth="2.0">
+                                       <VBox.margin>
+                                          <Insets left="10.0" />
                                        </VBox.margin>
                                     </Line>
                                     <Label text="AYUDA Y SOPORTE" textFill="#5a6a85" VBox.vgrow="ALWAYS">

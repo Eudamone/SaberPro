@@ -84,6 +84,30 @@ public enum FxmlView {
         public String getTitle() {return "Carga de resultados - Saber Pro";}
         @Override
         public String getFxmlFile() {return "/views/Admin/loadResultsAdmin.fxml";}
+    },
+    DASHBOARD_ADMIN{
+        @Override
+        public String getTitle() { return "Dashboard Administrador - Saber Pro"; }
+        @Override
+        public String getFxmlFile() { return "/views/Admin/dashboardAdmin.fxml"; }
+    },
+    CREATE_USER_ADMIN{
+        @Override
+        public String getTitle() { return "Crear Administrador - Saber Pro"; }
+        @Override
+        public String getFxmlFile() { return "/views/Admin/createUserAdmin.fxml"; }
+    },
+    EDIT_AND_DELETE_USERS_ADMIN{
+        @Override
+        public String getTitle() { return "Editar Administrador - Saber Pro"; }
+        @Override
+        public String getFxmlFile() {return "/views/Admin/editAndDeleteUsersAdmin.fxml";}
+    }
+    ,LOAD_MASSIVE_USERS_ADMIN{
+        @Override
+        public String getTitle() { return "Carga masiva de usuarios - Saber Pro"; }
+        @Override
+        public String getFxmlFile() {return "/views/Admin/loadMassiveUsersAdmin.fxml";}
     }
     ;
 
